@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Color Dash - Free HTML5 Game</title>
+<meta name="description" content="Play Color Dash - Run through color gates matching your current color. Tap to switch between colors. Speed increases every 10 points.">
+<meta name="theme-color" content="#0a0a1a">
+<link rel="canonical" href="https://balinti.github.io/color-dash/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Color Dash - Free HTML5 Game">
+<meta property="og:description" content="Run through color gates matching your current color. Tap to switch between colors. How far can you go?">
+<meta property="og:url" content="https://balinti.github.io/color-dash/">
+<meta property="og:image" content="https://balinti.github.io/color-dash/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Color Dash - Free HTML5 Game">
+<meta name="twitter:description" content="Run through color gates matching your current color. Tap to switch between colors. How far can you go?">
+<meta name="twitter:image" content="https://balinti.github.io/color-dash/og-image.png">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4099346100621490" crossorigin="anonymous"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a0a1a;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#e0e0e0;touch-action:none;user-select:none;-webkit-user-select:none}
+#wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;padding:4px}
+#game-container{position:relative;width:100%;max-width:420px;max-height:750px;aspect-ratio:420/750;background:#0d0d22;border-radius:12px;overflow:hidden;box-shadow:0 0 40px rgba(100,60,255,0.15)}
+canvas{display:block;width:100%;height:100%;border-radius:12px}
+#below{width:100%;max-width:420px;padding:10px 4px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+#share-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+#share-row button{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#ccc;padding:6px 14px;border-radius:6px;font-size:13px;cursor:pointer;transition:background .2s}
+#share-row button:hover{background:rgba(255,255,255,0.15)}
+#about{font-size:11px;color:#666;line-height:1.4;max-width:400px;margin-top:4px}
+#about strong{color:#888}
+</style>
+</head>
+<body>
+<div id="wrap">
+<div id="game-container"><canvas id="c"></canvas></div>
+<div id="below">
+<div id="share-row">
+<button id="btn-share" style="display:none">Share Score</button>
+<button id="btn-copy" style="display:none">Copy Score</button>
+</div>
+<div id="about">
+<strong>Color Dash: Pulse Gates</strong> — A hyper-casual timing game. Tap or press Space to switch between Light and Dark. Match the gate color and time the pulse window to pass through. Perfect timing earns bonus streaks! Gates speed up as you progress. How many can you clear?
+</div>
+</div>
+</div>
+<script>
+'use strict';
+(()=>{
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+const container=document.getElementById('game-container');
+const btnShare=document.getElementById('btn-share');
+const btnCopy=document.getElementById('btn-copy');
+
+// States
+const START=0,PLAYING=1,GAMEOVER=2;
+let state=START;
+
+// Canvas sizing
+let W,H,dpr;
+function resize(){
+  const rect=container.getBoundingClientRect();
+  dpr=window.devicePixelRatio||1;
+  W=rect.width;H=rect.height;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+resize();
+window.addEventListener('resize',resize);
+
+// Colors
+const LIGHT_COLOR='#f0ece4';
+const DARK_COLOR='#1a1a2e';
+const LIGHT_GATE='#f0ece4';
+const DARK_GATE='#1a1a2e';
+const LIGHT_ACCENT='#ffe8a0';
+const DARK_ACCENT='#6a5acd';
+
+// localStorage
+const LS_KEY='cdpg_highscore_v1';
+const LS_STREAK='cdpg_beststreak_v1';
+function loadBest(){try{return parseInt(localStorage.getItem(LS_KEY))||0}catch(e){return 0}}
+function saveBest(v){try{localStorage.setItem(LS_KEY,v)}catch(e){}}
+function loadBestStreak(){try{return parseInt(localStorage.getItem(LS_STREAK))||0}catch(e){return 0}}
+function saveBestStreak(v){try{localStorage.setItem(LS_STREAK,v)}catch(e){}}
+
+let bestScore=loadBest();
+let bestStreak=loadBestStreak();
+
+// Game variables
+let score,gatesCleared,streak,mult,switchedSinceLastGate;
+let playerIsLight; // true=light, false=dark
+let gates,particles;
+let spawnTimer,gameTime,lastTime;
+let shakeX,shakeY,shakeMag,shakeDecay;
+let flashAlpha;
+let perfectCount,totalGatesPassed;
+let bgHue;
+
+// Helpers
+function lerp(a,b,t){return a+(b-a)*t}
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v))}
+function rand(lo,hi){return lo+Math.random()*(hi-lo)}
+
+// Difficulty curve
+function dFactor(s){return 1-Math.exp(-s/28)}
+
+function getSpeed(s){const d=dFactor(s);return 260+220*d}
+function getSpawnInterval(s){const d=dFactor(s);return clamp(1.25-0.55*d,0.62,1.25)}
+function getPulseFreq(s){const d=dFactor(s);return 1.15+1.10*d+rand(-0.10,0.10)}
+function getDriftAmp(s){if(s<25)return 0;const d=dFactor(s);return 6+14*d}
+function getDriftFreq(){return rand(0.6,1.4)}
+function getDoubleChance(s){if(s<50)return 0;return clamp((s-50)/80,0,0.35)}
+
+// Player
+const PLAYER_RADIUS=16;
+function playerY(){return H*0.82}
+
+// Gate class
+function makeGate(yPos,isLight,freq,phase,driftAmp,driftFreq,driftPhase){
+  return{y:yPos,isLight,freq,phase,driftAmp,driftFreq,driftPhase,passed:false,prevY:yPos,gapX:W/2}
+}
+
+function spawnGate(){
+  const isLight=Math.random()<0.5;
+  const freq=getPulseFreq(score);
+  const phase=Math.random();
+  const dAmp=getDriftAmp(score);
+  const dFreq=getDriftFreq();
+  const dPhase=Math.random()*Math.PI*2;
+  const g=makeGate(-30,isLight,freq,phase,dAmp,dFreq,dPhase);
+  gates.push(g);
+  // Double gate
+  const pD=getDoubleChance(score);
+  if(Math.random()<pD){
+    const speed=getSpeed(score);
+    const isLight2=Math.random()<0.5;
+    const g2=makeGate(-30-0.42*speed,isLight2,getPulseFreq(score),Math.random(),dAmp,getDriftFreq(),Math.random()*Math.PI*2);
+    gates.push(g2);
+  }
+}
+
+// Particles
+function spawnParticles(x,y,count,color,speed){
+  for(let i=0;i<count;i++){
+    const angle=Math.random()*Math.PI*2;
+    const sp=rand(speed*0.3,speed);
+    particles.push({x,y,vx:Math.cos(angle)*sp,vy:Math.sin(angle)*sp,life:1,maxLife:rand(0.4,0.9),color,radius:rand(2,5)});
+  }
+}
+
+// Shake
+function triggerShake(mag,dec){shakeMag=mag;shakeDecay=dec}
+
+// Init game
+function initGame(){
+  score=0;gatesCleared=0;streak=0;mult=1;
+  switchedSinceLastGate=false;
+  playerIsLight=true;
+  gates=[];particles=[];
+  spawnTimer=0;gameTime=0;
+  shakeX=0;shakeY=0;shakeMag=0;shakeDecay=8;
+  flashAlpha=0;
+  perfectCount=0;totalGatesPassed=0;
+  bgHue=240;
+}
+
+// Toggle color
+function toggleColor(){
+  playerIsLight=!playerIsLight;
+  switchedSinceLastGate=true;
+  spawnParticles(W/2,playerY(),8,playerIsLight?LIGHT_ACCENT:DARK_ACCENT,80);
+}
+
+// Input
+function handleInput(e){
+  if(e&&e.target&&(e.target.tagName==='BUTTON'))return;
+  if(state===START){state=PLAYING;initGame();return}
+  if(state===GAMEOVER){state=START;btnShare.style.display='none';btnCopy.style.display='none';return}
+  if(state===PLAYING){toggleColor()}
+}
+canvas.addEventListener('pointerdown',handleInput);
+document.addEventListener('keydown',(e)=>{
+  if(e.code==='Space'||e.code==='Enter'){e.preventDefault();handleInput()}
+});
+
+// Share
+function getShareText(){
+  return `Color Dash: Pulse Gates\nScore: ${score} | Gates: ${gatesCleared} | Best Streak: ${streak}\nPlay: https://balinti.github.io/color-dash/`;
+}
+btnShare.addEventListener('click',(e)=>{
+  e.stopPropagation();
+  if(navigator.share){navigator.share({title:'Color Dash',text:getShareText(),url:'https://balinti.github.io/color-dash/'})}
+});
+btnCopy.addEventListener('click',(e)=>{
+  e.stopPropagation();
+  navigator.clipboard.writeText(getShareText()).then(()=>{btnCopy.textContent='Copied!';setTimeout(()=>btnCopy.textContent='Copy Score',1500)});
+});
+
+// Drawing helpers
+function drawPlayerOrb(x,y,isLight){
+  const r=PLAYER_RADIUS;
+  ctx.save();
+  // Glow
+  const glow=ctx.createRadialGradient(x,y,r*0.3,x,y,r*2.5);
+  glow.addColorStop(0,isLight?'rgba(240,236,228,0.3)':'rgba(106,90,205,0.3)');
+  glow.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=glow;
+  ctx.beginPath();ctx.arc(x,y,r*2.5,0,Math.PI*2);ctx.fill();
+
+  // Main orb
+  ctx.fillStyle=isLight?LIGHT_COLOR:DARK_COLOR;
+  ctx.strokeStyle=isLight?'#d4c97a':'#8878e0';
+  ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.stroke();
+
+  // Pattern for accessibility
+  if(isLight){
+    // Dots pattern
+    ctx.fillStyle='rgba(180,160,80,0.6)';
+    for(let dy=-1;dy<=1;dy++){
+      for(let dx=-1;dx<=1;dx++){
+        if(dx===0&&dy===0)continue;
+        const px=x+dx*6;const py=y+dy*6;
+        if((px-x)**2+(py-y)**2<(r-3)**2){
+          ctx.beginPath();ctx.arc(px,py,1.8,0,Math.PI*2);ctx.fill();
+        }
+      }
+    }
+  } else {
+    // Diagonal stripes
+    ctx.strokeStyle='rgba(140,120,230,0.5)';
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.save();
+    ctx.beginPath();ctx.arc(x,y,r-2,0,Math.PI*2);ctx.clip();
+    for(let i=-r*2;i<r*2;i+=6){
+      ctx.moveTo(x+i-r,y-r);
+      ctx.lineTo(x+i+r,y+r);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+function drawGate(gate,t){
+  const d=dFactor(score);
+  const s=0.5+0.5*Math.sin(2*Math.PI*gate.freq*t+2*Math.PI*gate.phase);
+  const openFracMax=lerp(0.62,0.34,d);
+  const openFracMin=lerp(0.34,0.12,d);
+  const openFrac=openFracMin+(openFracMax-openFracMin)*s;
+  const gapWidth=W*openFrac;
+
+  // Drift
+  let cx=W/2;
+  if(gate.driftAmp>0){
+    cx+=gate.driftAmp*Math.sin(2*Math.PI*gate.driftFreq*t+gate.driftPhase);
+  }
+  gate.gapX=cx;
+
+  const leftEnd=cx-gapWidth/2;
+  const rightStart=cx+gapWidth/2;
+  const gateH=8;
+  const y=gate.y;
+
+  const gateColor=gate.isLight?LIGHT_GATE:DARK_GATE;
+  const gateAccent=gate.isLight?'rgba(240,236,228,0.4)':'rgba(106,90,205,0.4)';
+
+  // Pulse ring telegraph
+  const pulseRingAlpha=0.15+0.15*s;
+  ctx.save();
+  ctx.strokeStyle=gate.isLight?`rgba(240,236,228,${pulseRingAlpha})`:`rgba(106,90,205,${pulseRingAlpha})`;
+  ctx.lineWidth=1.5;
+  ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.arc(cx,y,gapWidth/2+10,0,Math.PI*2);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // Left bar
+  ctx.fillStyle=gateColor;
+  ctx.fillRect(0,y-gateH/2,Math.max(0,leftEnd),gateH);
+
+  // Right bar
+  ctx.fillStyle=gateColor;
+  ctx.fillRect(rightStart,y-gateH/2,W-rightStart,gateH);
+
+  // Accent edges
+  ctx.fillStyle=gateAccent;
+  if(leftEnd>4){
+    ctx.fillRect(leftEnd-4,y-gateH/2-2,4,gateH+4);
+  }
+  if(rightStart<W-4){
+    ctx.fillRect(rightStart,y-gateH/2-2,4,gateH+4);
+  }
+
+  // Pattern on gate bars for accessibility
+  ctx.save();
+  if(gate.isLight){
+    // Dots on bar
+    ctx.fillStyle='rgba(180,160,80,0.4)';
+    for(let px=8;px<leftEnd-4;px+=12){
+      ctx.beginPath();ctx.arc(px,y,2,0,Math.PI*2);ctx.fill();
+    }
+    for(let px=rightStart+8;px<W-4;px+=12){
+      ctx.beginPath();ctx.arc(px,y,2,0,Math.PI*2);ctx.fill();
+    }
+  } else {
+    // Stripes on bar
+    ctx.strokeStyle='rgba(140,120,230,0.35)';
+    ctx.lineWidth=1.5;
+    ctx.beginPath();
+    for(let i=0;i<leftEnd;i+=8){
+      ctx.moveTo(i,y-gateH/2);ctx.lineTo(i+gateH,y+gateH/2);
+    }
+    for(let i=rightStart;i<W;i+=8){
+      ctx.moveTo(i,y-gateH/2);ctx.lineTo(i+gateH,y+gateH/2);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function getGateOpenFrac(gate,t){
+  const d=dFactor(score);
+  const s=0.5+0.5*Math.sin(2*Math.PI*gate.freq*t+2*Math.PI*gate.phase);
+  const openFracMax=lerp(0.62,0.34,d);
+  const openFracMin=lerp(0.34,0.12,d);
+  return openFracMin+(openFracMax-openFracMin)*s;
+}
+
+// Main loop
+let prevTimestamp=0;
+function loop(timestamp){
+  requestAnimationFrame(loop);
+  if(!prevTimestamp)prevTimestamp=timestamp;
+  let dt=(timestamp-prevTimestamp)/1000;
+  prevTimestamp=timestamp;
+  dt=Math.min(dt,1/30); // clamp
+
+  // Update
+  if(state===PLAYING){
+    gameTime+=dt;
+    const speed=getSpeed(score);
+
+    // Spawn
+    spawnTimer-=dt;
+    if(spawnTimer<=0){
+      spawnGate();
+      spawnTimer=getSpawnInterval(score);
+    }
+
+    // Update gates
+    const pY=playerY();
+    for(let i=gates.length-1;i>=0;i--){
+      const g=gates[i];
+      g.prevY=g.y;
+      g.y+=speed*dt;
+
+      // Check crossing
+      if(!g.passed&&g.prevY<pY&&g.y>=pY){
+        g.passed=true;
+        evaluateGate(g);
+      }
+
+      // Remove off screen
+      if(g.y>H+50){gates.splice(i,1)}
+    }
+
+    // Background hue shift
+    bgHue=(240+gameTime*2+streak*3)%360;
+  }
+
+  // Shake
+  if(shakeMag>0.1){
+    shakeX=(Math.random()-0.5)*shakeMag;
+    shakeY=(Math.random()-0.5)*shakeMag;
+    shakeMag*=Math.exp(-shakeDecay*dt);
+  } else {shakeX=0;shakeY=0;shakeMag=0}
+
+  // Flash decay
+  if(flashAlpha>0)flashAlpha=Math.max(0,flashAlpha-dt*3);
+
+  // Update particles
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx*dt;p.y+=p.vy*dt;
+    p.vy+=200*dt; // gravity
+    p.life-=dt/p.maxLife;
+    if(p.life<=0)particles.splice(i,1);
+  }
+
+  // Draw
+  draw();
+}
+
+function evaluateGate(gate){
+  const d=dFactor(score);
+  const openFrac=getGateOpenFrac(gate,gameTime);
+  const openThreshold=lerp(0.26,0.18,d);
+  const perfectThreshold=0.92;
+
+  const colorMatch=gate.isLight===playerIsLight;
+  const isOpen=openFrac>=openThreshold;
+
+  if(!colorMatch||!isOpen){
+    // Crash
+    crash();
+    return;
+  }
+
+  // Pass
+  totalGatesPassed++;
+  gatesCleared++;
+  const normalizedOpen=(openFrac-openThreshold)/(1-openThreshold);
+  const isPerfect=normalizedOpen>=perfectThreshold;
+
+  if(switchedSinceLastGate){
+    streak=0;mult=1;
+  } else {
+    streak++;
+  }
+  if(isPerfect){
+    streak++;
+    perfectCount++;
+  }
+  mult=Math.min(6,1+Math.floor(streak/3));
+  score+=mult;
+  switchedSinceLastGate=false;
+
+  // Visual feedback
+  const px=gate.gapX||W/2;
+  if(isPerfect){
+    spawnParticles(px,playerY(),25,'#ffe066',160);
+    triggerShake(6,10);
+    flashAlpha=0.35;
+  } else {
+    spawnParticles(px,playerY(),12,playerIsLight?LIGHT_ACCENT:DARK_ACCENT,100);
+    triggerShake(2.5,12);
+  }
+
+  // Update best
+  if(score>bestScore){bestScore=score;saveBest(bestScore)}
+  if(streak>bestStreak){bestStreak=streak;saveBestStreak(bestStreak)}
+}
+
+function crash(){
+  spawnParticles(W/2,playerY(),40,'#ff4466',200);
+  triggerShake(14,4);
+  state=GAMEOVER;
+  // Show share buttons
+  if(navigator.share){btnShare.style.display='inline-block'}
+  btnCopy.style.display='inline-block';
+  // Update bests
+  if(score>bestScore){bestScore=score;saveBest(bestScore)}
+  if(streak>bestStreak){bestStreak=streak;saveBestStreak(bestStreak)}
+}
+
+function draw(){
+  ctx.save();
+  ctx.translate(shakeX,shakeY);
+
+  // Background
+  const bgGrad=ctx.createLinearGradient(0,0,0,H);
+  bgGrad.addColorStop(0,`hsl(${bgHue||240},25%,8%)`);
+  bgGrad.addColorStop(1,`hsl(${((bgHue||240)+30)%360},20%,5%)`);
+  ctx.fillStyle=bgGrad;
+  ctx.fillRect(-10,-10,W+20,H+20);
+
+  // Subtle grid lines
+  ctx.strokeStyle='rgba(255,255,255,0.02)';
+  ctx.lineWidth=1;
+  for(let y=0;y<H;y+=40){
+    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+  }
+
+  if(state===PLAYING||state===GAMEOVER){
+    // Draw gates
+    for(const g of gates){
+      drawGate(g,gameTime);
+    }
+
+    // Player line hint
+    ctx.strokeStyle='rgba(255,255,255,0.06)';
+    ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(0,playerY());ctx.lineTo(W,playerY());ctx.stroke();
+
+    // Player
+    drawPlayerOrb(W/2,playerY(),playerIsLight);
+
+    // Particles
+    for(const p of particles){
+      ctx.globalAlpha=clamp(p.life,0,1);
+      ctx.fillStyle=p.color;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.radius*p.life,0,Math.PI*2);ctx.fill();
+    }
+    ctx.globalAlpha=1;
+
+    // Flash overlay for perfect
+    if(flashAlpha>0){
+      ctx.fillStyle=`rgba(255,224,100,${flashAlpha})`;
+      ctx.fillRect(-10,-10,W+20,H+20);
+    }
+
+    // HUD
+    drawHUD();
+  }
+
+  if(state===START){
+    drawStartScreen();
+  }
+  if(state===GAMEOVER){
+    drawGameoverScreen();
+  }
+
+  ctx.restore();
+}
+
+function drawHUD(){
+  const pad=14;
+  ctx.font='bold 18px "Segoe UI",system-ui,sans-serif';
+  ctx.textBaseline='top';
+
+  // Score
+  ctx.fillStyle='#fff';
+  ctx.textAlign='left';
+  ctx.fillText(`Score: ${score}`,pad,pad);
+
+  // Best
+  ctx.fillStyle='#888';
+  ctx.font='13px "Segoe UI",system-ui,sans-serif';
+  ctx.fillText(`Best: ${bestScore}`,pad,pad+22);
+
+  // Streak / Mult
+  ctx.textAlign='right';
+  ctx.font='bold 16px "Segoe UI",system-ui,sans-serif';
+  if(mult>1){
+    ctx.fillStyle='#ffe066';
+    ctx.fillText(`x${mult}`,W-pad,pad);
+    ctx.fillStyle='#aaa';
+    ctx.font='12px "Segoe UI",system-ui,sans-serif';
+    ctx.fillText(`Streak: ${streak}`,W-pad,pad+20);
+  } else {
+    ctx.fillStyle='#777';
+    ctx.fillText(`x${mult}`,W-pad,pad);
+  }
+
+  // Color indicator
+  const indicatorY=pad+6;
+  const indicatorX=W/2;
+  ctx.font='11px "Segoe UI",system-ui,sans-serif';
+  ctx.textAlign='center';
+  ctx.fillStyle=playerIsLight?LIGHT_COLOR:'#8878e0';
+  ctx.fillText(playerIsLight?'LIGHT':'DARK',indicatorX,pad);
+}
+
+function drawStartScreen(){
+  // Dim overlay
+  ctx.fillStyle='rgba(5,5,20,0.75)';
+  ctx.fillRect(0,0,W,H);
+
+  // Animated player preview
+  const t=Date.now()/1000;
+  const previewY=H*0.38;
+  drawPlayerOrb(W/2,previewY,Math.sin(t*1.5)>0);
+
+  // Title
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.font='bold 36px "Segoe UI",system-ui,sans-serif';
+  ctx.fillStyle='#fff';
+  ctx.fillText('Color Dash',W/2,H*0.18);
+
+  ctx.font='16px "Segoe UI",system-ui,sans-serif';
+  ctx.fillStyle='#8878e0';
+  ctx.fillText('Pulse Gates',W/2,H*0.18+32);
+
+  // Instructions
+  ctx.font='14px "Segoe UI",system-ui,sans-serif';
+  ctx.fillStyle='#aaa';
+  ctx.fillText('Match your color to the gate',W/2,H*0.52);
+  ctx.fillText('Time the pulse window to pass through',W/2,H*0.52+22);
+
+  ctx.font='12px "Segoe UI",system-ui,sans-serif';
+  ctx.fillStyle='#666';
+  ctx.fillText('Tap / Space / Enter to switch colors',W/2,H*0.62);
+
+  // Tap to start
+  const pulse=0.7+0.3*Math.sin(t*3);
+  ctx.globalAlpha=pulse;
+  ctx.font='bold 20px "Segoe UI",system-ui,sans-serif';
+  ctx.fillStyle='#ffe066';
+  ctx.fillText('Tap to Start',W/2,H*0.74);
+  ctx.globalAlpha=1;
+
+  // Best score
+  if(bestScore>0){
+    ctx.font='13px "Segoe UI",system-ui,sans-serif';
+    ctx.fillStyle='#666';
+    ctx.fillText(`Best: ${bestScore}`,W/2,H*0.82);
+  }
+}
+
+function drawGameoverScreen(){
+  // Dim overlay
+  ctx.fillStyle='rgba(5,5,20,0.8)';
+  ctx.fillRect(0,0,W,H);
+
+  ctx.textAlign='center';ctx.textBaseline='middle';
+
+  // Title
+  ctx.font='bold 30px "Segoe UI",system-ui,sans-serif';
+  ctx.fillStyle='#ff4466';
+  ctx.fillText('Game Over',W/2,H*0.2);
+
+  // Stats
+  const statY=H*0.34;
+  const lineH=28;
+  ctx.font='16px "Segoe UI",system-ui,sans-serif';
+
+  ctx.fillStyle='#fff';
+  ctx.fillText(`Score: ${score}`,W/2,statY);
+
+  ctx.fillStyle=score>=bestScore?'#ffe066':'#888';
+  ctx.font='13px "Segoe UI",system-ui,sans-serif';
+  ctx.fillText(score>=bestScore?'New Best!':  `Best: ${bestScore}`,W/2,statY+lineH*0.85);
+
+  ctx.font='14px "Segoe UI",system-ui,sans-serif';
+  ctx.fillStyle='#aaa';
+  ctx.fillText(`Gates Cleared: ${gatesCleared}`,W/2,statY+lineH*2.2);
+  ctx.fillText(`Best Streak: ${streak}`,W/2,statY+lineH*3.2);
+
+  const perfectPct=totalGatesPassed>0?Math.round(perfectCount/totalGatesPassed*100):0;
+  ctx.fillText(`Perfect: ${perfectPct}%`,W/2,statY+lineH*4.2);
+
+  // Tap to retry
+  const t=Date.now()/1000;
+  const pulse=0.6+0.4*Math.sin(t*3);
+  ctx.globalAlpha=pulse;
+  ctx.font='bold 18px "Segoe UI",system-ui,sans-serif';
+  ctx.fillStyle='#ffe066';
+  ctx.fillText('Tap to Retry',W/2,H*0.72);
+  ctx.globalAlpha=1;
+}
+
+// Init and start
+initGame();
+bgHue=240;
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
