@@ -6,892 +6,778 @@
 <meta name="description" content="Play Color Dash - Run through color gates matching your current color. Tap to switch between colors. Speed increases every 10 points.">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0d0d1a">
+<link rel="canonical" href="https://balinti.github.io/color-dash/">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="Color Dash - Free HTML5 Game">
 <meta property="og:description" content="Run through color gates matching your current color. Tap to switch colors and dash between lanes. How far can you streak?">
 <meta property="og:url" content="https://balinti.github.io/color-dash/">
-<meta property="og:image" content="https://balinti.github.io/color-dash/og-image.jpg">
+<meta property="og:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='630' viewBox='0 0 1200 630'%3E%3Crect fill='%230d0d1a' width='1200' height='630'/%3E%3Ccircle cx='500' cy='315' r='80' fill='%2300e5ff'/%3E%3Cpolygon points='750,235 830,395 670,395' fill='%23ff8c00'/%3E%3Ctext x='600' y='520' text-anchor='middle' fill='white' font-size='64' font-family='sans-serif' font-weight='bold'%3EColor Dash%3C/text%3E%3C/svg%3E">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Color Dash - Free HTML5 Game">
 <meta name="twitter:description" content="Run through color gates matching your current color. Tap to switch colors and dash between lanes.">
-<meta name="twitter:image" content="https://balinti.github.io/color-dash/og-image.jpg">
+<meta name="twitter:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='630' viewBox='0 0 1200 630'%3E%3Crect fill='%230d0d1a' width='1200' height='630'/%3E%3Ccircle cx='500' cy='315' r='80' fill='%2300e5ff'/%3E%3Cpolygon points='750,235 830,395 670,395' fill='%23ff8c00'/%3E%3Ctext x='600' y='520' text-anchor='middle' fill='white' font-size='64' font-family='sans-serif' font-weight='bold'%3EColor Dash%3C/text%3E%3C/svg%3E">
 
-<!-- JSON-LD Schema -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "VideoGame",
-  "name": "Color Dash: Split Sync",
-  "description": "A hyper-casual two-lane auto-runner where you flip between lanes to match color gates. Build combos, dodge jammers, and chase multiplier rings.",
-  "url": "https://balinti.github.io/color-dash/",
-  "genre": "Casual",
-  "gamePlatform": "Web Browser",
-  "applicationCategory": "Game",
-  "operatingSystem": "Any",
-  "playMode": "SinglePlayer",
-  "numberOfPlayers": "1",
-  "inLanguage": "en"
-}
-</script>
-
+<!-- AdSense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4099346100621490" crossorigin="anonymous"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#0a0a14;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
-#wrap{display:flex;justify-content:center;align-items:center;width:100%;height:100vh;height:100dvh}
-canvas{display:block;touch-action:none;image-rendering:auto}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a0a14;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+body{display:flex;justify-content:center;align-items:center;font-family:'Segoe UI',system-ui,-apple-system,sans-serif}
+#gc{position:relative;width:min(420px,100vw);height:min(750px,100vh);overflow:hidden;background:#0d0d1a}
+canvas{display:block;width:100%;height:100%}
+#ui{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;display:flex;flex-direction:column}
+#hud{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 16px 0;opacity:0;transition:opacity .3s}
+#hud.show{opacity:1}
+.hud-left,.hud-right{display:flex;flex-direction:column;gap:2px}
+.hud-label{font-size:10px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1px}
+.hud-val{font-size:22px;font-weight:700;color:#fff;line-height:1.1}
+#mult-display{font-size:16px;font-weight:700;color:#ffcc00;opacity:0;transition:opacity .2s}
+#mult-display.show{opacity:1}
+#ink-bar-wrap{margin:8px 16px 0;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;opacity:0;transition:opacity .3s}
+#ink-bar-wrap.show{opacity:1}
+#ink-bar{height:100%;width:100%;border-radius:3px;background:linear-gradient(90deg,#00e5ff,#00b8d4);transition:width .15s,background .3s}
+#ink-bar.critical{background:linear-gradient(90deg,#ff1744,#ff5252);animation:pulse-bar .4s ease-in-out infinite alternate}
+@keyframes pulse-bar{0%{opacity:.6}100%{opacity:1}}
+#overlay{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;pointer-events:auto}
+#overlay.hidden{pointer-events:none;opacity:0}
+.ov-title{font-size:36px;font-weight:800;color:#fff;text-shadow:0 0 30px rgba(0,229,255,.4);margin-bottom:6px;letter-spacing:-1px}
+.ov-sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:24px;letter-spacing:1px}
+.ov-score{font-size:54px;font-weight:800;color:#fff;line-height:1}
+.ov-best{font-size:14px;color:rgba(255,255,255,.45);margin-top:4px}
+.ov-tap{font-size:15px;color:rgba(255,255,255,.55);margin-top:28px;animation:blink 1.6s ease-in-out infinite}
+.ov-share{margin-top:14px;padding:8px 20px;border:1px solid rgba(255,255,255,.2);border-radius:20px;background:transparent;color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;pointer-events:auto;transition:all .2s}
+.ov-share:active{background:rgba(255,255,255,.1);color:#fff}
+.ov-challenge{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(255,140,0,.15);border:1px solid rgba(255,140,0,.3);border-radius:16px;padding:4px 14px;font-size:11px;color:#ff8c00;white-space:nowrap}
+@keyframes blink{0%,100%{opacity:.4}50%{opacity:1}}
+#vignette{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,transparent 40%,rgba(255,23,68,.25) 100%);transition:opacity .3s}
+#vignette.show{opacity:1;animation:vig-pulse .5s ease-in-out infinite alternate}
+@keyframes vig-pulse{0%{opacity:.5}100%{opacity:1}}
 </style>
 </head>
 <body>
-<div id="wrap"><canvas id="gc"></canvas></div>
+<div id="gc">
+  <canvas id="cv"></canvas>
+  <div id="ui">
+    <div id="hud">
+      <div class="hud-left">
+        <span class="hud-label">Score</span>
+        <span class="hud-val" id="score-val">0</span>
+      </div>
+      <div style="text-align:center">
+        <span id="mult-display">x1</span>
+      </div>
+      <div class="hud-right" style="text-align:right">
+        <span class="hud-label">Best</span>
+        <span class="hud-val" id="best-val">0</span>
+      </div>
+    </div>
+    <div id="ink-bar-wrap"><div id="ink-bar"></div></div>
+  </div>
+  <div id="overlay">
+    <div class="ov-title">Color Dash</div>
+    <div class="ov-sub">STREAK PAINT</div>
+    <div class="ov-tap">Tap to Start</div>
+  </div>
+  <div id="vignette"></div>
+</div>
 
 <script>
 'use strict';
+(function(){
 
-// ==================== CANVAS SETUP ====================
-const canvas = document.getElementById('gc');
-const ctx = canvas.getContext('2d');
+/* ── Canvas Setup ── */
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const gc = document.getElementById('gc');
+let W, H, dpr;
 
-const BASE_W = 420, BASE_H = 750;
-const MAX_W = 420, MAX_H = 750;
-
-let dpr = Math.min(window.devicePixelRatio || 1, 3);
-let cW, cH, scale;
-
-function resize() {
-  dpr = Math.min(window.devicePixelRatio || 1, 3);
-  const ww = window.innerWidth, wh = window.innerHeight;
-  const aspect = BASE_W / BASE_H;
-  let w, h;
-  if (ww / wh < aspect) {
-    w = Math.min(ww, MAX_W);
-    h = w / aspect;
-  } else {
-    h = Math.min(wh, MAX_H);
-    w = h * aspect;
-  }
-  cW = w; cH = h;
-  scale = w / BASE_W;
-  canvas.width = Math.round(w * dpr);
-  canvas.height = Math.round(h * dpr);
-  canvas.style.width = w + 'px';
-  canvas.style.height = h + 'px';
-  ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
+function resize(){
+  const r = gc.getBoundingClientRect();
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = r.width; H = r.height;
+  cv.width = W * dpr; cv.height = H * dpr;
+  cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
-resize();
 window.addEventListener('resize', resize);
+resize();
 
-// ==================== CONSTANTS ====================
-const TRACK_PAD = 30;
-const TRACK_L = TRACK_PAD;
-const TRACK_R = BASE_W - TRACK_PAD;
-const TRACK_W = TRACK_R - TRACK_L;
-const LANE_W = TRACK_W / 2;
-const LANE_CL = TRACK_L + LANE_W / 2; // left lane center
-const LANE_CR = TRACK_R - LANE_W / 2; // right lane center
-const LANE_DIV = TRACK_L + LANE_W;    // center divider x
+/* ── DOM refs ── */
+const scoreEl = document.getElementById('score-val');
+const bestEl = document.getElementById('best-val');
+const multEl = document.getElementById('mult-display');
+const hudEl = document.getElementById('hud');
+const inkWrap = document.getElementById('ink-bar-wrap');
+const inkBar = document.getElementById('ink-bar');
+const overlay = document.getElementById('overlay');
+const vignetteEl = document.getElementById('vignette');
 
-const PLAYER_Y = BASE_H - 140;
-const PLAYER_R = 18;
-const TRACK_Y = 0;
-const GATE_H = 34;
+/* ── Colors ── */
+const CYAN = '#00e5ff';
+const ORANGE = '#ff8c00';
+const CLEAN_COL = '#aabbcc';
+const BG_TOP = '#0d0d1a';
+const BG_BOT = '#1a1a2e';
 
-// Colors
-const COOL_H = 210, COOL_S = 85, COOL_L = 55;
-const WARM_H = 28, WARM_S = 92, WARM_L = 55;
-const COOL_CLR = `hsl(${COOL_H},${COOL_S}%,${COOL_L}%)`;
-const WARM_CLR = `hsl(${WARM_H},${WARM_S}%,${WARM_L}%)`;
-
-function laneColor(lane) {
-  return lane === 0 ? COOL_CLR : WARM_CLR;
-}
-function laneHSL(lane) {
-  return lane === 0 ? [COOL_H, COOL_S, COOL_L] : [WARM_H, WARM_S, WARM_L];
-}
-function hsl(h, s, l, a) {
-  return a !== undefined ? `hsla(${h},${s}%,${l}%,${a})` : `hsl(${h},${s}%,${l}%)`;
+/* ── Seeded RNG ── */
+function mulberry32(a){
+  return function(){ a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 }
 
-// ==================== PERSISTENCE ====================
-const LS_KEY = 'colordash_splitsync';
-function loadSave() {
+/* ── Game State ── */
+let state = 'start'; // start | playing | gameover
+let score, bestScore, ink, streak, mult, speed;
+let playerLane, playerX, playerY, playerColor; // 0=cyan, 1=orange
+let driftPhase, stunTimer, playerVx;
+let obstacles, ghostObstacles, spawnTimer, distTick;
+let shakeX, shakeY, shakeMag;
+let particles;
+let rng, seed, patternTier;
+let challengeScore = 0, challengeSeed = 0;
+let lastTime = 0;
+
+const PLAYER_R = 16;
+const LANES = 3;
+const INK_MAX = 100;
+
+/* ── Track geometry ── */
+function trackW(){ return W * 0.86; }
+function laneW(){ return trackW() / LANES; }
+function trackL(){ return (W - trackW()) / 2; }
+function laneCenter(i){ return trackL() + laneW() * (i + 0.5); }
+
+/* ── localStorage ── */
+const LS_KEY = 'cdsp_best';
+function loadBest(){ try{ return parseInt(localStorage.getItem(LS_KEY)) || 0; }catch(e){ return 0; } }
+function saveBest(v){ try{ localStorage.setItem(LS_KEY, v); }catch(e){} }
+
+/* ── URL params ── */
+function parseChallenge(){
   try {
-    const d = JSON.parse(localStorage.getItem(LS_KEY));
-    return d || { hi: 0, bestCombo: 0 };
-  } catch(e) { return { hi: 0, bestCombo: 0 }; }
+    const p = new URLSearchParams(window.location.search);
+    if(p.has('challenge')) challengeScore = parseInt(p.get('challenge')) || 0;
+    if(p.has('seed')) challengeSeed = parseInt(p.get('seed')) || 0;
+  } catch(e){}
 }
-function saveBest(score, combo) {
-  const d = loadSave();
-  if (score > d.hi) d.hi = score;
-  if (combo > d.bestCombo) d.bestCombo = combo;
-  localStorage.setItem(LS_KEY, JSON.stringify(d));
-}
+parseChallenge();
 
-// ==================== GAME STATE ====================
-let state = 'start'; // 'start' | 'playing' | 'gameover'
-let score, combo, peakCombo, shield;
-let speed, gameTime, nextSpawnDist, distSinceSpawn;
-let shakeAmp, timeScale, timeScaleRecoverT;
-let gates, particles, pPool;
-let playerLane; // 0=left(cool), 1=right(warm)
-let playerX, playerTargetX;
-let accentHue; // cycling hue for juice
-let goScore, goPeakCombo; // frozen at game over
-
-// Particle pool
-const MAX_PARTICLES = 600;
-pPool = [];
-
-function resetGame() {
-  score = 0; combo = 0; peakCombo = 0; shield = 1;
-  speed = 260; gameTime = 0;
-  nextSpawnDist = 240; distSinceSpawn = 200; // spawn quickly
-  shakeAmp = 0; timeScale = 1; timeScaleRecoverT = 0;
-  gates = []; particles = []; pPool = [];
-  playerLane = 0;
-  playerX = LANE_CL;
-  playerTargetX = LANE_CL;
-  accentHue = 0;
+/* ── Particle Pool ── */
+const MAX_PARTICLES = 240;
+particles = [];
+for(let i = 0; i < MAX_PARTICLES; i++){
+  particles.push({ active:false, x:0, y:0, vx:0, vy:0, life:0, maxLife:0, r:0, color:'', alpha:1 });
 }
 
-function flipLane() {
-  playerLane = playerLane === 0 ? 1 : 0;
-  playerTargetX = playerLane === 0 ? LANE_CL : LANE_CR;
-}
-
-// ==================== SPEED & SPAWN ====================
-function getSpeed(s) { return 260 + 18 * Math.sqrt(s); }
-function getSpawnDist(s) { return Math.max(150, Math.min(240, 240 - 0.55 * s)); }
-
-// ==================== GATE TYPES ====================
-// gate: { y, leftLane (0=cool), rightLane (1=warm), type, scored,
-//         jamSwapped, jamTime, jamTelegraph,
-//         multValue, multLane, riskyWidth, wobblePhase,
-//         flashT }
-function spawnGate() {
-  const s = score;
-  const p = Math.max(0, Math.min(1, s / 120));
-
-  // Probabilities
-  const bonusChance = 0.10 + 0.20 * p;  // 10% -> 30%
-  const jammerChance = 0.18 * p;          // 0% -> 18%
-
-  let type = 'normal';
-  const r = Math.random();
-  if (r < jammerChance) {
-    type = 'jammer';
-  } else if (r < jammerChance + bonusChance) {
-    type = 'bonus';
-  }
-
-  // Double gate after score ~80
-  const doubleChance = s > 80 ? Math.min(0.25, (s - 80) / 200) : 0;
-
-  const g = {
-    y: TRACK_Y - GATE_H - 10,
-    leftLane: 0,
-    rightLane: 1,
-    type: type,
-    scored: false,
-    // Jammer
-    jamSwapped: false,
-    jamTime: 0.55 - 0.25 * p,
-    jamTelegraphStart: 0,
-    jamTelegraphing: false,
-    lifetime: 0,
-    // Bonus
-    multValue: Math.random() < 0.75 ? 2 : 3,
-    multLane: Math.random() < 0.5 ? 0 : 1,
-    riskyWidth: LANE_W * 0.72,
-    wobblePhase: 0,
-    wobbleActive: s > 20,
-    // Visual
-    flashT: 0
-  };
-
-  gates.push(g);
-
-  // Possibly spawn a quick double
-  if (Math.random() < doubleChance) {
-    const g2 = Object.assign({}, g);
-    g2.y -= GATE_H + 30;
-    g2.type = 'normal';
-    g2.scored = false;
-    g2.lifetime = 0;
-    g2.jamSwapped = false;
-    gates.push(g2);
-  }
-}
-
-// ==================== PARTICLES ====================
-function spawnParticle(x, y, vx, vy, life, r, g, b, size) {
-  const p = pPool.length > 0 ? pPool.pop() : {};
-  p.x = x; p.y = y; p.vx = vx; p.vy = vy;
-  p.life = life; p.maxLife = life;
-  p.r = r; p.g = g; p.b = b;
-  p.size = size || 3;
-  p.grav = 520;
-  if (particles.length < MAX_PARTICLES) particles.push(p);
-}
-
-function burstCleanPass(x, y, lane) {
-  const [h, s, l] = laneHSL(lane);
-  for (let i = 0; i < 14; i++) {
-    const a = Math.random() * Math.PI * 2;
-    const sp = 80 + Math.random() * 200;
-    const rgb = hslToRgb(h, s, l);
-    spawnParticle(x, y, Math.cos(a) * sp, Math.sin(a) * sp - 60,
-      0.3 + Math.random() * 0.3, rgb[0], rgb[1], rgb[2], 2 + Math.random() * 3);
-  }
-}
-
-function burstMultRing(x, y) {
-  for (let i = 0; i < 24; i++) {
-    const a = (i / 24) * Math.PI * 2;
-    const sp = 180 + Math.random() * 100;
-    spawnParticle(x, y, Math.cos(a) * sp, Math.sin(a) * sp,
-      0.4 + Math.random() * 0.2, 255, 230, 60, 3 + Math.random() * 3);
-  }
-}
-
-function burstMultTrail(x, y) {
-  for (let i = 0; i < 10; i++) {
-    spawnParticle(x + (Math.random() - 0.5) * 20, y + (Math.random() - 0.5) * 10,
-      (Math.random() - 0.5) * 40, -40 - Math.random() * 80,
-      0.3 + Math.random() * 0.2, 255, 200, 50, 2 + Math.random() * 2);
-  }
-}
-
-function burstShieldBreak(x, y) {
-  for (let i = 0; i < 30; i++) {
-    const a = Math.random() * Math.PI * 2;
-    const sp = 150 + Math.random() * 300;
-    spawnParticle(x, y, Math.cos(a) * sp, Math.sin(a) * sp,
-      0.4 + Math.random() * 0.3, 255, 100, 60, 3 + Math.random() * 4);
-  }
-}
-
-function burstGameOver(x, y) {
-  for (let i = 0; i < 50; i++) {
-    const a = Math.random() * Math.PI * 2;
-    const sp = 200 + Math.random() * 400;
-    spawnParticle(x, y, Math.cos(a) * sp, Math.sin(a) * sp,
-      0.5 + Math.random() * 0.5, 255, 50, 50, 3 + Math.random() * 5);
-  }
-}
-
-// HSL to RGB helper
-function hslToRgb(h, s, l) {
-  s /= 100; l /= 100;
-  const k = n => (n + h / 30) % 12;
-  const a = s * Math.min(l, 1 - l);
-  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
-  return [Math.round(f(0) * 255), Math.round(f(8) * 255), Math.round(f(4) * 255)];
-}
-
-// ==================== COLLISION ====================
-function circleRectOverlap(cx, cy, cr, rx, ry, rw, rh) {
-  const closestX = Math.max(rx, Math.min(cx, rx + rw));
-  const closestY = Math.max(ry, Math.min(cy, ry + rh));
-  const dx = cx - closestX, dy = cy - closestY;
-  return dx * dx + dy * dy <= cr * cr;
-}
-
-// ==================== UPDATE ====================
-function update(rawDt) {
-  if (state !== 'playing') return;
-
-  // Time scale recovery
-  if (timeScaleRecoverT > 0) {
-    timeScaleRecoverT -= rawDt;
-    if (timeScaleRecoverT <= 0) {
-      timeScale = 1;
-      timeScaleRecoverT = 0;
-    } else {
-      timeScale = 0.35 + (1 - 0.35) * (1 - timeScaleRecoverT / 0.4);
-    }
-  }
-
-  const dt = rawDt * timeScale;
-  gameTime += dt;
-  accentHue = (accentHue + dt * 60) % 360;
-
-  // Speed
-  speed = getSpeed(score);
-
-  // Player movement (instant snap with smooth lerp)
-  const lerpSpeed = 28;
-  playerX += (playerTargetX - playerX) * Math.min(1, lerpSpeed * dt);
-
-  // Spawn gates by distance
-  const moveDist = speed * dt;
-  distSinceSpawn += moveDist;
-  nextSpawnDist = getSpawnDist(score);
-  if (distSinceSpawn >= nextSpawnDist) {
-    distSinceSpawn = 0;
-    spawnGate();
-  }
-
-  // Move gates & check scoring/collision
-  for (let i = gates.length - 1; i >= 0; i--) {
-    const g = gates[i];
-    g.y += speed * dt;
-    g.lifetime += dt;
-    g.flashT += dt;
-
-    // Jammer logic
-    if (g.type === 'jammer' && !g.jamSwapped) {
-      const timeToReach = (PLAYER_Y - g.y) / speed;
-      if (timeToReach <= g.jamTime) {
-        // Swap safe lanes
-        g.jamSwapped = true;
-        const tmp = g.leftLane;
-        g.leftLane = g.rightLane;
-        g.rightLane = tmp;
-      }
-      // Telegraph
-      if (timeToReach <= g.jamTime + 0.12 && timeToReach > g.jamTime) {
-        g.jamTelegraphing = true;
-      }
-    }
-
-    // Bonus wobble
-    if (g.type === 'bonus' && g.wobbleActive) {
-      g.wobblePhase += dt * 4;
-    }
-
-    // Collision check: gate overlaps player
-    if (!g.scored && g.y + GATE_H >= PLAYER_Y - PLAYER_R && g.y <= PLAYER_Y + PLAYER_R) {
-      g.scored = true;
-
-      // Determine which lane half the player is in
-      const pLane = playerLane;
-
-      // Get the color identity of the half the player is in
-      const halfLane = pLane === 0 ? g.leftLane : g.rightLane;
-
-      // For bonus type, check if player hit multiplier lane
-      let hitMultiplier = false;
-      if (g.type === 'bonus') {
-        // Both halves are valid, check if player chose multLane
-        if (pLane === g.multLane) {
-          // Check risky width
-          const laneCenter = pLane === 0 ? LANE_CL : LANE_CR;
-          const riskyHalf = g.riskyWidth / 2;
-          const wobbleOffset = g.wobbleActive ? Math.sin(g.wobblePhase) * 12 : 0;
-          const riskyCenter = laneCenter + wobbleOffset;
-          // If player within risky width
-          if (Math.abs(playerX - riskyCenter) <= riskyHalf / 2 + PLAYER_R) {
-            hitMultiplier = true;
-          }
-          // Even if missed risky zone, bonus gates are always passable
-        }
-        // Bonus: always pass
-        const comboBonus = Math.floor(combo / 5);
-        const pts = hitMultiplier ? (1 + comboBonus) * g.multValue : 1 + comboBonus;
-        score += pts;
-        combo++;
-        if (combo > peakCombo) peakCombo = combo;
-        burstCleanPass(playerX, PLAYER_Y, pLane);
-        if (hitMultiplier) {
-          burstMultRing(playerX, PLAYER_Y);
-          shakeAmp += 5;
-        }
-      } else if (g.type === 'jammer' || g.type === 'normal') {
-        // Must match: player lane identity matches the gate half identity
-        const match = (pLane === halfLane);
-        if (match) {
-          // Clean pass
-          const comboBonus = Math.floor(combo / 5);
-          score += 1 + comboBonus;
-          combo++;
-          if (combo > peakCombo) peakCombo = combo;
-          burstCleanPass(playerX, PLAYER_Y, pLane);
-        } else {
-          // Wrong!
-          if (shield === 1) {
-            // Break shield
-            shield = 0;
-            combo = Math.floor(combo * 0.4);
-            timeScale = 0.35;
-            timeScaleRecoverT = 0.4;
-            shakeAmp += 10;
-            burstShieldBreak(playerX, PLAYER_Y);
-          } else {
-            // Game over
-            goScore = Math.floor(score);
-            goPeakCombo = peakCombo;
-            burstGameOver(playerX, PLAYER_Y);
-            shakeAmp = 18;
-            state = 'gameover';
-            saveBest(goScore, goPeakCombo);
-            return;
-          }
-        }
-      }
-    }
-
-    // Remove gates that are off screen
-    if (g.y > BASE_H + 50) {
-      gates.splice(i, 1);
-    }
-  }
-
-  // Update particles
-  for (let i = particles.length - 1; i >= 0; i--) {
+function spawnParticle(x, y, vx, vy, life, r, color){
+  for(let i = 0; i < MAX_PARTICLES; i++){
     const p = particles[i];
-    p.life -= rawDt; // particles run on raw time
-    if (p.life <= 0) {
-      pPool.push(particles[i]);
-      particles.splice(i, 1);
-      continue;
-    }
-    p.x += p.vx * rawDt;
-    p.y += p.vy * rawDt;
-    p.vy += p.grav * rawDt;
-  }
-
-  // Shake decay: 18/s
-  if (shakeAmp > 0) {
-    shakeAmp -= 18 * rawDt;
-    if (shakeAmp < 0.2) shakeAmp = 0;
-  }
-}
-
-// ==================== DRAWING ====================
-function drawTriangle(cx, cy, size) {
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - size);
-  ctx.lineTo(cx - size * 0.866, cy + size * 0.5);
-  ctx.lineTo(cx + size * 0.866, cy + size * 0.5);
-  ctx.closePath();
-}
-
-function drawCircleIcon(cx, cy, size) {
-  ctx.beginPath();
-  ctx.arc(cx, cy, size * 0.7, 0, Math.PI * 2);
-}
-
-function drawStripePattern(x, y, w, h) {
-  ctx.save();
-  ctx.globalAlpha = 0.12;
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth = 1.5;
-  for (let i = -2; i < w / 8 + 2; i++) {
-    const sx = x + i * 8;
-    ctx.beginPath();
-    ctx.moveTo(sx, y);
-    ctx.lineTo(sx - h * 0.3, y + h);
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
-function drawDotPattern(x, y, w, h) {
-  ctx.save();
-  ctx.globalAlpha = 0.1;
-  ctx.fillStyle = '#fff';
-  for (let r = 0; r < h; r += 8) {
-    for (let c = 0; c < w; c += 8) {
-      ctx.beginPath();
-      ctx.arc(x + c + 4, y + r + 4, 1.5, 0, Math.PI * 2);
-      ctx.fill();
+    if(!p.active){
+      p.active = true; p.x = x; p.y = y; p.vx = vx; p.vy = vy;
+      p.life = life; p.maxLife = life; p.r = r; p.color = color; p.alpha = 1;
+      return;
     }
   }
-  ctx.restore();
 }
 
-function drawGateHalf(g, side, cx, halfW) {
-  const isLeft = side === 0;
-  const laneSide = isLeft ? g.leftLane : g.rightLane;
-  const [ch, cs, cl] = laneHSL(laneSide);
-  const color = hsl(ch, cs, cl, 1);
-  const darkColor = hsl(ch, cs, cl - 15, 1);
+function spawnBurst(x, y, count, color, spread, spd){
+  for(let i = 0; i < count; i++){
+    const a = Math.random() * Math.PI * 2;
+    const s = spd * (0.4 + Math.random() * 0.6);
+    const life = 0.3 + Math.random() * 0.5;
+    const r = 2 + Math.random() * 4;
+    spawnParticle(x + (Math.random()-0.5)*spread, y + (Math.random()-0.5)*spread,
+      Math.cos(a)*s, Math.sin(a)*s, life, r, color);
+  }
+}
 
-  let x, w;
-  if (g.type === 'bonus' && side === g.multLane) {
-    // Risky narrower lane
-    const wobbleOffset = g.wobbleActive ? Math.sin(g.wobblePhase) * 12 : 0;
-    w = g.riskyWidth;
-    x = cx - w / 2 + wobbleOffset;
+/* ── Obstacles ── */
+const KIND_GATE = 0;
+const KIND_CLEAN = 1;
+
+function makeObs(lane, y, kind, color, shape){
+  return { lane, y, h: 46, kind, color, shape: shape || 0, scored: false, w: laneW() * 0.86 };
+}
+
+/* ── Init / Reset ── */
+function init(){
+  score = 0;
+  bestScore = loadBest();
+  bestEl.textContent = bestScore;
+  ink = INK_MAX;
+  streak = 0; mult = 1;
+  speed = 260;
+  playerLane = 1;
+  playerX = laneCenter(1);
+  playerY = H * 0.78;
+  playerColor = 0;
+  driftPhase = 0;
+  stunTimer = 0;
+  playerVx = 0;
+  obstacles = [];
+  ghostObstacles = [];
+  spawnTimer = 0;
+  distTick = 0;
+  shakeX = 0; shakeY = 0; shakeMag = 0;
+  seed = challengeSeed || (Date.now() & 0x7fffffff);
+  rng = mulberry32(seed);
+  patternTier = 0;
+  for(let i = 0; i < MAX_PARTICLES; i++) particles[i].active = false;
+}
+
+/* ── Compute mult from streak ── */
+function computeMult(){ mult = Math.min(8, 1 + Math.floor(streak / 3)); }
+
+/* ── Spawn patterns ── */
+function spawnRow(){
+  patternTier = Math.floor(score / 25);
+  const r = rng();
+  const tier = patternTier;
+
+  if(tier >= 2 && r < 0.12){
+    // double gate row: 2 gates in different lanes
+    const lanes = [0,1,2];
+    const i1 = Math.floor(rng()*3);
+    const l1 = lanes[i1]; lanes.splice(i1,1);
+    const l2 = lanes[Math.floor(rng()*2)];
+    const c1 = rng() < 0.5 ? 0 : 1;
+    const c2 = rng() < 0.5 ? 0 : 1;
+    obstacles.push(makeObs(l1, -50, KIND_GATE, c1, c1));
+    obstacles.push(makeObs(l2, -50, KIND_GATE, c2, c2));
+  } else if(tier >= 1 && r < 0.28){
+    // shifted gate: gate not centered in lane timing
+    const lane = Math.floor(rng()*3);
+    const c = rng() < 0.5 ? 0 : 1;
+    obstacles.push(makeObs(lane, -70, KIND_GATE, c, c));
+  } else if(r < 0.18){
+    // clean tile
+    const lane = Math.floor(rng()*3);
+    obstacles.push(makeObs(lane, -50, KIND_CLEAN, -1, 2));
   } else {
-    w = halfW - 4;
-    x = isLeft ? TRACK_L + 2 : LANE_DIV + 2;
-  }
-
-  // Gate body
-  ctx.fillStyle = darkColor;
-  ctx.fillRect(x, g.y, w, GATE_H);
-
-  // Inner lighter fill
-  ctx.fillStyle = color;
-  ctx.fillRect(x + 2, g.y + 2, w - 4, GATE_H - 4);
-
-  // Pattern
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(x, g.y, w, GATE_H);
-  ctx.clip();
-  if (laneSide === 0) {
-    drawStripePattern(x, g.y, w, GATE_H);
-  } else {
-    drawDotPattern(x, g.y, w, GATE_H);
-  }
-  ctx.restore();
-
-  // Icon
-  const iconSize = GATE_H * 0.3;
-  const iconX = x + w / 2;
-  const iconY = g.y + GATE_H / 2;
-  ctx.fillStyle = 'rgba(255,255,255,0.6)';
-  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-  ctx.lineWidth = 2;
-  if (laneSide === 0) {
-    // Triangle for cool
-    drawTriangle(iconX, iconY, iconSize);
-    ctx.fill();
-  } else {
-    // Circle for warm
-    drawCircleIcon(iconX, iconY, iconSize);
-    ctx.fill();
-  }
-
-  // Thick outline for accessibility
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 3;
-  ctx.strokeRect(x, g.y, w, GATE_H);
-
-  // Jammer telegraph flash
-  if (g.type === 'jammer' && g.jamTelegraphing && !g.jamSwapped) {
-    const flash = Math.sin(g.flashT * 30) * 0.5 + 0.5;
-    ctx.strokeStyle = `rgba(255, 255, 100, ${0.4 + flash * 0.5})`;
-    ctx.lineWidth = 4;
-    ctx.strokeRect(x - 2, g.y - 2, w + 4, GATE_H + 4);
-  }
-
-  // Jammer indicator
-  if (g.type === 'jammer' && !g.jamSwapped) {
-    ctx.fillStyle = 'rgba(255,255,0,0.3)';
-    ctx.font = 'bold 10px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillText('!', x + w / 2, g.y - 12);
-  }
-
-  // Bonus multiplier ring
-  if (g.type === 'bonus' && side === g.multLane) {
-    const ringR = GATE_H * 0.45;
-    ctx.strokeStyle = `rgba(255, 230, 50, ${0.5 + Math.sin(g.flashT * 6) * 0.3})`;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(iconX, iconY, ringR, 0, Math.PI * 2);
-    ctx.stroke();
-    // multiplier label
-    ctx.fillStyle = 'rgba(255,230,50,0.85)';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    ctx.fillText('x' + g.multValue, iconX, g.y - 2);
+    // single gate
+    const lane = Math.floor(rng()*3);
+    const c = rng() < 0.5 ? 0 : 1;
+    obstacles.push(makeObs(lane, -50, KIND_GATE, c, c));
   }
 }
 
-function draw(rawT) {
-  ctx.save();
-
-  // Screen shake
-  let sx = 0, sy = 0;
-  if (shakeAmp > 0) {
-    sx = (Math.random() - 0.5) * shakeAmp * 2;
-    sy = (Math.random() - 0.5) * shakeAmp * 2;
-    ctx.translate(sx, sy);
-  }
-
-  // Background gradient
-  const bgHue = (accentHue || 0);
-  const bgGrd = ctx.createLinearGradient(0, 0, 0, BASE_H);
-  bgGrd.addColorStop(0, hsl(220 + bgHue * 0.05, 25, 8, 1));
-  bgGrd.addColorStop(0.5, hsl(240 + bgHue * 0.03, 20, 6, 1));
-  bgGrd.addColorStop(1, hsl(260 + bgHue * 0.04, 22, 4, 1));
-  ctx.fillStyle = bgGrd;
-  ctx.fillRect(-30, -30, BASE_W + 60, BASE_H + 60);
-
-  // Track background
-  ctx.fillStyle = 'rgba(255,255,255,0.025)';
-  ctx.fillRect(TRACK_L, 0, TRACK_W, BASE_H);
-
-  // Lane tint
-  ctx.fillStyle = `hsla(${COOL_H},${COOL_S}%,${COOL_L}%,0.03)`;
-  ctx.fillRect(TRACK_L, 0, LANE_W, BASE_H);
-  ctx.fillStyle = `hsla(${WARM_H},${WARM_S}%,${WARM_L}%,0.03)`;
-  ctx.fillRect(LANE_DIV, 0, LANE_W, BASE_H);
-
-  // Lane divider
-  ctx.setLineDash([10, 14]);
-  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(LANE_DIV, 0);
-  ctx.lineTo(LANE_DIV, BASE_H);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  // Draw gates
-  for (const g of gates) {
-    drawGateHalf(g, 0, LANE_CL, LANE_W);
-    drawGateHalf(g, 1, LANE_CR, LANE_W);
-  }
-
-  // Draw player
-  if (state === 'playing' || state === 'start') {
-    const [ph, ps, pl] = laneHSL(playerLane);
-    const pColor = hsl(ph, ps, pl, 1);
-
-    // Glow
-    const glowR = PLAYER_R * 2.5;
-    const grd = ctx.createRadialGradient(playerX, PLAYER_Y, PLAYER_R * 0.3, playerX, PLAYER_Y, glowR);
-    grd.addColorStop(0, hsl(ph, ps, pl, 0.3));
-    grd.addColorStop(1, hsl(ph, ps, pl, 0));
-    ctx.fillStyle = grd;
-    ctx.beginPath();
-    ctx.arc(playerX, PLAYER_Y, glowR, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Body
-    ctx.fillStyle = pColor;
-    ctx.beginPath();
-    ctx.arc(playerX, PLAYER_Y, PLAYER_R, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Rim
-    ctx.strokeStyle = hsl(ph, ps, pl + 20, 0.9);
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.arc(playerX, PLAYER_Y, PLAYER_R - 1, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Icon inside player
-    ctx.fillStyle = 'rgba(255,255,255,0.75)';
-    ctx.strokeStyle = 'rgba(255,255,255,0.75)';
-    ctx.lineWidth = 2;
-    if (playerLane === 0) {
-      drawTriangle(playerX, PLAYER_Y, PLAYER_R * 0.55);
-      ctx.fill();
-    } else {
-      drawCircleIcon(playerX, PLAYER_Y, PLAYER_R * 0.55);
-      ctx.fill();
-    }
-
-    // Shield indicator
-    if (shield === 1 && state === 'playing') {
-      ctx.strokeStyle = hsl((accentHue * 2) % 360, 70, 70, 0.5);
-      ctx.lineWidth = 2;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.arc(playerX, PLAYER_Y, PLAYER_R + 6, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    }
-  }
-
-  // Draw particles
-  for (const p of particles) {
-    const alpha = Math.max(0, p.life / p.maxLife) * 0.85;
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = `rgb(${p.r},${p.g},${p.b})`;
-    const hs = p.size / 2;
-    ctx.fillRect(p.x - hs, p.y - hs, p.size, p.size);
-  }
-  ctx.globalAlpha = 1;
-
-  // ===== HUD =====
-  if (state === 'playing') {
-    // Score
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 34px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.shadowColor = 'rgba(0,0,0,0.5)';
-    ctx.shadowBlur = 4;
-    ctx.fillText(Math.floor(score), BASE_W / 2, 18);
-    ctx.shadowBlur = 0;
-
-    // Combo
-    if (combo > 0) {
-      const comboBonus = Math.floor(combo / 5);
-      ctx.font = 'bold 14px sans-serif';
-      ctx.fillStyle = comboBonus > 0 ? 'rgba(255,220,80,0.9)' : 'rgba(255,255,255,0.5)';
-      ctx.fillText(`combo ${combo}` + (comboBonus > 0 ? `  +${comboBonus}` : ''), BASE_W / 2, 58);
-    }
-
-    // Shield indicator text
-    ctx.font = '11px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillStyle = shield === 1 ? 'rgba(100,220,255,0.6)' : 'rgba(255,80,80,0.5)';
-    ctx.fillText(shield === 1 ? 'SHIELD' : 'NO SHIELD', 10, 18);
-
-    // Lane labels
-    ctx.font = '10px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillStyle = `hsla(${COOL_H},${COOL_S}%,${COOL_L}%,0.25)`;
-    ctx.fillText('COOL', LANE_CL, BASE_H - 20);
-    ctx.fillStyle = `hsla(${WARM_H},${WARM_S}%,${WARM_L}%,0.25)`;
-    ctx.fillText('WARM', LANE_CR, BASE_H - 20);
-  }
-
-  // ===== START SCREEN =====
-  if (state === 'start') {
-    ctx.fillStyle = 'rgba(0,0,0,0.55)';
-    ctx.fillRect(0, 0, BASE_W, BASE_H);
-
-    // Title
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 40px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(80,160,255,0.4)';
-    ctx.shadowBlur = 14;
-    ctx.fillText('COLOR DASH', BASE_W / 2, 180);
-    ctx.shadowBlur = 0;
-
-    ctx.font = '16px sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.45)';
-    ctx.fillText('Split Sync', BASE_W / 2, 218);
-
-    // Tap prompt
-    const tapPulse = 0.65 + 0.35 * Math.sin(rawT * 3.5);
-    ctx.globalAlpha = tapPulse;
-    ctx.font = '20px sans-serif';
-    ctx.fillStyle = 'rgba(255,255,220,0.95)';
-    ctx.fillText('Tap to Start', BASE_W / 2, 300);
-    ctx.globalAlpha = 1;
-
-    // Instructions
-    ctx.font = '13px sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.35)';
-    ctx.fillText('Tap to flip between lanes', BASE_W / 2, 360);
-    ctx.fillText('Left = COOL (blue triangle)', BASE_W / 2, 382);
-    ctx.fillText('Right = WARM (orange circle)', BASE_W / 2, 404);
-    ctx.fillText('Match your lane to the gate color', BASE_W / 2, 430);
-
-    // Lane preview icons
-    ctx.fillStyle = COOL_CLR;
-    drawTriangle(BASE_W / 2 - 50, 464, 10);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.font = '11px sans-serif';
-    ctx.fillText('COOL', BASE_W / 2 - 50, 484);
-
-    ctx.fillStyle = WARM_CLR;
-    drawCircleIcon(BASE_W / 2 + 50, 464, 10);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.fillText('WARM', BASE_W / 2 + 50, 484);
-
-    // Best score
-    const sv = loadSave();
-    if (sv.hi > 0) {
-      ctx.font = '14px sans-serif';
-      ctx.fillStyle = 'rgba(255,220,80,0.6)';
-      ctx.fillText(`Best: ${sv.hi}`, BASE_W / 2, 530);
-    }
-
-    ctx.font = '11px sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.2)';
-    ctx.fillText('Space / Enter / Tap', BASE_W / 2, 580);
-  }
-
-  // ===== GAME OVER =====
-  if (state === 'gameover') {
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fillRect(0, 0, BASE_W, BASE_H);
-
-    ctx.fillStyle = '#f55';
-    ctx.font = 'bold 36px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(255,50,50,0.5)';
-    ctx.shadowBlur = 10;
-    ctx.fillText('GAME OVER', BASE_W / 2, 185);
-    ctx.shadowBlur = 0;
-
-    // Score
-    ctx.font = 'bold 48px sans-serif';
-    ctx.fillStyle = '#fff';
-    ctx.fillText(goScore, BASE_W / 2, 260);
-    ctx.font = '12px sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.fillText('SCORE', BASE_W / 2, 295);
-
-    // Best
-    const sv = loadSave();
-    ctx.font = '15px sans-serif';
-    ctx.fillStyle = 'rgba(255,220,80,0.8)';
-    ctx.fillText(`Best: ${sv.hi}`, BASE_W / 2, 330);
-
-    // Peak combo
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    ctx.fillText(`Peak Combo: ${goPeakCombo}`, BASE_W / 2, 358);
-
-    // Retry
-    const retryPulse = 0.6 + 0.4 * Math.sin(rawT * 3);
-    ctx.globalAlpha = retryPulse;
-    ctx.font = '19px sans-serif';
-    ctx.fillStyle = 'rgba(255,255,220,0.9)';
-    ctx.fillText('Tap to Retry', BASE_W / 2, 430);
-    ctx.globalAlpha = 1;
-  }
-
-  ctx.restore();
+/* ── Collision detect (circle vs rect) ── */
+function circRectOverlap(cx, cy, cr, rx, ry, rw, rh){
+  const nearX = Math.max(rx, Math.min(cx, rx + rw));
+  const nearY = Math.max(ry, Math.min(cy, ry + rh));
+  const dx = cx - nearX, dy = cy - nearY;
+  return dx*dx + dy*dy <= cr*cr;
 }
 
-// ==================== INPUT ====================
-function handleInput(e) {
-  if (e) e.preventDefault();
-  if (state === 'start') {
-    resetGame();
+function nearMissCheck(cx, cy, cr, rx, ry, rw, rh){
+  // near miss = within 6px margin but not colliding center
+  const margin = 6;
+  return circRectOverlap(cx, cy, cr + margin, rx, ry, rw, rh) &&
+         !circRectOverlap(cx, cy, cr * 0.5, rx, ry, rw, rh);
+}
+
+/* ── Tap action ── */
+function doTap(){
+  if(state === 'start'){
     state = 'playing';
+    init();
+    hudEl.classList.add('show');
+    inkWrap.classList.add('show');
+    overlay.classList.add('hidden');
     return;
   }
-  if (state === 'gameover') {
-    resetGame();
+  if(state === 'gameover'){
     state = 'playing';
+    init();
+    hudEl.classList.add('show');
+    inkWrap.classList.add('show');
+    overlay.classList.add('hidden');
+    overlay.innerHTML = '';
     return;
   }
-  if (state === 'playing') {
-    flipLane();
+  if(state === 'playing'){
+    // swap color
+    playerColor = 1 - playerColor;
+    // reset mult and streak
+    streak = 0; mult = 1;
+    // dash in drift direction
+    const driftDir = Math.sin(driftPhase) >= 0 ? 1 : -1;
+    const newLane = Math.max(0, Math.min(2, playerLane + driftDir));
+    playerLane = newLane;
+    // recoil
+    stunTimer = 0.10;
+    playerVx = driftDir * 120;
   }
 }
 
-canvas.addEventListener('pointerdown', handleInput, { passive: false });
-document.addEventListener('keydown', e => {
-  if (e.repeat) return;
-  if (e.code === 'Space' || e.code === 'Enter') {
+/* ── Input ── */
+gc.addEventListener('pointerdown', function(e){
+  e.preventDefault();
+  doTap();
+});
+document.addEventListener('keydown', function(e){
+  if(e.code === 'Space' || e.code === 'Enter'){
     e.preventDefault();
-    handleInput(null);
+    doTap();
   }
 });
 
-// ==================== MAIN LOOP ====================
-let lastTime = 0;
-resetGame();
-state = 'start';
+/* ── Screen shake ── */
+function triggerShake(mag){
+  shakeMag = Math.max(shakeMag, mag);
+}
 
-function loop(ts) {
-  const t = ts / 1000;
-  const dt = Math.min(t - (lastTime || t), 0.05);
-  lastTime = t;
+/* ── Draw helpers ── */
+function drawRoundRect(x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+function drawTriangle(cx, cy, size){
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - size);
+  ctx.lineTo(cx + size * 0.866, cy + size * 0.5);
+  ctx.lineTo(cx - size * 0.866, cy + size * 0.5);
+  ctx.closePath();
+}
+
+function colorForIndex(c){
+  return c === 0 ? CYAN : ORANGE;
+}
+
+/* ── Game Over ── */
+function goGameOver(){
+  state = 'gameover';
+  if(score > bestScore){
+    bestScore = score;
+    saveBest(bestScore);
+  }
+  triggerShake(14);
+  spawnBurst(playerX, playerY, 40, '#ff1744', 20, 200);
+
+  overlay.classList.remove('hidden');
+  overlay.innerHTML = `
+    <div class="ov-title">Game Over</div>
+    <div class="ov-score">${score}</div>
+    <div class="ov-best">Best: ${bestScore}</div>
+    <div class="ov-tap">Tap to Retry</div>
+    <button class="ov-share" id="share-btn">Challenge a Friend</button>
+  `;
+  const btn = document.getElementById('share-btn');
+  if(btn){
+    btn.style.pointerEvents = 'auto';
+    btn.addEventListener('pointerdown', function(e){
+      e.stopPropagation();
+      shareResult();
+    });
+  }
+  hudEl.classList.remove('show');
+  inkWrap.classList.remove('show');
+}
+
+/* ── Share ── */
+function shareResult(){
+  const text = `I scored ${score} in Color Dash: Streak Paint! Can you beat me?`;
+  const url = `https://balinti.github.io/color-dash/?challenge=${score}&seed=${seed}`;
+  if(navigator.share){
+    navigator.share({ title: 'Color Dash Challenge', text, url }).catch(()=>{});
+  } else {
+    try{
+      navigator.clipboard.writeText(text + ' ' + url);
+      const btn = document.getElementById('share-btn');
+      if(btn){ btn.textContent = 'Link Copied!'; setTimeout(()=>{ btn.textContent = 'Challenge a Friend'; }, 1500); }
+    }catch(e){}
+  }
+}
+
+/* ── Background lanes ── */
+function drawBackground(){
+  // gradient
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, BG_TOP);
+  grad.addColorStop(1, BG_BOT);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // track area
+  const tl = trackL();
+  const tw = trackW();
+  ctx.fillStyle = 'rgba(255,255,255,0.02)';
+  ctx.fillRect(tl, 0, tw, H);
+
+  // lane dividers
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  for(let i = 1; i < LANES; i++){
+    const x = tl + laneW() * i;
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+}
+
+/* ── Draw obstacle ── */
+function drawObstacle(ob, alpha){
+  const lw = laneW();
+  const cx = laneCenter(ob.lane);
+  const rx = cx - ob.w / 2;
+  const ry = ob.y;
+
+  ctx.globalAlpha = alpha;
+
+  if(ob.kind === KIND_CLEAN){
+    // neutral clean tile - white-ish
+    ctx.fillStyle = 'rgba(180,200,220,0.18)';
+    drawRoundRect(rx, ry, ob.w, ob.h, 6);
+    ctx.fill();
+    // diamond icon
+    ctx.fillStyle = 'rgba(180,200,220,0.5)';
+    ctx.save();
+    ctx.translate(cx, ry + ob.h/2);
+    ctx.rotate(Math.PI/4);
+    ctx.fillRect(-6, -6, 12, 12);
+    ctx.restore();
+  } else {
+    // color gate
+    const col = colorForIndex(ob.color);
+    ctx.fillStyle = col;
+    ctx.globalAlpha = alpha * 0.2;
+    drawRoundRect(rx, ry, ob.w, ob.h, 8);
+    ctx.fill();
+
+    ctx.globalAlpha = alpha * 0.9;
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 2.5;
+    drawRoundRect(rx, ry, ob.w, ob.h, 8);
+    ctx.stroke();
+
+    // shape cue inside
+    ctx.globalAlpha = alpha * 0.65;
+    ctx.fillStyle = col;
+    if(ob.shape === 0){
+      // circle for cyan
+      ctx.beginPath();
+      ctx.arc(cx, ry + ob.h/2, 10, 0, Math.PI*2);
+      ctx.fill();
+    } else {
+      // triangle for orange
+      drawTriangle(cx, ry + ob.h/2, 11);
+      ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+/* ── Draw player ── */
+function drawPlayer(){
+  const col = colorForIndex(playerColor);
+  // glow
+  ctx.shadowColor = col;
+  ctx.shadowBlur = 20;
+  ctx.fillStyle = col;
+
+  if(playerColor === 0){
+    // circle
+    ctx.beginPath();
+    ctx.arc(playerX, playerY, PLAYER_R, 0, Math.PI*2);
+    ctx.fill();
+    // inner bright
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#fff';
+    ctx.globalAlpha = 0.35;
+    ctx.beginPath();
+    ctx.arc(playerX - 3, playerY - 4, PLAYER_R * 0.4, 0, Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  } else {
+    // triangle
+    drawTriangle(playerX, playerY, PLAYER_R + 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#fff';
+    ctx.globalAlpha = 0.3;
+    drawTriangle(playerX - 1, playerY - 2, PLAYER_R * 0.35);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+  ctx.shadowBlur = 0;
+}
+
+/* ── Draw particles ── */
+function drawParticles(){
+  for(let i = 0; i < MAX_PARTICLES; i++){
+    const p = particles[i];
+    if(!p.active) continue;
+    const t = p.life / p.maxLife;
+    ctx.globalAlpha = t * p.alpha;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r * t, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+/* ── Update ── */
+function update(dt){
+  if(state !== 'playing') return;
+  if(dt > 0.1) dt = 0.1; // cap
+
+  // speed scaling
+  speed = Math.min(520, 260 + 1.6 * score);
+
+  // drift phase
+  driftPhase += dt * 2.8;
+
+  // stun countdown
+  if(stunTimer > 0) stunTimer -= dt;
+
+  // player x smoothing toward lane center
+  const targetX = laneCenter(playerLane);
+  const dx = targetX - playerX;
+  playerVx += dx * 12 * dt * 60;
+  playerVx *= 0.82;
+  playerX += playerVx * dt;
+
+  // gentle oscillation visual (not affecting lane)
+  const driftOffset = Math.sin(driftPhase) * 4;
+
+  // spawn obstacles
+  const spawnInterval = Math.max(0.42, 0.78 - 0.0022 * score);
+  spawnTimer -= dt;
+  if(spawnTimer <= 0){
+    spawnTimer = spawnInterval;
+    spawnRow();
+  }
+
+  // move obstacles
+  const moveAmt = speed * dt;
+  for(let i = obstacles.length - 1; i >= 0; i--){
+    const ob = obstacles[i];
+    ob.y += moveAmt;
+    if(ob.y > H + 60){
+      obstacles.splice(i, 1);
+      continue;
+    }
+
+    // collision
+    if(!ob.scored){
+      const cx = playerX + driftOffset;
+      const cy = playerY;
+      const rx = laneCenter(ob.lane) - ob.w/2;
+      const ry = ob.y;
+
+      if(circRectOverlap(cx, cy, PLAYER_R, rx, ry, ob.w, ob.h)){
+        ob.scored = true;
+
+        if(ob.kind === KIND_CLEAN){
+          // clean tile
+          ink = Math.min(INK_MAX, ink + 22);
+          score += 6;
+          spawnBurst(cx, ry + ob.h/2, 8, CLEAN_COL, 10, 80);
+        } else if(ob.color === playerColor){
+          // correct gate
+          streak++;
+          computeMult();
+          score += 10 * mult;
+          ink = Math.min(INK_MAX, ink + 3 + 0.5 * mult);
+          spawnBurst(cx, ry + ob.h/2, 14 + mult * 2, colorForIndex(ob.color), 12, 120 + mult * 15);
+
+          // near miss bonus
+          if(nearMissCheck(cx, cy, PLAYER_R, rx, ry, ob.w, ob.h)){
+            score += 5;
+            spawnBurst(cx, cy, 8, '#fff', 6, 100);
+          }
+        } else {
+          // wrong gate
+          const drain = Math.min(34, 18 + 0.25 * score);
+          ink -= drain;
+          streak = Math.max(0, streak - 2);
+          computeMult();
+          triggerShake(5);
+          spawnBurst(cx, ry + ob.h/2, 12, '#ff5252', 14, 90);
+        }
+      }
+    }
+  }
+
+  // build ghost list (next 2 unscored obs off-screen or near top)
+  ghostObstacles.length = 0;
+  let ghostCount = 0;
+  for(let i = 0; i < obstacles.length && ghostCount < 2; i++){
+    if(!obstacles[i].scored && obstacles[i].y < playerY - 100){
+      ghostObstacles.push(obstacles[i]);
+      ghostCount++;
+    }
+  }
+
+  // passive ink regen at high streak
+  if(streak >= 6){
+    ink = Math.min(INK_MAX, ink + dt * 1.8);
+  }
+
+  // distance score ticks
+  distTick += dt;
+  if(distTick >= 0.5){
+    distTick -= 0.5;
+    score += 1;
+  }
+
+  // ink check
+  if(ink <= 0){
+    ink = 0;
+    goGameOver();
+    return;
+  }
+
+  // update particles
+  for(let i = 0; i < MAX_PARTICLES; i++){
+    const p = particles[i];
+    if(!p.active) continue;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vy += 180 * dt; // gravity
+    p.life -= dt;
+    if(p.life <= 0) p.active = false;
+  }
+
+  // screen shake decay
+  if(shakeMag > 0.1){
+    shakeX = (Math.random() - 0.5) * shakeMag * 2;
+    shakeY = (Math.random() - 0.5) * shakeMag * 2;
+    shakeMag *= 0.88;
+  } else {
+    shakeX = 0; shakeY = 0; shakeMag = 0;
+  }
+
+  // update UI
+  scoreEl.textContent = score;
+  bestEl.textContent = Math.max(bestScore, score);
+  multEl.textContent = 'x' + mult;
+  if(mult > 1) multEl.classList.add('show'); else multEl.classList.remove('show');
+
+  const inkPct = Math.max(0, ink / INK_MAX * 100);
+  inkBar.style.width = inkPct + '%';
+  if(ink < 25){
+    inkBar.classList.add('critical');
+    vignetteEl.classList.add('show');
+  } else {
+    inkBar.classList.remove('critical');
+    vignetteEl.classList.remove('show');
+  }
+}
+
+/* ── Draw ── */
+function draw(){
+  ctx.save();
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  if(state === 'playing'){
+    ctx.translate(shakeX, shakeY);
+  }
+
+  drawBackground();
+
+  // draw ghost previews
+  for(let i = 0; i < ghostObstacles.length; i++){
+    drawObstacle(ghostObstacles[i], 0.15 + i * 0.05);
+  }
+
+  // draw obstacles
+  for(let i = 0; i < obstacles.length; i++){
+    if(ghostObstacles.indexOf(obstacles[i]) === -1){
+      drawObstacle(obstacles[i], 0.9);
+    }
+  }
+
+  // draw player
+  if(state === 'playing' || state === 'gameover'){
+    const driftOffset = Math.sin(driftPhase) * 4;
+    ctx.save();
+    ctx.translate(driftOffset, 0);
+    drawPlayer();
+    ctx.restore();
+  }
+
+  // title screen player preview
+  if(state === 'start'){
+    const col = CYAN;
+    const cx = W/2, cy = H * 0.48;
+    // pulsing glow
+    const pulse = 0.7 + 0.3 * Math.sin(Date.now() * 0.003);
+    ctx.shadowColor = col;
+    ctx.shadowBlur = 30 * pulse;
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 24, 0, Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    // inner
+    ctx.fillStyle = '#fff';
+    ctx.globalAlpha = 0.3;
+    ctx.beginPath();
+    ctx.arc(cx - 4, cy - 5, 8, 0, Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  drawParticles();
+
+  // track edges
+  const tl = trackL();
+  const tw = trackW();
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(tl, 0); ctx.lineTo(tl, H); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(tl + tw, 0); ctx.lineTo(tl + tw, H); ctx.stroke();
+
+  ctx.restore();
+}
+
+/* ── Main Loop ── */
+function loop(ts){
+  requestAnimationFrame(loop);
+  const now = ts / 1000;
+  const dt = lastTime ? Math.min(now - lastTime, 0.1) : 0.016;
+  lastTime = now;
 
   update(dt);
-  draw(t);
-
-  requestAnimationFrame(loop);
+  draw();
 }
+
+/* ── Challenge banner ── */
+if(challengeScore > 0){
+  const banner = document.createElement('div');
+  banner.className = 'ov-challenge';
+  banner.textContent = 'Beat ' + challengeScore + ' to win!';
+  gc.appendChild(banner);
+}
+
+/* ── Start best display ── */
+bestEl.textContent = loadBest();
+
+/* ── Prevent scroll/zoom ── */
+document.addEventListener('touchmove', function(e){ e.preventDefault(); }, { passive: false });
+document.addEventListener('gesturestart', function(e){ e.preventDefault(); });
+
+/* ── Go ── */
 requestAnimationFrame(loop);
+
+})();
 </script>
 </body>
 </html>
