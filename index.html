@@ -5,897 +5,685 @@
 <title>Color Dash - Free HTML5 Game</title>
 <meta name="description" content="Play Color Dash - Run through color gates matching your current color. Tap to switch between colors. Speed increases every 10 points.">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#1a1a2e">
+<meta name="theme-color" content="#0b1020">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Color Dash - Free HTML5 Game">
-<meta property="og:description" content="Play Color Dash - Run through color gates matching your current color. Tap to switch between colors.">
-<meta property="og:url" content="https://balinti.github.io/color-dash/">
-<meta property="og:image" content="https://balinti.github.io/color-dash/og.png">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Color Dash - Free HTML5 Game">
-<meta name="twitter:description" content="Play Color Dash - Run through color gates matching your current color. Tap to switch between colors.">
-<meta name="twitter:image" content="https://balinti.github.io/color-dash/og.png">
+<meta property="og:description" content="Tap to flip between Sun and Moon modes. Match gates, grab bonuses, build multiplier combos. How far can you glide?">
+<meta property="og:url" content="https://Balinti.github.io/color-dash/">
+<meta property="og:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='315' viewBox='0 0 600 315'%3E%3Crect fill='%230b1020' width='600' height='315'/%3E%3Ctext x='300' y='130' text-anchor='middle' font-size='64' fill='%23f4c542'%3E%E2%98%80%3C/text%3E%3Ctext x='300' y='210' text-anchor='middle' font-size='64' fill='%2388ccff'%3E%E2%98%BD%3C/text%3E%3Ctext x='300' y='285' text-anchor='middle' font-size='30' fill='white' font-family='sans-serif'%3EColor Dash%3C/text%3E%3C/svg%3E">
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"VideoGame",
+  "name":"Color Dash",
+  "description":"A hyper-casual HTML5 game. Tap to flip between Sun and Moon modes, match color gates, grab bonuses, and build multiplier combos.",
+  "genre":"Casual",
+  "gamePlatform":"Web Browser",
+  "applicationCategory":"Game",
+  "operatingSystem":"Any",
+  "url":"https://Balinti.github.io/color-dash/",
+  "playMode":"SinglePlayer",
+  "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}
+}
+</script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4099346100621490" crossorigin="anonymous"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#0f0f23;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
-#wrap{position:relative;touch-action:none;-webkit-touch-callout:none}
-canvas{display:block;border-radius:10px}
-#seo{max-width:420px;color:#666;font-size:11px;text-align:center;padding:6px 12px;line-height:1.4}
-#seo h1{font-size:13px;color:#888;margin-bottom:3px}
-#seo ul{list-style:none;padding:0}
-#seo ul li::before{content:"- "}
+html,body{width:100%;height:100%;overflow:hidden;background:#0b1020;font-family:'Segoe UI',system-ui,sans-serif;color:#eee;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+#wrap{position:relative;max-width:420px;width:100%;height:100vh;max-height:750px;margin:0 auto;overflow:hidden}
+canvas{display:block;width:100%;height:100%}
+#about{position:fixed;bottom:0;left:0;right:0;background:rgba(11,16,32,.96);max-width:420px;margin:0 auto;font-size:12px;line-height:1.5;z-index:10}
+#about summary{padding:8px 14px;cursor:pointer;font-size:13px;color:#aaa}
+#about .inner{padding:4px 14px 14px;color:#888;max-height:200px;overflow-y:auto}
+@media(min-height:760px){#wrap{margin-top:calc((100vh - 750px)/2)}}
 </style>
 </head>
 <body>
 <div id="wrap"><canvas id="c"></canvas></div>
-<div id="seo">
-<h1>Color Dash - Paint Split</h1>
-<p>A hyper-casual endless runner. Match your paint color to the gates ahead!</p>
-<ul>
-<li>Tap or press Space to flip between Light and Dark</li>
-<li>Match your color to pass through gates safely</li>
-<li>Build combos for higher score multipliers</li>
-<li>Collect Charge gates to refill your flip buffer</li>
-</ul>
+<details id="about">
+<summary>About Color Dash</summary>
+<div class="inner">
+<p><strong>Color Dash</strong> is a free hyper-casual HTML5 game. Tap or press Space/Enter to flip between <em>Sun &#9728;</em> and <em>Moon &#9789;</em> modes. Match the correct gate to score points.</p>
+<p>Grab risky <strong>bonus gates</strong> for multiplier combos and overdrive charge. Wrong gates break your shield energy. Lose all energy and it's game over!</p>
+<p><strong>Controls:</strong> Tap the screen, or press Space / Enter to switch mode.</p>
+<p><strong>Tips:</strong> Bonus gates are tighter but build your multiplier up to x8 and charge overdrive. Safe gates are wider with smaller rewards. Decoy gates appear later as visual tricks - they're faint and won't collide.</p>
+<p><strong>Accessibility:</strong> Keyboard-friendly, high-contrast glyphs, works on mobile and desktop browsers.</p>
 </div>
+</details>
 <script>
 'use strict';
 (function(){
 
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-const wrap = document.getElementById('wrap');
+/* ════ Helpers ════ */
+var clamp=function(v,lo,hi){return v<lo?lo:v>hi?hi:v};
+var lerp=function(a,b,t){return a+(b-a)*t};
+var rand=function(lo,hi){return Math.random()*(hi-lo)+lo};
+var hsl=function(h,s,l){return'hsl('+((h%360+360)%360)+','+s+'%,'+l+'%)'};
+var hsla=function(h,s,l,a){return'hsla('+((h%360+360)%360)+','+s+'%,'+l+'%,'+a+')'};
+var TAU=Math.PI*2;
 
-/* ── Constants ── */
-const LS_KEY = 'paintSplit_highScore_v1';
-const MAX_W = 420, MAX_H = 750;
-const DPR = Math.min(window.devicePixelRatio || 1, 2);
+/* ════ Constants ════ */
+var LS_KEY='color_dash_highscore_v1';
+var MAX_DPR=2;
+var DESIGN_W=420,DESIGN_H=750;
 
-let W, H;
-let state = 'start';
-let score = 0, best = 0;
-let combo = 0, comboMult = 1;
-let buffer = 0.5;
-let paint = 0; // 0=light, 1=dark
-let rows = [];
-let particles = [];
-let lastTime = 0;
-let distAcc = 0;
-let shakeX = 0, shakeY = 0, shakeDur = 0, shakeStr = 0;
-let hitstopTimer = 0;
-let hueShift = 0;
-let gameOverTimer = 0;
-let challengeScore = null;
-let showHint = true;
-let hintTimer = 0;
-let totalTime = 0;
-let rowsSpawned = 0;
+var SUN_HUE=45,MOON_HUE=200;
+var SUN_GLYPH='\u2600',MOON_GLYPH='\u263D';
 
-/* ── Runner ── */
-const runner = { x: 0, targetX: 0, y: 0, r: 10, lane: 0 };
+var ENERGY_MAX=2;
+var MULTI_MAX=8;
+var OVERDRIVE_DUR=3.5;
+var FLIP_CD=0.12;
+var INPUT_BUFFER_WINDOW=0.14;
+var GATE_WIN_SAFE=54;
+var GATE_WIN_BONUS_BASE=36;
 
-/* ── Lane positions ── */
-let laneX = [0, 0];
+/* ════ Canvas ════ */
+var canvas=document.getElementById('c');
+var ctx=canvas.getContext('2d');
+var wrap=document.getElementById('wrap');
+var dpr=1,cw=DESIGN_W,ch=DESIGN_H,scaleX=1,scaleY=1;
 
-/* ── Gate types ── */
-const SAFE = 0, BONUS = 1, CHARGE = 2;
-
-/* ── Load best ── */
-try { best = parseInt(localStorage.getItem(LS_KEY)) || 0; } catch(e){}
-
-/* ── Challenge param ── */
-try {
-  const p = new URLSearchParams(window.location.search);
-  if (p.has('challenge')) {
-    const v = parseInt(p.get('challenge'));
-    if (!isNaN(v) && v > 0) challengeScore = v;
-  }
-} catch(e){}
-
-/* ── Resize ── */
-function resize() {
-  W = Math.min(MAX_W, window.innerWidth);
-  H = Math.min(MAX_H, window.innerHeight);
-  canvas.width = Math.round(W * DPR);
-  canvas.height = Math.round(H * DPR);
-  canvas.style.width = W + 'px';
-  canvas.style.height = H + 'px';
-  wrap.style.width = W + 'px';
-  wrap.style.height = H + 'px';
-  laneX[0] = W * 0.30;
-  laneX[1] = W * 0.70;
-  runner.y = H * 0.72;
-  if (state !== 'playing') {
-    runner.targetX = laneX[runner.lane];
-    runner.x = runner.targetX;
-  }
+function resize(){
+  var r=wrap.getBoundingClientRect();
+  cw=r.width;ch=r.height;
+  dpr=Math.min(window.devicePixelRatio||1,MAX_DPR);
+  canvas.width=Math.round(cw*dpr);
+  canvas.height=Math.round(ch*dpr);
+  scaleX=cw/DESIGN_W;
+  scaleY=ch/DESIGN_H;
 }
-window.addEventListener('resize', resize);
+window.addEventListener('resize',resize);
 resize();
 
-/* ── Difficulty formulas ── */
-function getSpeed() { return Math.min(520, 220 + 18 * Math.sqrt(score)); }
-function getSpacing() { return Math.max(118, 178 - 0.55 * score); }
-function getPBonus() { return Math.min(0.28, Math.max(0, 0.0035 * score)); }
-function getPCharge() { return Math.min(0.10, Math.max(0.04, 0.10 - 0.0007 * score)); }
-function getShrink() { return score > 40 ? Math.min(10, (score - 40) * 0.25) : 0; }
-function getBurstChance() { return score > 50 ? Math.min(0.18, (score - 50) * 0.004) : 0; }
+/* ════ State ════ */
+var state='start';
+var score=0,best=0;
+try{best=parseInt(localStorage.getItem(LS_KEY))||0}catch(e){}
+var dist=0;
+var mode=0; // 0=SUN, 1=MOON
+var energy=ENERGY_MAX;
+var multiplier=1;
+var odCharge=0,odActive=false,odTimer=0;
+var flipCD=0;
+var lastInputT=0,inputBuffered=false;
+var bgHue=220;
+var gameTime=0;
 
-/* ── Gate width ── */
-function gateWidth(type) {
-  const s = getShrink();
-  return type === BONUS ? Math.max(22, 34 - s) : Math.max(36, 54 - s);
+/* Shake */
+var shakeX=0,shakeY=0,shakeI=0;
+
+/* Hitstop */
+var hitstopT=0;
+
+/* Gates */
+var gates=[];
+var gateSpawnAcc=0;
+var gateId=0;
+
+/* Particles */
+var particles=[];
+
+/* Player */
+var PX=DESIGN_W/2,PY=DESIGN_H*0.82,PR=18;
+
+/* ════ Mode helpers ════ */
+function modeHue(){return mode===0?SUN_HUE:MOON_HUE}
+function modeGlyph(){return mode===0?SUN_GLYPH:MOON_GLYPH}
+function gateHue(m){return m===0?SUN_HUE:MOON_HUE}
+function gateGlyph(m){return m===0?SUN_GLYPH:MOON_GLYPH}
+
+/* ════ Difficulty ════ */
+function diff(){
+  var t=clamp(dist/28000,0,1);
+  return{
+    speed:lerp(2.4,5.8,t),
+    interval:lerp(105,55,t),
+    bonusOff:lerp(8,60,t),
+    bonusWin:lerp(GATE_WIN_BONUS_BASE,18,clamp(t*1.4,0,1)),
+    decoyP:lerp(0,0.38,clamp((t-0.2)/0.8,0,1))
+  };
 }
 
-/* ── Row spawning ── */
-function makeRow(y) {
-  const pB = getPBonus();
-  const pC = getPCharge();
-  const gates = [];
-  for (let lane = 0; lane < 2; lane++) {
-    let type = SAFE;
-    const r = Math.random();
-    if (r < pC) type = CHARGE;
-    else if (r < pC + pB) type = BONUS;
-    // First 3 rows: safe and wide
-    if (rowsSpawned < 3) type = SAFE;
-    const gPaint = Math.random() < 0.5 ? 0 : 1;
-    gates.push({ lane: lane, type: type, paint: gPaint, w: gateWidth(type), scored: false, pulseT: Math.random() * 6.28 });
-  }
-  rowsSpawned++;
-  return { y: y, gates: gates, resolved: false };
-}
-
-/* ── Particles ── */
-function spawnBurst(x, y, color, count) {
-  for (let i = 0; i < count; i++) {
-    const a = Math.random() * 6.2832;
-    const sp = 40 + Math.random() * 130;
-    particles.push({
-      x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
-      life: 0.35 + Math.random() * 0.45, maxLife: 0.5,
-      r: 2 + Math.random() * 3.5, color: color
-    });
-  }
-}
-
-function spawnTrail(x, y) {
-  particles.push({
-    x: x + (Math.random() - 0.5) * 6, y: y + 8,
-    vx: (Math.random() - 0.5) * 12, vy: 15 + Math.random() * 25,
-    life: 0.18 + Math.random() * 0.15, maxLife: 0.3,
-    r: 1.2 + Math.random() * 2, color: paint === 0 ? '#ffe066' : '#7ecfff'
+/* ════ Gate spawn ════ */
+function spawnGate(){
+  var d=diff();
+  var isBonus=Math.random()<0.42;
+  var gMode=Math.random()<0.5?0:1;
+  var bOff=isBonus?d.bonusOff:0;
+  var win=isBonus?d.bonusWin:GATE_WIN_SAFE;
+  gates.push({
+    id:gateId++,y:-65-bOff,
+    mode:gMode,bonus:isBonus,
+    win:win,scored:false,
+    w:isBonus?rand(85,115):rand(125,170),
+    decoy:false
   });
-}
-
-function spawnScrape(x, y) {
-  for (let i = 0; i < 7; i++) {
-    particles.push({
-      x: x, y: y, vx: (Math.random() - 0.5) * 90, vy: -20 + Math.random() * 50,
-      life: 0.22, maxLife: 0.22,
-      r: 1.5, color: '#ff8844'
+  if(d.decoyP>0&&Math.random()<d.decoyP){
+    gates.push({
+      id:gateId++,y:-65-rand(0,35),
+      mode:Math.random()<0.5?0:1,
+      bonus:false,win:GATE_WIN_SAFE,
+      scored:true,w:rand(100,140),
+      decoy:true
     });
   }
 }
 
-/* ── Screen shake ── */
-function triggerShake(str, dur) {
-  shakeStr = Math.max(shakeStr, str);
-  shakeDur = Math.max(shakeDur, dur);
+/* ════ Particles ════ */
+function addP(x,y,vx,vy,life,col,sz){
+  if(particles.length>300)return;
+  particles.push({x:x,y:y,vx:vx,vy:vy,life:life,ml:life,col:col,sz:sz});
 }
-
-/* ── Input ── */
-let inputLocked = false;
-
-function handleInput(e) {
-  if (e.type === 'keydown') {
-    if (e.code === 'Space') e.preventDefault();
-    if (e.code !== 'Space' && e.code !== 'Enter') return;
-  }
-  if (inputLocked) return;
-  if (state === 'start') {
-    startGame();
-  } else if (state === 'playing') {
-    flipPaint();
-  } else if (state === 'gameover') {
-    if (gameOverTimer < 0.28) return;
-    resetToStart();
+function emitTrail(){
+  var h=modeHue();
+  addP(PX+rand(-6,6),PY+rand(4,12),rand(-0.4,0.4),rand(0.8,2.2),rand(0.4,0.8),hsla(h,80,65,0.7),rand(2,4.5));
+}
+function emitClear(bonus){
+  var n=bonus?30:14;var h=modeHue();
+  for(var i=0;i<n;i++){
+    var a=rand(0,TAU),sp=rand(1.5,bonus?7:4);
+    addP(PX,PY,Math.cos(a)*sp,Math.sin(a)*sp,rand(0.5,1.1),hsla(h+rand(-30,30),90,60,0.9),rand(2,5.5));
   }
 }
-
-canvas.addEventListener('pointerdown', handleInput);
-document.addEventListener('keydown', handleInput);
-
-function flipPaint() {
-  paint = paint === 0 ? 1 : 0;
-  combo = 0;
-  comboMult = 1;
-  showHint = false;
+function emitShieldBreak(){
+  for(var i=0;i<24;i++){
+    var a=rand(0,TAU),sp=rand(2,6);
+    addP(PX,PY,Math.cos(a)*sp,Math.sin(a)*sp,rand(0.45,0.9),hsla(0,90,55,0.9),rand(2.5,5));
+  }
 }
-
-function startGame() {
-  state = 'playing';
-  score = 0; combo = 0; comboMult = 1;
-  buffer = 0.5; paint = 0;
-  rows = []; particles = [];
-  distAcc = 0; shakeX = 0; shakeY = 0; shakeDur = 0; shakeStr = 0;
-  hitstopTimer = 0; gameOverTimer = 0;
-  showHint = true; hintTimer = 0;
-  totalTime = 0; rowsSpawned = 0;
-  runner.lane = 0;
-  runner.targetX = laneX[0];
-  runner.x = laneX[0];
-  // Spawn initial rows
-  const sp = 178; // initial spacing
-  for (let i = 0; i < 6; i++) {
-    rows.push(makeRow(-60 - i * sp));
+function emitOD(){
+  for(var i=0;i<5;i++){
+    addP(PX+rand(-16,16),PY+rand(-16,16),rand(-1.2,1.2),rand(-2.5,0.5),rand(0.3,0.6),hsla(rand(0,360),90,70,0.7),rand(2,4));
   }
 }
 
-function resetToStart() {
-  state = 'start';
-  particles = [];
-  shakeX = 0; shakeY = 0; shakeDur = 0; shakeStr = 0;
-}
+/* ════ Shake ════ */
+function shake(v){shakeI=Math.max(shakeI,v)}
 
-function triggerGameOver() {
-  state = 'gameover';
-  gameOverTimer = 0;
-  if (score > best) {
-    best = score;
-    try { localStorage.setItem(LS_KEY, best); } catch(e){}
+/* ════ Input ════ */
+function handleInput(e){
+  if(e&&e.type==='keydown'){
+    if(e.code!=='Space'&&e.code!=='Enter')return;
+    e.preventDefault();
   }
-  triggerShake(10, 0.5);
-  hitstopTimer = 0.12;
-  spawnBurst(runner.x, runner.y, '#ff4466', 35);
+  if(e&&e.type==='pointerdown')e.preventDefault();
+  if(state==='start'){startGame();return}
+  if(state==='gameover'){startGame();return}
+  var now=performance.now()/1000;
+  if(now-flipCD<FLIP_CD){
+    inputBuffered=true;lastInputT=now;return;
+  }
+  doFlip(now);
+}
+function doFlip(now){
+  mode=mode===0?1:0;
+  flipCD=now||performance.now()/1000;
+  inputBuffered=false;
 }
 
-/* ── Color helpers ── */
-function hsl(h, s, l, a) {
-  return a !== undefined ? 'hsla('+h+','+s+'%,'+l+'%,'+a+')' : 'hsl('+h+','+s+'%,'+l+'%)';
+wrap.addEventListener('pointerdown',handleInput);
+document.addEventListener('keydown',handleInput);
+document.addEventListener('touchmove',function(e){e.preventDefault()},{passive:false});
+
+/* ════ Lifecycle ════ */
+function startGame(){
+  state='playing';score=0;dist=0;
+  mode=0;energy=ENERGY_MAX;multiplier=1;
+  odCharge=0;odActive=false;odTimer=0;
+  gates=[];particles=[];
+  gateSpawnAcc=0;gateId=0;
+  shakeI=0;hitstopT=0;
+  inputBuffered=false;gameTime=0;
+  flipCD=0;lastInputT=0;
+}
+function gameOver(){
+  state='gameover';
+  if(score>best){best=score;try{localStorage.setItem(LS_KEY,String(best))}catch(e){}}
+  shake(16);
 }
 
-function paintColor(p, bright) {
-  if (p === 0) return bright ? hsl((hueShift+45)%360, 80, 72) : hsl((hueShift+45)%360, 60, 55);
-  return bright ? hsl((hueShift+220)%360, 70, 65) : hsl((hueShift+220)%360, 55, 45);
-}
+/* ════ Update ════ */
+function update(dt){
+  if(hitstopT>0){hitstopT-=dt;return}
 
-function paintOutline(p) {
-  if (p === 0) return 'rgba(255,255,200,0.7)';
-  return 'rgba(100,180,255,0.6)';
-}
+  bgHue+=dt*5;
+  gameTime+=dt;
 
-function bgGrad() {
-  const base = paint === 0 ? (hueShift + 240) % 360 : (hueShift + 260) % 360;
-  const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, hsl(base, 28, 11));
-  g.addColorStop(1, hsl((base + 20) % 360, 22, 7));
-  return g;
-}
-
-/* ── Drawing patterns ── */
-function drawDots(x, y, w, h) {
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(x - w/2, y - h/2, w, h);
-  ctx.clip();
-  const sp = 7;
-  for (let dx = x - w/2 + 3; dx < x + w/2; dx += sp) {
-    for (let dy = y - h/2 + 3; dy < y + h/2; dy += sp) {
-      ctx.beginPath();
-      ctx.arc(dx, dy, 1.4, 0, 6.2832);
-      ctx.fillStyle = 'rgba(255,255,255,0.4)';
-      ctx.fill();
+  // Input buffer
+  if(inputBuffered){
+    var now=performance.now()/1000;
+    if(now-lastInputT<INPUT_BUFFER_WINDOW&&now-flipCD>=FLIP_CD){
+      doFlip(now);
+    }else if(now-lastInputT>=INPUT_BUFFER_WINDOW){
+      inputBuffered=false;
     }
   }
-  ctx.restore();
-}
 
-function drawStripes(x, y, w, h) {
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(x - w/2, y - h/2, w, h);
-  ctx.clip();
-  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-  ctx.lineWidth = 1.5;
-  const sp = 6;
-  for (let d = -w - h; d < w + h; d += sp) {
-    ctx.beginPath();
-    ctx.moveTo(x - w/2 + d, y - h/2);
-    ctx.lineTo(x - w/2 + d + h, y + h/2);
-    ctx.stroke();
+  var d=diff();
+  var spd=d.speed;
+  if(odActive)spd*=1.15;
+
+  // Distance + score
+  dist+=spd*60*dt;
+  var dScore=Math.floor(spd*0.13*multiplier*(odActive?2:1));
+  score+=dScore;
+
+  // Overdrive
+  if(odActive){
+    odTimer-=dt;
+    emitOD();
+    if(odTimer<=0){odActive=false;odTimer=0}
   }
-  ctx.restore();
-}
 
-function drawChargeStripes(x, y, w, h) {
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(x - w/2, y - h/2, w, h);
-  ctx.clip();
-  ctx.strokeStyle = 'rgba(255,220,50,0.45)';
-  ctx.lineWidth = 2;
-  const sp = 9;
-  for (let d = -w - h; d < w + h; d += sp) {
-    ctx.beginPath();
-    ctx.moveTo(x - w/2 + d, y + h/2);
-    ctx.lineTo(x - w/2 + d + h, y - h/2);
-    ctx.stroke();
+  // Spawn
+  gateSpawnAcc+=spd*60*dt;
+  if(gateSpawnAcc>=d.interval){
+    spawnGate();
+    gateSpawnAcc-=d.interval;
   }
-  // Lightning mark
-  ctx.fillStyle = 'rgba(255,220,50,0.8)';
-  ctx.font = 'bold 11px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('\u26A1', x, y);
-  ctx.restore();
-}
 
-/* ── Rounded rect ── */
-function rRect(x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x+r,y);
-  ctx.lineTo(x+w-r,y);
-  ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-  ctx.lineTo(x+w,y+h-r);
-  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-  ctx.lineTo(x+r,y+h);
-  ctx.quadraticCurveTo(x,y+h,x,y+h-r);
-  ctx.lineTo(x,y+r);
-  ctx.quadraticCurveTo(x,y,x+r,y);
-  ctx.closePath();
-}
-
-/* ── Auto-lane AI ── */
-function pickLane() {
-  let nearestRow = null;
-  let nearestDist = Infinity;
-  for (let i = 0; i < rows.length; i++) {
-    if (rows[i].resolved) continue;
-    const d = runner.y - rows[i].y;
-    if (d > -80 && d < nearestDist) {
-      nearestDist = d;
-      nearestRow = rows[i];
+  // Move + collide gates
+  for(var i=gates.length-1;i>=0;i--){
+    var g=gates[i];
+    g.y+=spd*60*dt/60;
+    if(!g.scored&&!g.decoy){
+      var dy=g.y-PY;
+      if(Math.abs(dy)<g.win){
+        g.scored=true;
+        if(g.mode===mode){
+          if(g.bonus){
+            score+=Math.floor(30*multiplier);
+            multiplier=Math.min(multiplier+1,MULTI_MAX);
+            odCharge=clamp(odCharge+0.22,0,1);
+            hitstopT=0.06;
+            shake(5);
+          }else{
+            score+=Math.floor(10*multiplier);
+          }
+          emitClear(g.bonus);
+          shake(g.bonus?5:2);
+        }else{
+          energy--;
+          multiplier=1;
+          emitShieldBreak();
+          shake(9);
+          if(energy<=0){gameOver();return}
+        }
+      }else if(dy>g.win+15){
+        g.scored=true;
+      }
     }
+    if(g.y>DESIGN_H+90)gates.splice(i,1);
   }
-  if (!nearestRow) return;
-  let bestLane = 0, bestS = -999;
-  for (const g of nearestRow.gates) {
-    let s = 0;
-    if (g.paint === paint) s += 10;
-    if (g.type === BONUS && g.paint === paint) s += 5;
-    if (g.type === CHARGE) s += (buffer < 0.4 ? 6 : 1);
-    if (s > bestS) { bestS = s; bestLane = g.lane; }
+
+  // OD activation
+  if(!odActive&&odCharge>=1){
+    odActive=true;odTimer=OVERDRIVE_DUR;odCharge=0;shake(6);
   }
-  runner.lane = bestLane;
-}
-
-/* ── Update ── */
-function update(dt) {
-  if (hitstopTimer > 0) { hitstopTimer -= dt; return; }
-
-  // Shake decay
-  if (shakeDur > 0) {
-    shakeDur -= dt;
-    shakeX = (Math.random()-0.5) * shakeStr * 2;
-    shakeY = (Math.random()-0.5) * shakeStr * 2;
-    shakeStr *= 0.9;
-  } else { shakeX = 0; shakeY = 0; }
-
-  if (state === 'gameover') {
-    gameOverTimer += dt;
-    updateParticles(dt);
-    return;
-  }
-  if (state !== 'playing') return;
-
-  totalTime += dt;
-  hueShift = (hueShift + dt * 8) % 360;
-  if (showHint) { hintTimer += dt; if (hintTimer > 5) showHint = false; }
-
-  // Auto-lane pick
-  pickLane();
-
-  // Runner movement
-  runner.targetX = laneX[runner.lane];
-  runner.x += (runner.targetX - runner.x) * Math.min(1, dt * 14);
 
   // Trail
-  if (Math.random() < 0.55) spawnTrail(runner.x, runner.y);
-
-  const speed = getSpeed();
-  const spacing = getSpacing();
-
-  // Move rows
-  for (let i = rows.length - 1; i >= 0; i--) {
-    rows[i].y += speed * dt;
-    if (rows[i].y > H + 50) rows.splice(i, 1);
-  }
-
-  // Collision
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
-    if (row.resolved) continue;
-    if (Math.abs(row.y - runner.y) <= 14) {
-      row.resolved = true;
-      resolveRow(row);
-      if (state !== 'playing') return;
-    }
-  }
-
-  // Spawn new rows
-  distAcc += speed * dt;
-  while (distAcc >= spacing) {
-    distAcc -= spacing;
-    const topY = rows.length > 0 ? Math.min.apply(null, rows.map(function(r){return r.y;})) : 0;
-    let newY = topY - spacing;
-    if (newY > -60) newY = -60;
-    rows.push(makeRow(newY));
-    // Burst chance
-    if (Math.random() < getBurstChance()) {
-      rows.push(makeRow(newY - spacing * 0.68));
-    }
-  }
+  if(Math.random()<0.6)emitTrail();
 
   // Particles
-  updateParticles(dt);
+  for(var j=particles.length-1;j>=0;j--){
+    var p=particles[j];
+    p.x+=p.vx;p.y+=p.vy;
+    p.vy+=0.02; // tiny gravity
+    p.life-=dt;
+    if(p.life<=0)particles.splice(j,1);
+  }
+
+  // Shake decay
+  if(shakeI>0.15){
+    shakeX=rand(-shakeI,shakeI);
+    shakeY=rand(-shakeI,shakeI);
+    shakeI*=Math.pow(0.06,dt);
+  }else{shakeX=shakeY=0;shakeI=0}
 }
 
-function updateParticles(dt) {
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const p = particles[i];
-    p.x += p.vx * dt;
-    p.y += p.vy * dt;
-    p.life -= dt;
-    if (p.life <= 0) particles.splice(i, 1);
-  }
-  // Cap particle count
-  if (particles.length > 200) particles.splice(0, particles.length - 200);
+/* ════ Draw ════ */
+function drawBG(){
+  var h=(bgHue%360+360)%360;
+  var g=ctx.createLinearGradient(0,0,0,DESIGN_H);
+  g.addColorStop(0,hsl(h,30,9));
+  g.addColorStop(0.5,hsl((h+18)%360,25,6));
+  g.addColorStop(1,hsl((h+36)%360,20,4));
+  ctx.fillStyle=g;
+  ctx.fillRect(0,0,DESIGN_W,DESIGN_H);
 }
 
-function resolveRow(row) {
-  // Find gate in runner's lane
-  let g = null;
-  for (let i = 0; i < row.gates.length; i++) {
-    if (row.gates[i].lane === runner.lane) { g = row.gates[i]; break; }
+function drawDotPat(x,y,w,h,hu){
+  ctx.save();ctx.globalAlpha=0.2;
+  var step=11;
+  for(var px=x;px<x+w;px+=step){
+    for(var py=y;py<y+h;py+=step){
+      ctx.beginPath();ctx.arc(px+3,py+3,1.8,0,TAU);
+      ctx.fillStyle=hsl(hu,60,70);ctx.fill();
+    }
   }
-  if (!g) { triggerGameOver(); return; }
-
-  const gx = laneX[g.lane];
-  const halfW = g.w / 2;
-  const dist = Math.abs(runner.x - gx);
-
-  if (dist > halfW + runner.r + 2) {
-    triggerGameOver();
-    return;
-  }
-
-  if (g.paint === paint) {
-    successGate(g, dist, halfW, false);
-  } else if (buffer > 0) {
-    // Auto-flip save
-    paint = g.paint;
-    buffer = Math.max(0, buffer - 0.35);
-    successGate(g, dist, halfW, true);
-    triggerShake(5, 0.22);
-    spawnBurst(runner.x, runner.y, '#ffaa00', 12);
-  } else {
-    triggerGameOver();
-  }
+  ctx.restore();
 }
-
-function successGate(g, dist, halfW, wasSave) {
-  const edgeDist = halfW - dist + runner.r;
-  const nearMiss = edgeDist >= 0 && edgeDist < 4;
-
-  let base = 1;
-  if (g.type === BONUS) base = 3;
-  if (g.type === CHARGE) {
-    base = 1;
-    buffer = Math.min(1, buffer + 0.45);
-    spawnBurst(runner.x, runner.y, '#ffee44', 8);
-  }
-
-  if (!wasSave) {
-    combo++;
-  } else {
-    combo = 0;
-  }
-  comboMult = Math.min(4, 1 + Math.floor(combo / 4));
-  score += base * comboMult;
-
-  // Perfect drip (no save, no near-miss)
-  if (!wasSave && !nearMiss) {
-    buffer = Math.min(1, buffer + 0.03);
-  }
-
-  // Particles
-  const col = paintColor(g.paint, true);
-  const count = g.type === BONUS ? 20 : 9;
-  spawnBurst(runner.x, runner.y, col, count);
-
-  if (g.type === BONUS) triggerShake(3, 0.15);
-
-  if (nearMiss) spawnScrape(runner.x + (dist > 0 ? runner.r : -runner.r), runner.y);
-
-  g.scored = true;
-}
-
-/* ── Draw ── */
-function draw() {
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  ctx.clearRect(0, 0, W, H);
-
-  // Background
-  ctx.fillStyle = bgGrad();
-  ctx.fillRect(0, 0, W, H);
-
-  // Lane guides
-  ctx.globalAlpha = 0.07;
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth = 1;
-  for (let i = 0; i < 2; i++) {
-    ctx.beginPath();
-    ctx.moveTo(laneX[i], 0);
-    ctx.lineTo(laneX[i], H);
-    ctx.stroke();
-  }
-  // Center divider
+function drawStripePat(x,y,w,h,hu){
+  ctx.save();ctx.globalAlpha=0.16;
+  ctx.strokeStyle=hsl(hu,60,70);ctx.lineWidth=1.8;
   ctx.beginPath();
-  ctx.moveTo(W/2, 0);
-  ctx.lineTo(W/2, H);
-  ctx.stroke();
-  ctx.globalAlpha = 1;
+  var step=9;
+  for(var d=-h;d<w+h;d+=step){
+    ctx.moveTo(x+d,y);ctx.lineTo(x+d-h,y+h);
+  }
+  ctx.stroke();ctx.restore();
+}
 
-  // Apply shake
+function drawGate(g){
+  var gw=g.w;
+  var gh=38;
+  var gy=g.y-gh/2;
+  var hu=gateHue(g.mode);
+  var cx=DESIGN_W/2;
+
   ctx.save();
-  ctx.translate(shakeX, shakeY);
+  if(g.decoy){
+    ctx.globalAlpha=0.14+Math.sin(g.y*0.06)*0.06;
+  }
 
-  if (state === 'playing' || state === 'gameover') {
-    drawGates();
-    drawRunner();
-    drawParticles();
-    drawUI();
+  var barW=(DESIGN_W-gw)/2;
+
+  // Left bar
+  ctx.fillStyle=hsla(hu,65,g.bonus?45:35,g.bonus?0.9:0.7);
+  ctx.fillRect(0,gy,barW+4,gh);
+
+  // Right bar
+  ctx.fillRect(DESIGN_W-barW-4,gy,barW+4,gh);
+
+  // Gate opening border
+  ctx.strokeStyle=hsl(hu,80,g.bonus?72:55);
+  ctx.lineWidth=g.bonus?4.5:3;
+  ctx.strokeRect(barW,gy,gw,gh);
+
+  // Inner fill
+  ctx.fillStyle=hsla(hu,50,g.bonus?25:18,0.5);
+  ctx.fillRect(barW+2,gy+2,gw-4,gh-4);
+
+  // Pattern
+  if(g.mode===0){
+    drawDotPat(barW+3,gy+3,gw-6,gh-6,hu);
+  }else{
+    drawStripePat(barW+3,gy+3,gw-6,gh-6,hu);
+  }
+
+  // Glyph
+  ctx.font=(g.bonus?'bold 26px':'22px')+' sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle=hsl(hu,85,g.bonus?82:66);
+  ctx.fillText(gateGlyph(g.mode),cx,g.y);
+
+  // Bonus label
+  if(g.bonus&&!g.decoy){
+    ctx.font='bold 10px sans-serif';
+    ctx.fillStyle=hsl(hu,90,80);
+    ctx.fillText('BONUS',cx,gy-7);
+  }
+
+  // Decoy shimmer
+  if(g.decoy){
+    ctx.font='9px sans-serif';
+    ctx.fillStyle=hsla(hu,40,60,0.3);
+    ctx.fillText('~',cx,g.y);
   }
 
   ctx.restore();
-
-  if (state === 'start') drawStartScreen();
-  if (state === 'gameover') drawGameOverScreen();
 }
 
-function drawGates() {
-  for (let ri = 0; ri < rows.length; ri++) {
-    const row = rows[ri];
-    for (let gi = 0; gi < row.gates.length; gi++) {
-      const g = row.gates[gi];
-      if (g.scored) continue;
-      const x = laneX[g.lane];
-      const y = row.y;
-      const gw = g.w;
-      const gh = 18;
-
-      // Pulse for bonus
-      let scale = 1;
-      if (g.type === BONUS) {
-        g.pulseT += 0.06;
-        scale = 1 + 0.1 * Math.sin(g.pulseT);
-      }
-
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.scale(scale, scale);
-
-      // Gate body fill
-      const col = paintColor(g.paint, true);
-      ctx.fillStyle = col;
-      ctx.globalAlpha = 0.85;
-      rRect(-gw/2, -gh/2, gw, gh, 6);
-      ctx.fill();
-
-      // Bloom/glow stroke
-      ctx.globalAlpha = 0.5;
-      ctx.strokeStyle = col;
-      ctx.lineWidth = 4;
-      rRect(-gw/2 - 2, -gh/2 - 2, gw + 4, gh + 4, 8);
-      ctx.stroke();
-
-      // Outline (colorblind)
-      ctx.globalAlpha = 1;
-      ctx.strokeStyle = paintOutline(g.paint);
-      ctx.lineWidth = g.paint === 0 ? 1.5 : 2.5;
-      rRect(-gw/2, -gh/2, gw, gh, 6);
-      ctx.stroke();
-
-      // Pattern overlay
-      ctx.globalAlpha = 1;
-      if (g.type === CHARGE) {
-        drawChargeStripes(0, 0, gw, gh);
-      } else if (g.paint === 0) {
-        drawDots(0, 0, gw, gh);
-      } else {
-        drawStripes(0, 0, gw, gh);
-      }
-
-      ctx.restore();
-    }
-  }
-}
-
-function drawRunner() {
-  const x = runner.x;
-  const y = runner.y;
-  const r = runner.r;
+function drawPlayer(){
+  var h=modeHue();
 
   // Glow
-  const gc = paint === 0 ? '255,230,100' : '100,180,255';
-  const glow = ctx.createRadialGradient(x, y, r*0.4, x, y, r*2.8);
-  glow.addColorStop(0, 'rgba('+gc+',0.45)');
-  glow.addColorStop(1, 'rgba('+gc+',0)');
-  ctx.fillStyle = glow;
-  ctx.beginPath();
-  ctx.arc(x, y, r*2.8, 0, 6.2832);
-  ctx.fill();
+  var gr=ctx.createRadialGradient(PX,PY,PR*0.3,PX,PY,PR*2.8);
+  gr.addColorStop(0,hsla(h,80,60,odActive?0.55:0.32));
+  gr.addColorStop(1,hsla(h,80,60,0));
+  ctx.fillStyle=gr;
+  ctx.beginPath();ctx.arc(PX,PY,PR*2.8,0,TAU);ctx.fill();
 
-  // Ball
-  ctx.fillStyle = paintColor(paint, true);
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, 6.2832);
-  ctx.fill();
+  // Orb shadow
+  ctx.fillStyle=hsla(h,60,20,0.4);
+  ctx.beginPath();ctx.arc(PX+1,PY+2,PR+1,0,TAU);ctx.fill();
 
-  // Highlight
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
-  ctx.beginPath();
-  ctx.arc(x - r*0.3, y - r*0.3, r*0.38, 0, 6.2832);
-  ctx.fill();
+  // Orb
+  ctx.fillStyle=hsl(h,75,55);
+  ctx.beginPath();ctx.arc(PX,PY,PR,0,TAU);ctx.fill();
 
-  // Paint indicator pattern on ball
-  if (paint === 0) {
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.beginPath();
-    ctx.arc(x, y, 2, 0, 6.2832);
-    ctx.fill();
-  } else {
-    ctx.strokeStyle = 'rgba(255,255,255,0.45)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x-3, y-3); ctx.lineTo(x+3, y+3);
-    ctx.moveTo(x+3, y-3); ctx.lineTo(x-3, y+3);
-    ctx.stroke();
+  // Inner highlight
+  var ig=ctx.createRadialGradient(PX-4,PY-5,1,PX,PY,PR);
+  ig.addColorStop(0,'rgba(255,255,255,0.35)');
+  ig.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=ig;
+  ctx.beginPath();ctx.arc(PX,PY,PR,0,TAU);ctx.fill();
+
+  // Glyph
+  ctx.font='bold 20px sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle='#fff';
+  ctx.fillText(modeGlyph(),PX,PY+1);
+
+  // OD ring
+  if(odActive){
+    ctx.strokeStyle=hsla(((gameTime*200)%360),90,70,0.75);
+    ctx.lineWidth=3;
+    ctx.beginPath();ctx.arc(PX,PY,PR+7+Math.sin(gameTime*8)*3,0,TAU);ctx.stroke();
   }
 }
 
-function drawParticles() {
-  for (let i = 0; i < particles.length; i++) {
-    const p = particles[i];
-    const a = Math.max(0, p.life / p.maxLife);
-    ctx.globalAlpha = a;
-    ctx.fillStyle = p.color;
+function drawParticles(){
+  for(var i=0;i<particles.length;i++){
+    var p=particles[i];
+    var t=clamp(p.life/p.ml,0,1);
+    ctx.globalAlpha=t;
+    ctx.fillStyle=p.col;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r * (0.3 + 0.7*a), 0, 6.2832);
+    ctx.arc(p.x,p.y,p.sz*t,0,TAU);
     ctx.fill();
   }
-  ctx.globalAlpha = 1;
+  ctx.globalAlpha=1;
 }
 
-function drawUI() {
-  // Score top-left
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 24px sans-serif';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'top';
-  ctx.fillText(score, 16, 14);
+function drawHUD(){
+  // Score
+  ctx.font='bold 22px sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='top';
+  ctx.fillStyle='#fff';
+  ctx.fillText(score,DESIGN_W/2,14);
 
-  // Best top-right
-  ctx.font = '12px sans-serif';
-  ctx.textAlign = 'right';
-  ctx.fillStyle = '#999';
-  ctx.fillText('BEST ' + best, W - 16, 16);
+  // Best
+  ctx.font='11px sans-serif';
+  ctx.fillStyle='#999';
+  ctx.fillText('BEST: '+best,DESIGN_W/2,40);
 
-  // Combo display
-  if (combo >= 4) {
-    ctx.font = 'bold 13px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillStyle = hsl((hueShift+60)%360, 90, 72);
-    ctx.fillText('x' + comboMult + '  COMBO ' + combo, W/2, 16);
+  // Multiplier
+  if(multiplier>1){
+    ctx.font='bold 16px sans-serif';
+    ctx.fillStyle=hsl(modeHue(),90,72);
+    ctx.textAlign='right';
+    ctx.fillText('x'+multiplier,DESIGN_W-14,16);
   }
 
-  // Buffer bar
-  const barW = 76, barH = 5;
-  const barX = W/2 - barW/2, barY = 38;
-  ctx.fillStyle = 'rgba(255,255,255,0.12)';
-  rRect(barX, barY, barW, barH, 2.5);
-  ctx.fill();
+  // Current glyph
+  ctx.font='28px sans-serif';
+  ctx.textAlign='left';
+  ctx.fillStyle=hsl(modeHue(),80,65);
+  ctx.fillText(modeGlyph(),12,10);
 
-  const bPct = Math.max(0, Math.min(1, buffer));
-  const bCol = bPct > 0.3 ? hsl(140, 65, 50) : hsl(0, 65, 50);
-  if (bPct > 0) {
-    ctx.fillStyle = bCol;
-    rRect(barX, barY, barW * bPct, barH, 2.5);
-    ctx.fill();
+  // Energy pips
+  for(var i=0;i<ENERGY_MAX;i++){
+    var ex=14+i*20;
+    var ey=50;
+    ctx.beginPath();ctx.arc(ex,ey,6,0,TAU);
+    if(i<energy){
+      ctx.fillStyle=hsl(130,70,50);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.3)';ctx.lineWidth=1.5;ctx.stroke();
+    }else{
+      ctx.fillStyle='rgba(255,255,255,0.1)';ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1;ctx.stroke();
+    }
   }
+  ctx.font='8px sans-serif';ctx.textAlign='left';ctx.fillStyle='#666';
+  ctx.fillText('SHIELD',12,62);
 
-  ctx.font = '8px sans-serif';
-  ctx.fillStyle = '#777';
-  ctx.textAlign = 'center';
-  ctx.fillText('BUFFER', W/2, barY + barH + 8);
-
-  // Paint state indicator
-  ctx.font = '10px sans-serif';
-  ctx.fillStyle = paintColor(paint, true);
-  ctx.fillText(paint === 0 ? '\u25CF LIGHT' : '\u2716 DARK', W/2, barY + barH + 20);
-
-  // Hint
-  if (showHint) {
-    const ha = 0.5 + 0.5 * Math.sin(totalTime * 5);
-    ctx.globalAlpha = ha;
-    ctx.font = '14px sans-serif';
-    ctx.fillStyle = '#fff';
-    ctx.textAlign = 'center';
-    ctx.fillText('Tap to Flip', W/2, runner.y + 38);
-    ctx.globalAlpha = 1;
-  }
+  // Overdrive bar
+  var bw=82,bh=7;
+  var bx=DESIGN_W-bw-14,by=44;
+  ctx.fillStyle='rgba(255,255,255,0.08)';
+  ctx.fillRect(bx,by,bw,bh);
+  var charge=odActive?1:odCharge;
+  ctx.fillStyle=odActive?hsl(((gameTime*120)%360),90,60):hsl(48,80,52);
+  ctx.fillRect(bx,by,bw*charge,bh);
+  ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1;
+  ctx.strokeRect(bx,by,bw,bh);
+  ctx.font='8px sans-serif';ctx.textAlign='right';ctx.fillStyle='#666';
+  ctx.fillText(odActive?'OVERDRIVE':'CHARGE',DESIGN_W-14,by+bh+10);
 }
 
-function drawStartScreen() {
-  ctx.fillStyle = 'rgba(12,12,30,0.72)';
-  ctx.fillRect(0, 0, W, H);
+function drawStartScreen(){
+  drawBG();
 
-  // Animated runner preview
-  const t = Date.now() * 0.003;
-  const previewPaint = Math.floor(t) % 2;
-  const previewColor = paintColor(previewPaint, true);
-  const px = W/2, py = H * 0.42;
-  const glow = ctx.createRadialGradient(px, py, 5, px, py, 30);
-  glow.addColorStop(0, previewPaint === 0 ? 'rgba(255,230,100,0.4)' : 'rgba(100,180,255,0.4)');
-  glow.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = glow;
-  ctx.beginPath();
-  ctx.arc(px, py, 30, 0, 6.2832);
-  ctx.fill();
-  ctx.fillStyle = previewColor;
-  ctx.beginPath();
-  ctx.arc(px, py, 14, 0, 6.2832);
-  ctx.fill();
+  // Floating glyphs animation
+  var t=gameTime;
+  ctx.save();
+  ctx.globalAlpha=0.15;
+  for(var i=0;i<6;i++){
+    var fx=DESIGN_W*0.15+i*(DESIGN_W*0.14);
+    var fy=DESIGN_H*0.35+Math.sin(t*1.2+i*1.1)*30;
+    ctx.font='32px sans-serif';ctx.textAlign='center';
+    ctx.fillStyle=hsl(i%2===0?SUN_HUE:MOON_HUE,70,60);
+    ctx.fillText(i%2===0?SUN_GLYPH:MOON_GLYPH,fx,fy);
+  }
+  ctx.restore();
 
   // Title
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 40px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('Color Dash', W/2, H * 0.28);
+  ctx.font='bold 44px sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle='#fff';
+  ctx.fillText('Color Dash',DESIGN_W/2,DESIGN_H*0.24);
 
-  ctx.font = '14px sans-serif';
-  ctx.fillStyle = '#aaa';
-  ctx.fillText('Paint Split', W/2, H * 0.28 + 32);
+  // Subtitle
+  ctx.font='16px sans-serif';
+  ctx.fillStyle='#aaa';
+  ctx.fillText('Glyph Glide',DESIGN_W/2,DESIGN_H*0.24+34);
 
-  // Tap to start
-  const alpha = 0.45 + 0.55 * Math.sin(Date.now() * 0.004);
-  ctx.globalAlpha = alpha;
-  ctx.font = '18px sans-serif';
-  ctx.fillStyle = '#fff';
-  ctx.fillText('Tap to Start', W/2, H * 0.57);
-  ctx.globalAlpha = 1;
+  // Mode icons
+  ctx.font='52px sans-serif';
+  ctx.fillStyle=hsl(SUN_HUE,80,65);
+  ctx.fillText(SUN_GLYPH,DESIGN_W/2-42,DESIGN_H*0.44);
+  ctx.fillStyle=hsl(MOON_HUE,80,65);
+  ctx.fillText(MOON_GLYPH,DESIGN_W/2+42,DESIGN_H*0.44);
 
-  // Challenge banner
-  if (challengeScore !== null) {
-    ctx.fillStyle = hsl(45, 90, 62);
-    ctx.font = 'bold 14px sans-serif';
-    ctx.fillText('Challenge: Beat ' + challengeScore + ' pts!', W/2, H * 0.66);
+  // Instructions
+  ctx.font='15px sans-serif';
+  ctx.fillStyle='#bbb';
+  ctx.fillText('Tap to flip between Sun & Moon',DESIGN_W/2,DESIGN_H*0.555);
+  ctx.font='12px sans-serif';ctx.fillStyle='#888';
+  ctx.fillText('Match gates \u2022 Grab bonuses \u2022 Build combos',DESIGN_W/2,DESIGN_H*0.59);
+
+  // Tap prompt
+  var pulse=0.5+Math.sin(gameTime*4)*0.5;
+  ctx.globalAlpha=0.4+pulse*0.6;
+  ctx.font='21px sans-serif';
+  ctx.fillStyle='#fff';
+  ctx.fillText('Tap to Start',DESIGN_W/2,DESIGN_H*0.70);
+  ctx.globalAlpha=1;
+
+  if(best>0){
+    ctx.font='13px sans-serif';ctx.fillStyle='#777';
+    ctx.fillText('Best: '+best,DESIGN_W/2,DESIGN_H*0.78);
   }
 
-  // Best score
-  if (best > 0) {
-    ctx.fillStyle = '#777';
-    ctx.font = '13px sans-serif';
-    ctx.fillText('Best: ' + best, W/2, H * 0.74);
-  }
-
-  // Controls
-  ctx.fillStyle = '#555';
-  ctx.font = '11px sans-serif';
-  ctx.fillText('Space / Enter / Tap', W/2, H * 0.84);
+  ctx.font='11px sans-serif';ctx.fillStyle='#555';
+  ctx.fillText('Space / Enter / Tap',DESIGN_W/2,DESIGN_H*0.86);
 }
 
-function drawGameOverScreen() {
-  ctx.fillStyle = 'rgba(12,12,30,0.78)';
-  ctx.fillRect(0, 0, W, H);
+function drawGameOverScreen(){
+  drawBG();
+  drawParticles();
 
-  ctx.fillStyle = '#ff6677';
-  ctx.font = 'bold 30px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('Game Over', W/2, H * 0.26);
+  ctx.font='bold 38px sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle='#e55';
+  ctx.fillText('Game Over',DESIGN_W/2,DESIGN_H*0.25);
 
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 44px sans-serif';
-  ctx.fillText(score, W/2, H * 0.36);
+  ctx.font='bold 56px sans-serif';
+  ctx.fillStyle='#fff';
+  ctx.fillText(score,DESIGN_W/2,DESIGN_H*0.38);
 
-  ctx.fillStyle = '#aaa';
-  ctx.font = '14px sans-serif';
-  ctx.fillText('Best: ' + best, W/2, H * 0.43);
+  ctx.font='14px sans-serif';
+  ctx.fillStyle='#aaa';
+  ctx.fillText('SCORE',DESIGN_W/2,DESIGN_H*0.445);
 
-  // Combo recap
-  if (comboMult > 1) {
-    ctx.fillStyle = '#cc9';
-    ctx.font = '12px sans-serif';
-    ctx.fillText('Max Multiplier: x' + comboMult, W/2, H * 0.48);
-  }
+  ctx.font='bold 28px sans-serif';
+  ctx.fillStyle=score>=best?hsl(50,90,65):'#ccc';
+  ctx.fillText(best,DESIGN_W/2,DESIGN_H*0.54);
 
-  // Challenge result
-  let shareY = H * 0.56;
-  if (challengeScore !== null) {
-    if (score >= challengeScore) {
-      ctx.fillStyle = '#66ff88';
-      ctx.font = 'bold 16px sans-serif';
-      ctx.fillText('Challenge Beaten! \u2714', W/2, H * 0.53);
-    } else {
-      ctx.fillStyle = '#ff8866';
-      ctx.font = '14px sans-serif';
-      ctx.fillText('Needed ' + challengeScore + ' - Try again!', W/2, H * 0.53);
+  ctx.font='13px sans-serif';
+  ctx.fillStyle=score>=best?hsl(50,80,70):'#888';
+  ctx.fillText(score>=best?'NEW BEST!':'BEST',DESIGN_W/2,DESIGN_H*0.59);
+
+  var pulse=0.4+Math.sin(gameTime*4)*0.6;
+  ctx.globalAlpha=clamp(pulse,0.3,1);
+  ctx.font='20px sans-serif';
+  ctx.fillStyle='#fff';
+  ctx.fillText('Tap to Retry',DESIGN_W/2,DESIGN_H*0.73);
+  ctx.globalAlpha=1;
+}
+
+/* ════ Main Loop ════ */
+var lastT=0;
+function frame(ts){
+  requestAnimationFrame(frame);
+  var dt=lastT?(ts-lastT)/1000:1/60;
+  lastT=ts;
+  if(dt>0.08)dt=0.08;
+  gameTime+=dt;
+
+  // Always update shake + particles in gameover
+  if(state==='gameover'){
+    // Shake decay
+    if(shakeI>0.15){
+      shakeX=rand(-shakeI,shakeI);shakeY=rand(-shakeI,shakeI);
+      shakeI*=Math.pow(0.04,dt);
+    }else{shakeX=shakeY=0;shakeI=0}
+    // Particles
+    for(var j=particles.length-1;j>=0;j--){
+      var pp=particles[j];
+      pp.x+=pp.vx;pp.y+=pp.vy;pp.vy+=0.02;
+      pp.life-=dt;
+      if(pp.life<=0)particles.splice(j,1);
     }
-    shareY = H * 0.60;
+    bgHue+=dt*5;
   }
 
-  // Share button
-  const bw = 110, bh = 32, bx = W/2 - bw/2, by = shareY;
-  ctx.fillStyle = hsl(210, 60, 48);
-  rRect(bx, by, bw, bh, 10);
-  ctx.fill();
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 13px sans-serif';
-  ctx.fillText('Share', W/2, by + bh/2);
+  if(state==='playing')update(dt);
 
-  // Tap to retry
-  const alpha = 0.45 + 0.55 * Math.sin(Date.now() * 0.004);
-  ctx.globalAlpha = alpha;
-  ctx.font = '16px sans-serif';
-  ctx.fillStyle = '#fff';
-  ctx.fillText('Tap to Retry', W/2, H * 0.76);
-  ctx.globalAlpha = 1;
-}
+  // Render
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.save();
+  // Scale to design coords
+  ctx.scale(scaleX,scaleY);
+  ctx.translate(shakeX,shakeY);
 
-/* ── Share button detection ── */
-canvas.addEventListener('pointerdown', function(e) {
-  if (state !== 'gameover') return;
-  const rect = canvas.getBoundingClientRect();
-  const mx = (e.clientX - rect.left) * (W / rect.width);
-  const my = (e.clientY - rect.top) * (H / rect.height);
-  let shareY = challengeScore !== null ? H * 0.60 : H * 0.56;
-  const bw = 110, bh = 32, bx = W/2 - bw/2;
-  if (mx >= bx && mx <= bx + bw && my >= shareY && my <= shareY + bh) {
-    e.stopPropagation();
-    inputLocked = true;
-    setTimeout(function(){ inputLocked = false; }, 300);
-    const url = window.location.origin + window.location.pathname + '?challenge=' + score;
-    const text = 'I scored ' + score + ' in Color Dash! Can you beat it?';
-    if (navigator.share) {
-      navigator.share({ title: 'Color Dash Challenge', text: text, url: url }).catch(function(){});
-    } else {
-      try {
-        navigator.clipboard.writeText(text + ' ' + url);
-      } catch(e2){}
-    }
+  if(state==='start'){
+    drawStartScreen();
+  }else if(state==='playing'){
+    drawBG();
+    for(var i=0;i<gates.length;i++)drawGate(gates[i]);
+    drawParticles();
+    drawPlayer();
+    drawHUD();
+  }else if(state==='gameover'){
+    drawGameOverScreen();
   }
-});
 
-/* ── Prevent scroll/zoom ── */
-document.addEventListener('touchmove', function(e){ e.preventDefault(); }, { passive: false });
-document.addEventListener('gesturestart', function(e){ e.preventDefault(); });
-
-/* ── Main loop ── */
-function loop(ts) {
-  requestAnimationFrame(loop);
-  if (!lastTime) { lastTime = ts; return; }
-  let dt = (ts - lastTime) / 1000;
-  lastTime = ts;
-  if (dt > 0.1) dt = 0.1;
-  update(dt);
-  draw();
+  ctx.restore();
 }
-
-requestAnimationFrame(loop);
+requestAnimationFrame(frame);
 
 })();
 </script>
