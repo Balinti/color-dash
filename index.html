@@ -2,873 +2,812 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Color Dash - Free HTML5 Game</title>
 <meta name="description" content="Play Color Dash - Run through color gates matching your current color. Tap to switch between colors. Speed increases every 10 points.">
-<meta name="theme-color" content="#1a1a2e">
-<link rel="canonical" href="https://balinti.github.io/color-dash/">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0a1a">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Color Dash - Free HTML5 Game">
 <meta property="og:description" content="Play Color Dash - Run through color gates matching your current color. Tap to switch between colors. Speed increases every 10 points.">
 <meta property="og:url" content="https://balinti.github.io/color-dash/">
-<meta property="og:image" content="https://balinti.github.io/color-dash/og.png">
+<meta property="og:image" content="https://balinti.github.io/color-dash/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Color Dash - Free HTML5 Game">
 <meta name="twitter:description" content="Play Color Dash - Run through color gates matching your current color. Tap to switch between colors. Speed increases every 10 points.">
-<meta name="twitter:image" content="https://balinti.github.io/color-dash/og.png">
+<meta name="twitter:image" content="https://balinti.github.io/color-dash/og-image.png">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4099346100621490" crossorigin="anonymous"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow-x:hidden;background:#0f0f23;font-family:'Segoe UI',system-ui,sans-serif;color:#e0e0e0}
-#wrap{max-width:420px;margin:0 auto;display:flex;flex-direction:column;align-items:center;min-height:100vh;min-height:100dvh;position:relative}
-canvas{display:block;width:100%;max-width:420px;border-radius:8px;touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
-#seo-toggle{background:none;border:1px solid #333;color:#888;padding:6px 14px;border-radius:4px;cursor:pointer;font-size:12px;margin:12px 0 4px}
-#seo-toggle:hover{color:#aaa;border-color:#555}
-#seo-block{max-width:400px;padding:10px 16px;font-size:11px;line-height:1.5;color:#555;display:none;text-align:left}
-#seo-block.open{display:block}
-#seo-block h2{font-size:13px;color:#666;margin-bottom:4px}
-#seo-block p{margin-bottom:6px}
+html,body{
+  width:100%;height:100%;
+  overflow:hidden;
+  background:#0a0a1a;
+  font-family:system-ui,-apple-system,sans-serif;
+  touch-action:none;
+  overscroll-behavior:none;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+  -webkit-user-select:none;
+}
+#app{
+  width:100%;height:100%;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+}
+#shell{
+  position:relative;
+  width:100%;max-width:420px;
+  height:100%;max-height:750px;
+  overflow:hidden;
+  border-radius:8px;
+  background:#0a0a1a;
+}
+canvas#c{
+  display:block;
+  width:100%;height:100%;
+}
+#hud{
+  position:absolute;top:0;left:0;right:0;
+  display:flex;justify-content:space-between;
+  padding:12px 16px;
+  pointer-events:none;
+  font-size:18px;font-weight:700;
+  color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.5);
+  z-index:2;
+}
+#hud span{opacity:0;transition:opacity .2s}
+#hud.visible span{opacity:1}
+#overlay{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  z-index:3;pointer-events:none;
+  opacity:0;transition:opacity .3s;
+}
+#overlay.visible{opacity:1;pointer-events:auto}
+#overlay h1{
+  font-size:42px;font-weight:900;
+  background:linear-gradient(135deg,#ff6b6b,#ffd93d,#6bcb77,#4d96ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  margin-bottom:8px;
+}
+#overlay .sub{
+  color:rgba(255,255,255,.7);font-size:14px;margin-bottom:24px;
+}
+#overlay .score-display{
+  color:#fff;font-size:28px;font-weight:700;margin-bottom:6px;
+}
+#overlay .best-display{
+  color:rgba(255,255,255,.5);font-size:16px;margin-bottom:24px;
+}
+#overlay .tap-msg{
+  color:rgba(255,255,255,.6);font-size:16px;
+  animation:pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+#content{
+  display:none;
+  max-width:420px;width:100%;
+  padding:24px 16px;color:rgba(255,255,255,.55);
+  font-size:13px;line-height:1.6;
+}
+#content h2{font-size:16px;color:rgba(255,255,255,.7);margin-bottom:8px}
+#content p{margin-bottom:12px}
+@media(min-height:800px){
+  #content{display:block}
+}
 </style>
 </head>
 <body>
-<div id="wrap">
-<canvas id="c"></canvas>
-<button id="seo-toggle" aria-label="Toggle game information">Game Info ▼</button>
-<div id="seo-block">
-<h2>Color Dash – Free Hyper-Casual HTML5 Game</h2>
-<p>Color Dash is a fast-paced lane-switching runner game you can play in your browser. Tap or press Space to switch lanes and match your color and symbol to the incoming gates. Build combos by hitting safe lanes perfectly, collect bonus shards for big points, and manage your Heat meter to survive. The game gets faster as you progress, with new patterns and double gates appearing at higher scores.</p>
-<p>Features: 3-lane runner gameplay, combo multiplier system, heat management mechanic, particle effects, colorblind-friendly symbols, high score persistence, mobile-optimized with touch controls. No download required – play instantly!</p>
-<p>Keywords: color dash, HTML5 game, browser game, hyper-casual game, free online game, lane runner, color matching game, tap game, mobile game</p>
+<div id="app">
+  <div id="shell">
+    <canvas id="c"></canvas>
+    <div id="hud"><span id="hudScore">0</span><span id="hudStreak"></span></div>
+    <div id="overlay" class="visible">
+      <h1>Color Dash</h1>
+      <div class="sub">Signal Split</div>
+      <div class="tap-msg">Tap to Start</div>
+    </div>
+  </div>
 </div>
+<div id="content">
+  <h2>How to Play</h2>
+  <p>Tap or press Space to switch lanes. Your runner automatically matches the color of the gate in your current lane. Pass through gates to score points. Build streaks for multiplier bonuses!</p>
+  <p>Watch for special gates: Boost gates (&#9733;) give a temporary score multiplier, while Crack gates (&#9888;) are risky but reward +3 points. Blocked lanes are telegraphed with a countdown &mdash; switch lanes before they close!</p>
+  <p>Speed increases every 10 points. How far can you dash?</p>
+  <h2>Accessibility</h2>
+  <p>Color Dash uses distinct patterns and icons on each gate in addition to color, helping players who may have difficulty distinguishing colors.</p>
 </div>
+
 <script>
 'use strict';
-(()=>{
 
-/* ── CONSTANTS ── */
-const CANVAS_W = 420, CANVAS_H = 750;
-const LANE_COUNT = 3;
-const PLAYER_SIZE = 28;
-const GATE_HEIGHT = 52;
-const GATE_GAP = 6;
-const HEAT_MAX = 100;
-const COMBO_MAX = 4;
-const NEAR_MISS_WINDOW = 0.18;
-const RETRY_LOCK_MS = 450;
-const MAX_PARTICLES = 200;
-const DPR = Math.min(window.devicePixelRatio || 1, 3);
+/* ===================================================================
+   Color Dash — Signal Split
+   Single-file HTML5 Canvas hyper-casual game
+   =================================================================== */
 
-/* ── COLORS & SYMBOLS ── */
-const PALETTE = [
-  {h:0,   s:75, l:55, name:'red'},
-  {h:130, s:65, l:45, name:'green'},
-  {h:220, s:75, l:55, name:'blue'},
-  {h:45,  s:85, l:55, name:'yellow'},
+// ==================== CONSTANTS ====================
+const STORAGE_KEY   = 'colorDashBest';
+const LEGACY_KEY    = 'signalSplitBest';
+const LANE_COUNT    = 2;
+const PLAYER_SIZE   = 22;
+const GATE_HEIGHT   = 50;
+const GATE_GAP_MIN  = 170;
+const GATE_GAP_MAX  = 270;
+const BASE_SPEED    = 2.6;
+const SPEED_INC     = 0.2;
+const SPEED_CAP     = 7.5;
+const PERFECT_WIN   = 14;
+const BOOST_BASE    = 0.12;
+const CRACK_BASE    = 0.08;
+const BLOCK_BASE    = 0.06;
+const SHAKE_DUR     = 300;
+const SHAKE_INT     = 8;
+const P_PASS        = 12;
+const P_PERF        = 24;
+const P_CRACK       = 30;
+const P_LIFE        = 40;
+
+// Color palette (HSL)
+const COLORS = [
+  { h:   0, s: 75, l: 60 },
+  { h:  45, s: 90, l: 55 },
+  { h: 140, s: 60, l: 50 },
+  { h: 210, s: 80, l: 60 },
+  { h: 280, s: 70, l: 60 },
 ];
-const SYMBOLS = ['★','▲','●','◆'];
-const SYMBOL_LABELS = {
-  '★':'star','▲':'triangle','●':'circle','◆':'diamond'
-};
 
-function hsl(c, a){return `hsla(${c.h},${c.s}%,${c.l}%,${a??1})`}
-function hslStr(h,s,l,a){return `hsla(${h},${s}%,${l}%,${a??1})`}
+// Pattern types for accessibility
+const PATTERNS = ['stripes', 'dots', 'crosshatch', 'diamonds', 'waves'];
 
-/* ── CANVAS SETUP ── */
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-let cW, cH, scale;
+// ==================== DOM REFS ====================
+const canvas   = document.getElementById('c');
+const ctx      = canvas.getContext('2d');
+const shell    = document.getElementById('shell');
+const hud      = document.getElementById('hud');
+const hudScore = document.getElementById('hudScore');
+const hudStrk  = document.getElementById('hudStreak');
+const overlay  = document.getElementById('overlay');
 
-function resize(){
-  const wrap = document.getElementById('wrap');
-  const vw = Math.min(window.innerWidth, 420);
-  const vh = window.innerHeight;
-  const aspect = CANVAS_W / CANVAS_H;
-  let w = vw, h = w / aspect;
-  if(h > vh * 0.92){ h = vh * 0.92; w = h * aspect; }
-  canvas.style.width = w + 'px';
-  canvas.style.height = h + 'px';
-  canvas.width = Math.round(w * DPR);
-  canvas.height = Math.round(h * DPR);
-  cW = CANVAS_W;
-  cH = CANVAS_H;
-  scale = canvas.width / CANVAS_W;
-  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+// ==================== GAME STATE ====================
+let W, H, dpr, laneW, laneX;
+let state = 'start';
+let score, best, streak, multi;
+let speed, gateGap;
+let pLane, pY, pVy, pSquash;
+let gates, parts, floats;
+let skT, skX, skY;
+let boostT, boostM;
+let blkLane, blkTimer, blkCount;
+let hueShift, tColor;
+let lastTs;
+
+// ==================== HELPERS ====================
+function hsl(h, s, l, a) {
+  const hh = ((h + hueShift) % 360 + 360) % 360;
+  return a != null ? `hsla(${hh},${s}%,${l}%,${a})` : `hsl(${hh},${s}%,${l}%)`;
+}
+function cStr(c, a) { return hsl(c.h, c.s, c.l, a); }
+function rnd(a, b) { return a + Math.random() * (b - a); }
+function rndI(a, b) { return Math.floor(rnd(a, b + 1)); }
+function pick(a) { return a[rndI(0, a.length - 1)]; }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function loadBest() {
+  let b = parseInt(localStorage.getItem(STORAGE_KEY), 10);
+  if (isNaN(b)) {
+    b = parseInt(localStorage.getItem(LEGACY_KEY), 10);
+    if (isNaN(b)) b = 0;
+  }
+  return b;
+}
+function saveBest(v) { localStorage.setItem(STORAGE_KEY, v); }
+
+// ==================== RESIZE / DPR ====================
+function resize() {
+  const r = shell.getBoundingClientRect();
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = r.width;
+  H = r.height;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  laneW = W / LANE_COUNT;
+  laneX = [laneW * 0.5, laneW * 1.5];
 }
 window.addEventListener('resize', resize);
-resize();
 
-/* ── GAME STATE ── */
-const ROAD_LEFT = 30, ROAD_RIGHT = CANVAS_W - 30;
-const ROAD_W = ROAD_RIGHT - ROAD_LEFT;
-const LANE_W = ROAD_W / LANE_COUNT;
+// ==================== INIT ====================
+function init() {
+  score    = 0;
+  streak   = 0;
+  multi    = 1;
+  speed    = BASE_SPEED;
+  gateGap  = GATE_GAP_MAX;
+  pLane    = 0;
+  pY       = H * 0.78;
+  pVy      = 0;
+  pSquash  = 1;
+  gates    = [];
+  parts    = [];
+  floats   = [];
+  skT = skX = skY = 0;
+  boostT   = 0;
+  boostM   = 1;
+  blkLane  = -1;
+  blkTimer = 0;
+  blkCount = 0;
+  hueShift = 0;
+  tColor   = null;
+  best     = loadBest();
 
-let state = 'start'; // start | playing | gameover
-let score, best, bestCombo, bestShards;
-let combo, comboMult, heat, shards;
-let playerLane, playerColor, playerSymbol;
-let gates, particles, pops, rings;
-let speed, spawnTimer, spawnInterval;
-let gameTime, lastTime, shakeX, shakeY, shakeDur;
-let overReason, retryLockTime;
-let lastLaneSwitchTime;
-let nearMissFlash;
-
-/* ── LOAD BEST ── */
-function loadBest(){
-  best = parseInt(localStorage.getItem('dd_best')) || 0;
-  bestCombo = parseInt(localStorage.getItem('dd_bestCombo')) || 0;
-  bestShards = parseInt(localStorage.getItem('dd_bestShards')) || 0;
+  // Pre-spawn two gate pairs so the first is visible quickly
+  spawnPair(H * 0.25);
+  spawnPair(H * 0.25 - gateGap);
+  updateHUD();
 }
-function saveBest(){
-  if(score > best){ best = score; localStorage.setItem('dd_best', best); }
-  if(combo > bestCombo){ bestCombo = combo; localStorage.setItem('dd_bestCombo', bestCombo); }
-  if(shards > bestShards){ bestShards = shards; localStorage.setItem('dd_bestShards', bestShards); }
+
+// ==================== GATE SPAWNING ====================
+function pickTwo() {
+  const a = rndI(0, COLORS.length - 1);
+  let b = a;
+  while (b === a) b = rndI(0, COLORS.length - 1);
+  return [a, b];
 }
-loadBest();
 
-/* ── LANE GEOMETRY ── */
-function laneX(lane){ return ROAD_LEFT + lane * LANE_W + LANE_W / 2; }
-function laneLeft(lane){ return ROAD_LEFT + lane * LANE_W; }
+function spawnPair(yy) {
+  const [i0, i1] = pickTwo();
+  const y = yy !== undefined ? yy : -GATE_HEIGHT;
 
-/* ── PARTICLES ── */
-function spawnParticle(x, y, col, count, spdMul){
-  for(let i = 0; i < count && particles.length < MAX_PARTICLES; i++){
-    const a = Math.random() * Math.PI * 2;
-    const s = (1 + Math.random() * 3) * (spdMul || 1);
-    particles.push({
-      x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s,
-      life: 0.4 + Math.random()*0.4,
-      maxLife: 0.4 + Math.random()*0.4,
-      r: 2 + Math.random()*3,
-      col
+  let t0 = 'normal', t1 = 'normal';
+
+  // Boost gate
+  if (score > 5 && Math.random() < BOOST_BASE + score * 0.002) {
+    if (rndI(0,1) === 0) t0 = 'boost'; else t1 = 'boost';
+  }
+  // Crack gate
+  if (score > 10 && Math.random() < CRACK_BASE + score * 0.002) {
+    const cl = rndI(0,1);
+    if (cl === 0 && t0 === 'normal') t0 = 'crack';
+    else if (t1 === 'normal') t1 = 'crack';
+  }
+  // Block mechanic
+  if (score > 15 && blkLane === -1 && Math.random() < BLOCK_BASE + score * 0.001) {
+    blkLane  = rndI(0,1);
+    blkCount = 3;
+    blkTimer = 0;
+  }
+
+  gates.push(
+    { lane:0, y, c:COLORS[i0], ci:i0, pat:PATTERNS[i0 % PATTERNS.length], type:t0, passed:false, w:laneW*0.72 },
+    { lane:1, y, c:COLORS[i1], ci:i1, pat:PATTERNS[i1 % PATTERNS.length], type:t1, passed:false, w:laneW*0.72 }
+  );
+}
+
+// ==================== PARTICLES ====================
+function emit(x, y, color, n) {
+  for (let i = 0; i < n; i++) {
+    const a = rnd(0, Math.PI*2), sp = rnd(1.2, 4.5);
+    parts.push({
+      x, y,
+      vx: Math.cos(a)*sp,
+      vy: Math.sin(a)*sp - rnd(0.5, 2),
+      life: P_LIFE, max: P_LIFE,
+      c: color, sz: rnd(2, 5.5)
     });
   }
 }
-function spawnRing(x, y, col){
-  rings.push({x, y, r: 10, maxR: 60, life: 0.35, maxLife: 0.35, col});
-}
-function spawnPop(x, y, text, col){
-  pops.push({x, y, text, col, life: 0.7, maxLife: 0.7, vy: -80});
+
+function emitText(x, y, txt, col) {
+  floats.push({ x, y, txt, col, life: 55, max: 55 });
 }
 
-/* ── SHAKE ── */
-function triggerShake(dur, mag){
-  shakeDur = dur;
-  shakeX = (Math.random()-0.5) * mag;
-  shakeY = (Math.random()-0.5) * mag;
+// ==================== SHAKE ====================
+function shake(int, dur) {
+  skT = dur || SHAKE_DUR;
+  skX = int || SHAKE_INT;
+  skY = int || SHAKE_INT;
 }
 
-/* ── GATE CREATION ── */
-function randomColor(exclude){
-  let c;
-  do { c = PALETTE[Math.floor(Math.random()*PALETTE.length)]; } while(c === exclude);
-  return c;
-}
-function randomSymbol(exclude){
-  let s;
-  do { s = SYMBOLS[Math.floor(Math.random()*SYMBOLS.length)]; } while(s === exclude);
-  return s;
+// ==================== SWITCH LANE ====================
+function switchLane() {
+  if (state !== 'playing') return;
+  pLane = pLane === 0 ? 1 : 0;
+  pVy = -2.2;
+  pSquash = 0.68;
 }
 
-function createGate(){
-  const gateColor = PALETTE[Math.floor(Math.random()*PALETTE.length)];
-  const gateSymbol = SYMBOLS[Math.floor(Math.random()*SYMBOLS.length)];
-
-  // Decide lane types: one SAFE, one RISK, one BONUS (shuffled)
-  const types = ['safe','risk','bonus'];
-  // Shuffle
-  for(let i = types.length - 1; i > 0; i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [types[i], types[j]] = [types[j], types[i]];
-  }
-
-  const lanes = [];
-  for(let i = 0; i < 3; i++){
-    const t = types[i];
-    let laneColor = gateColor, laneSymbol = gateSymbol;
-    if(t === 'risk'){
-      // match only color OR only symbol
-      if(Math.random() < 0.5){
-        laneSymbol = randomSymbol(gateSymbol); // color match only
-      } else {
-        laneColor = randomColor(gateColor); // symbol match only
-      }
-    } else if(t === 'bonus'){
-      laneColor = randomColor(gateColor);
-      laneSymbol = randomSymbol(gateSymbol);
-    }
-    lanes.push({type: t, color: laneColor, symbol: laneSymbol});
-  }
-
-  return {
-    y: -GATE_HEIGHT,
-    gateColor, gateSymbol,
-    lanes,
-    crossed: false,
-    prevY: -GATE_HEIGHT
-  };
+// ==================== DIFFICULTY ====================
+function updateDiff() {
+  speed   = Math.min(BASE_SPEED + Math.floor(score / 10) * SPEED_INC, SPEED_CAP);
+  gateGap = Math.max(GATE_GAP_MIN, GATE_GAP_MAX - score * 1.4);
 }
 
-/* ── DIFFICULTY ── */
-function getSpeed(){ return Math.min(420, 240 + 1.6 * score); }
-function getInterval(){ return Math.max(0.62, Math.min(1.25, 1.25 - 0.0065 * score)); }
-function doubleGateChance(){ return score >= 30 ? Math.min(0.35, (score - 30) * 0.008) : 0; }
+// ==================== UPDATE ====================
+function update() {
+  if (state !== 'playing') return;
 
-/* ── INIT GAME ── */
-function initGame(){
-  score = 0; combo = 0; comboMult = 1; heat = 0; shards = 0;
-  playerLane = 1;
-  playerColor = PALETTE[0];
-  playerSymbol = SYMBOLS[0];
-  gates = []; particles = []; pops = []; rings = [];
-  speed = getSpeed();
-  spawnInterval = getInterval();
-  spawnTimer = 0.6;
-  gameTime = 0;
-  shakeX = 0; shakeY = 0; shakeDur = 0;
-  overReason = '';
-  lastLaneSwitchTime = -1;
-  nearMissFlash = 0;
-}
+  hueShift = (hueShift + 0.12) % 360;
+  updateDiff();
 
-/* ── CROSSING LOGIC ── */
-function processGateCross(gate){
-  const playerY = cH - 90;
-  const lane = gate.lanes[playerLane];
-  const t = lane.type;
-  const lc = lane.color;
-  const ls = lane.symbol;
-  const colorMatch = (playerColor === lc);
-  const symbolMatch = (playerSymbol === ls);
-
-  const px = laneX(playerLane);
-  const py = playerY;
-
-  // Near-miss check
-  const timeSinceSwitch = gameTime - lastLaneSwitchTime;
-  const isNearMiss = timeSinceSwitch >= 0 && timeSinceSwitch < NEAR_MISS_WINDOW;
-
-  if(t === 'safe'){
-    if(colorMatch && symbolMatch){
-      // Perfect SAFE
-      const pts = 1 * comboMult;
-      score += pts;
-      combo++;
-      comboMult = Math.min(COMBO_MAX, 1 + Math.floor(combo / 3));
-      heat = Math.max(0, heat - 12);
-      playerColor = gate.gateColor;
-      playerSymbol = gate.gateSymbol;
-      spawnParticle(px, py, hsl(playerColor), 12, 1.5);
-      spawnRing(px, py, hsl(playerColor, 0.6));
-      spawnPop(px, py - 30, `+${pts} SAFE`, hsl(playerColor));
-      if(isNearMiss){
-        score += 1;
-        nearMissFlash = 0.4;
-        spawnPop(px + 30, py - 50, 'SLIP!', '#fff');
-      }
-    } else {
-      // Wrong on SAFE lane — heat penalty
-      heat += 20;
-      combo = 0; comboMult = 1;
-      triggerShake(0.15, 4);
-      spawnPop(px, py - 30, 'WRONG!', '#ff4444');
-      spawnParticle(px, py, '#ff4444', 8, 1);
-    }
-  } else if(t === 'risk'){
-    if(colorMatch || symbolMatch){
-      // Partial match on RISK
-      const pts = 1 * comboMult;
-      score += pts;
-      heat += 8;
-      combo = 0; comboMult = 1;
-      if(colorMatch) playerColor = lc;
-      if(symbolMatch) playerSymbol = ls;
-      spawnParticle(px, py, hsl(lc), 8, 1);
-      spawnPop(px, py - 30, `+${pts} RISK`, hslStr(40,90,60));
-      triggerShake(0.08, 2);
-    } else {
-      // No match at all on RISK
-      heat += 18;
-      combo = 0; comboMult = 1;
-      triggerShake(0.15, 4);
-      spawnPop(px, py - 30, 'MISS!', '#ff4444');
-      spawnParticle(px, py, '#ff6644', 6, 1);
-    }
-  } else if(t === 'bonus'){
-    // Bonus: mismatch allowed, shard pickup
-    const bonusHeat = 12 + Math.min(8, score * 0.1);
-    heat += bonusHeat;
-    const pts = 3 * comboMult;
-    score += pts;
-    shards++;
-    combo = 0; comboMult = 1;
-    playerColor = lc;
-    playerSymbol = ls;
-    spawnParticle(px, py, '#ffdd44', 18, 2);
-    spawnRing(px, py, 'rgba(255,220,60,0.5)');
-    spawnPop(px, py - 30, `+${pts} SHARD!`, '#ffdd44');
-    triggerShake(0.1, 3);
-  }
-
-  // Passive heat decay applied elsewhere; clamp
-  heat = Math.min(HEAT_MAX, Math.max(0, heat));
-
-  // Check overheat
-  if(heat >= HEAT_MAX){
-    gameOver('Overloaded!');
-  }
-
-  // Update difficulty
-  speed = getSpeed();
-  spawnInterval = getInterval();
-}
-
-/* ── GAME OVER ── */
-function gameOver(reason){
-  state = 'gameover';
-  overReason = reason || 'Game Over';
-  saveBest();
-  triggerShake(0.5, 12);
-  const px = laneX(playerLane);
-  const py = cH - 90;
-  spawnParticle(px, py, hsl(playerColor), 30, 3);
-  spawnParticle(px, py, '#ff4444', 20, 2.5);
-  retryLockTime = performance.now();
-}
-
-/* ── INPUT ── */
-function handleInput(){
-  if(state === 'start'){
-    state = 'playing';
-    initGame();
-  } else if(state === 'playing'){
-    playerLane = (playerLane + 1) % LANE_COUNT;
-    lastLaneSwitchTime = gameTime;
-    triggerShake(0.04, 1.5);
-  } else if(state === 'gameover'){
-    if(performance.now() - retryLockTime > RETRY_LOCK_MS){
-      state = 'playing';
-      initGame();
-    }
-  }
-}
-
-canvas.addEventListener('pointerdown', (e)=>{
-  e.preventDefault();
-  handleInput();
-});
-document.addEventListener('keydown', (e)=>{
-  if(e.code === 'Space' || e.code === 'Enter'){
-    e.preventDefault();
-    handleInput();
-  }
-});
-
-/* ── SEO TOGGLE ── */
-document.getElementById('seo-toggle').addEventListener('click', ()=>{
-  const block = document.getElementById('seo-block');
-  const btn = document.getElementById('seo-toggle');
-  block.classList.toggle('open');
-  btn.textContent = block.classList.contains('open') ? 'Game Info ▲' : 'Game Info ▼';
-});
-
-/* ── UPDATE ── */
-function update(dt){
-  if(state !== 'playing') {
-    // Still update particles in non-playing states
-    updateParticles(dt);
-    return;
-  }
-
-  gameTime += dt;
-
-  // Passive heat decay
-  heat = Math.max(0, heat - 0.8 * dt);
-
-  // Spawn gates
-  spawnTimer -= dt;
-  if(spawnTimer <= 0){
-    gates.push(createGate());
-    // Double gate chance
-    if(Math.random() < doubleGateChance()){
-      const g2 = createGate();
-      g2.y = -GATE_HEIGHT * 2.2;
-      gates.push(g2);
-    }
-    spawnTimer = spawnInterval;
-  }
-
-  // Move gates
-  const playerBottomY = cH - 90 + PLAYER_SIZE;
-  const playerTopY = cH - 90 - PLAYER_SIZE;
-
-  for(let i = gates.length - 1; i >= 0; i--){
+  // --- Move gates ---
+  for (let i = gates.length - 1; i >= 0; i--) {
     const g = gates[i];
-    g.prevY = g.y;
-    g.y += speed * dt;
+    g.y += speed;
 
-    // Crossing detection: gate bottom edge crosses player center
-    const gateBottom = g.y + GATE_HEIGHT;
-    const prevBottom = g.prevY + GATE_HEIGHT;
-    const crossY = cH - 90;
+    // Gate passes player
+    if (!g.passed && g.y > pY + PLAYER_SIZE * 0.5) {
+      g.passed = true;
 
-    if(!g.crossed && prevBottom <= crossY && gateBottom > crossY){
-      g.crossed = true;
-      processGateCross(g);
+      if (g.lane === pLane) {
+        // Check block → game over
+        if (blkLane === g.lane && blkCount <= 0) { gameOver(); return; }
+
+        let pts = 1;
+        const dist = Math.abs(g.y - pY);
+        const perf = dist < PERFECT_WIN + GATE_HEIGHT * 0.5;
+
+        if (g.type === 'crack') {
+          pts = 3; streak += 3;
+          emit(laneX[g.lane], pY, g.c, P_CRACK);
+          emitText(laneX[g.lane], pY - 30, '+3 CRACK!', cStr(g.c));
+          shake(5, 160);
+        } else if (g.type === 'boost') {
+          boostT = 180; boostM = 2;
+          streak++;
+          emit(laneX[g.lane], pY, g.c, P_PERF);
+          emitText(laneX[g.lane], pY - 30, 'BOOST!', '#ffd93d');
+          // Narrow upcoming gates
+          for (const ng of gates) { if (ng.y < g.y) ng.w = laneW * 0.52; }
+        } else {
+          streak++;
+          if (perf) {
+            pts = 2;
+            emit(laneX[g.lane], pY, g.c, P_PERF);
+            emitText(laneX[g.lane], pY - 30, 'PERFECT!', '#fff');
+            shake(2.5, 90);
+          } else {
+            emit(laneX[g.lane], pY, g.c, P_PASS);
+          }
+        }
+
+        multi = 1 + Math.floor(streak / 5) * 0.5;
+        const fin = Math.round(pts * multi * boostM);
+        score += fin;
+        if (fin > 1) emitText(laneX[g.lane], pY - 52, '+' + fin, 'rgba(255,255,255,.8)');
+        pSquash = 1.3;
+        updateHUD();
+      }
     }
 
     // Remove off-screen
-    if(g.y > cH + 20){
-      gates.splice(i, 1);
+    if (g.y > H + GATE_HEIGHT) gates.splice(i, 1);
+  }
+
+  // --- Spawn ---
+  let topY = Infinity;
+  for (const g of gates) if (g.y < topY) topY = g.y;
+  if (topY > gateGap - 30) spawnPair();
+
+  // --- Block countdown ---
+  if (blkLane >= 0) {
+    blkTimer++;
+    if (blkTimer > 55) {
+      blkTimer = 0;
+      blkCount--;
+      if (blkCount < -2) blkLane = -1;
     }
   }
 
-  // Near miss flash decay
-  if(nearMissFlash > 0) nearMissFlash -= dt;
+  // --- Boost decay ---
+  if (boostT > 0) { boostT--; if (boostT <= 0) boostM = 1; }
 
-  // Shake decay
-  if(shakeDur > 0){
-    shakeDur -= dt;
-    shakeX *= 0.85;
-    shakeY *= 0.85;
-    if(shakeDur <= 0){ shakeX = 0; shakeY = 0; }
+  // --- Player physics ---
+  pSquash = lerp(pSquash, 1, 0.14);
+  pVy *= 0.84;
+
+  // --- Particles ---
+  for (let i = parts.length - 1; i >= 0; i--) {
+    const p = parts[i];
+    p.x += p.vx; p.y += p.vy; p.vy += 0.06;
+    if (--p.life <= 0) parts.splice(i, 1);
   }
 
-  updateParticles(dt);
+  // --- Floating texts ---
+  for (let i = floats.length - 1; i >= 0; i--) {
+    floats[i].y -= 0.8;
+    if (--floats[i].life <= 0) floats.splice(i, 1);
+  }
+
+  // --- Shake decay ---
+  if (skT > 0) {
+    skT -= 16;
+    const f = skT / SHAKE_DUR;
+    skX = (Math.random() - 0.5) * SHAKE_INT * f;
+    skY = (Math.random() - 0.5) * SHAKE_INT * f;
+    if (skT <= 0) skX = skY = 0;
+  }
+
+  // --- Tether color ---
+  tColor = null;
+  let clo = Infinity;
+  for (const g of gates) {
+    if (g.lane === pLane && !g.passed && g.y < clo) { clo = g.y; tColor = g.c; }
+  }
 }
 
-function updateParticles(dt){
-  for(let i = particles.length - 1; i >= 0; i--){
-    const p = particles[i];
-    p.x += p.vx * 60 * dt;
-    p.y += p.vy * 60 * dt;
-    p.vy += 120 * dt; // gravity
-    p.life -= dt;
-    if(p.life <= 0) particles.splice(i, 1);
-  }
-  for(let i = rings.length - 1; i >= 0; i--){
-    const r = rings[i];
-    r.r += (r.maxR - 10) / r.maxLife * dt;
-    r.life -= dt;
-    if(r.life <= 0) rings.splice(i, 1);
-  }
-  for(let i = pops.length - 1; i >= 0; i--){
-    const p = pops[i];
-    p.y += p.vy * dt;
-    p.life -= dt;
-    if(p.life <= 0) pops.splice(i, 1);
-  }
+// ==================== GAME OVER ====================
+function gameOver() {
+  state = 'gameover';
+  shake(SHAKE_INT, SHAKE_DUR);
+  emit(laneX[pLane], pY, COLORS[0], 35);
+  if (score > best) { best = score; saveBest(best); }
+
+  overlay.innerHTML =
+    '<h1>Color Dash</h1>' +
+    '<div class="score-display">Score: ' + score + '</div>' +
+    '<div class="best-display">Best: ' + best + '</div>' +
+    '<div class="tap-msg">Tap to Retry</div>';
+  overlay.classList.add('visible');
+  hud.classList.remove('visible');
 }
 
-/* ── DRAW ── */
-function draw(){
+function updateHUD() {
+  hudScore.textContent = score;
+  hudStrk.textContent = streak >= 5 ? 'x' + multi.toFixed(1) : '';
+}
+
+// ==================== DRAWING ====================
+
+// --- Background ---
+function drawBg() {
+  const gr = ctx.createLinearGradient(0, 0, 0, H);
+  gr.addColorStop(0, '#0a0a1a');
+  gr.addColorStop(0.5, '#0f1428');
+  gr.addColorStop(1, '#0a0a1a');
+  ctx.fillStyle = gr;
+  ctx.fillRect(0, 0, W, H);
+
+  // Lane divider
+  ctx.strokeStyle = 'rgba(255,255,255,.06)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([8, 16]);
+  ctx.beginPath();
+  ctx.moveTo(W / 2, 0);
+  ctx.lineTo(W / 2, H);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+// --- Rounded rect helper ---
+function rrect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+// --- Pattern overlay ---
+function drawPat(cx, cy, w, h, pat) {
   ctx.save();
-  ctx.translate(shakeX, shakeY);
+  ctx.globalAlpha = 0.22;
+  ctx.strokeStyle = '#fff';
+  ctx.fillStyle = '#fff';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.rect(cx - w/2, cy - h/2, w, h);
+  ctx.clip();
 
-  // Background gradient
-  const bgGrad = ctx.createLinearGradient(0, 0, 0, cH);
-  bgGrad.addColorStop(0, '#0f0f23');
-  bgGrad.addColorStop(0.5, '#1a1a2e');
-  bgGrad.addColorStop(1, '#16213e');
-  ctx.fillStyle = bgGrad;
-  ctx.fillRect(-20, -20, cW + 40, cH + 40);
+  const x0 = cx - w/2, y0 = cy - h/2;
+
+  switch (pat) {
+    case 'stripes':
+      for (let i = -w; i < w*2; i += 8) {
+        ctx.beginPath(); ctx.moveTo(x0+i, y0); ctx.lineTo(x0+i+h, y0+h); ctx.stroke();
+      }
+      break;
+    case 'dots':
+      for (let dx = 6; dx < w; dx += 12)
+        for (let dy = 6; dy < h; dy += 12)
+          { ctx.beginPath(); ctx.arc(x0+dx, y0+dy, 2, 0, Math.PI*2); ctx.fill(); }
+      break;
+    case 'crosshatch':
+      for (let i = -w; i < w*2; i += 10) {
+        ctx.beginPath(); ctx.moveTo(x0+i, y0); ctx.lineTo(x0+i+h, y0+h); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x0+i+h, y0); ctx.lineTo(x0+i, y0+h); ctx.stroke();
+      }
+      break;
+    case 'diamonds':
+      for (let dx = 8; dx < w; dx += 16)
+        for (let dy = 8; dy < h; dy += 16) {
+          ctx.beginPath();
+          ctx.moveTo(x0+dx, y0+dy-5); ctx.lineTo(x0+dx+5, y0+dy);
+          ctx.lineTo(x0+dx, y0+dy+5); ctx.lineTo(x0+dx-5, y0+dy);
+          ctx.closePath(); ctx.stroke();
+        }
+      break;
+    case 'waves':
+      for (let dy = 6; dy < h; dy += 10) {
+        ctx.beginPath();
+        for (let dx = 0; dx < w; dx += 2) ctx.lineTo(x0+dx, y0+dy+Math.sin(dx*.3)*3);
+        ctx.stroke();
+      }
+      break;
+  }
+  ctx.restore();
+}
+
+// --- Icon drawing ---
+function drawIcon(x, y, type, sz) {
+  ctx.save();
+  ctx.fillStyle = '#fff';
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+
+  if (type === 'boost') {
+    // 5-point star
+    const s = sz * 0.5;
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const a = (i * 36 - 90) * Math.PI / 180;
+      const r = i % 2 === 0 ? s : s * 0.4;
+      if (i === 0) ctx.moveTo(x + Math.cos(a)*r, y + Math.sin(a)*r);
+      else ctx.lineTo(x + Math.cos(a)*r, y + Math.sin(a)*r);
+    }
+    ctx.closePath();
+    ctx.fill();
+  } else if (type === 'crack') {
+    // Warning triangle with !
+    const s = sz * 0.5;
+    ctx.beginPath();
+    ctx.moveTo(x, y - s);
+    ctx.lineTo(x + s*0.9, y + s*0.7);
+    ctx.lineTo(x - s*0.9, y + s*0.7);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.font = `bold ${s}px system-ui`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('!', x, y + 2);
+  }
+  ctx.restore();
+}
+
+// --- Gate ---
+function drawGate(g) {
+  const x = laneX[g.lane];
+  const gw = g.w, gh = GATE_HEIGHT;
+  const c = g.c;
+
+  ctx.save();
+  ctx.shadowColor = cStr(c, 0.4);
+  ctx.shadowBlur = 14;
+
+  // Body gradient
+  const gr = ctx.createLinearGradient(x - gw/2, g.y, x + gw/2, g.y);
+  gr.addColorStop(0, cStr(c, 0.15));
+  gr.addColorStop(0.5, cStr(c, 0.32));
+  gr.addColorStop(1, cStr(c, 0.15));
+  ctx.fillStyle = gr;
+
+  rrect(x - gw/2, g.y - gh/2, gw, gh, 6);
+  ctx.fill();
+
+  ctx.strokeStyle = cStr(c, 0.6);
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.restore();
+
+  // Pattern
+  drawPat(x, g.y, gw, gh, g.pat);
+
+  // Special icon
+  if (g.type !== 'normal') drawIcon(x, g.y, g.type, 20);
+
+  // Block countdown ring
+  if (blkLane === g.lane && blkCount > 0 && !g.passed) {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,60,60,.6)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(x, g.y, gw/2+10, -Math.PI/2, -Math.PI/2 + Math.PI*2*(blkCount/3));
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(255,60,60,.8)';
+    ctx.font = 'bold 12px system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(blkCount.toString(), x + gw/2+16, g.y);
+    ctx.restore();
+  }
+
+  // Block overlay
+  if (blkLane === g.lane && blkCount <= 0 && !g.passed) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,30,30,.18)';
+    ctx.fillRect(x - gw/2, g.y - gh/2, gw, gh);
+    ctx.strokeStyle = 'rgba(255,60,60,.65)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x-10, g.y-10); ctx.lineTo(x+10, g.y+10);
+    ctx.moveTo(x+10, g.y-10); ctx.lineTo(x-10, g.y+10);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+// --- Player ---
+function drawPlayer() {
+  const x = laneX[pLane], y = pY + pVy, sz = PLAYER_SIZE;
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(2 - pSquash, pSquash);
+
+  // Tether shadow/glow
+  if (tColor) { ctx.shadowColor = cStr(tColor, 0.7); ctx.shadowBlur = 22; }
+
+  // Body
+  const pc = tColor || COLORS[0];
+  const rg = ctx.createRadialGradient(0, 0, 0, 0, 0, sz);
+  rg.addColorStop(0, cStr(pc, 1));
+  rg.addColorStop(1, cStr(pc, 0.55));
+  ctx.fillStyle = rg;
+
+  rrect(-sz/2, -sz/2, sz, sz, 5);
+  ctx.fill();
+
+  // Highlight
+  ctx.fillStyle = 'rgba(255,255,255,.28)';
+  ctx.beginPath();
+  ctx.arc(0, -3, sz*0.22, 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.restore();
+
+  // Tether line
+  if (tColor && state === 'playing') {
+    let ty = 0, found = false;
+    for (const g of gates) {
+      if (g.lane === pLane && !g.passed) { ty = g.y; found = true; break; }
+    }
+    if (found && ty < y) {
+      ctx.save();
+      ctx.strokeStyle = cStr(tColor, 0.13);
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 8]);
+      ctx.beginPath();
+      ctx.moveTo(x, y - sz/2);
+      ctx.lineTo(x, ty + GATE_HEIGHT/2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+  }
+
+  // Boost aura
+  if (boostT > 0) {
+    const pu = 1 + Math.sin(Date.now()*0.01)*0.2;
+    ctx.save();
+    ctx.strokeStyle = `rgba(255,217,61,${0.3*(boostT/180)})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x, pY + pVy, sz*pu, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+// --- Particles ---
+function drawParts() {
+  for (const p of parts) {
+    const a = p.life / p.max;
+    ctx.globalAlpha = a;
+    ctx.fillStyle = typeof p.c === 'string' ? p.c : cStr(p.c, a);
+    ctx.fillRect(p.x - p.sz/2, p.y - p.sz/2, p.sz, p.sz);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// --- Floating texts ---
+function drawFloats() {
+  for (const f of floats) {
+    ctx.save();
+    ctx.globalAlpha = f.life / f.max;
+    ctx.fillStyle = f.col;
+    ctx.font = 'bold 14px system-ui';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(f.txt, f.x, f.y);
+    ctx.restore();
+  }
+}
+
+// --- Block warning ---
+function drawBlockWarn() {
+  if (blkLane >= 0 && blkCount <= 0) {
+    const bx = blkLane === 0 ? 0 : W/2;
+    const fl = 0.04 + Math.sin(Date.now()*0.008)*0.03;
+    ctx.fillStyle = `rgba(255,30,30,${fl})`;
+    ctx.fillRect(bx, 0, W/2, H);
+  }
+}
+
+// ==================== RENDER ====================
+function render() {
+  ctx.save();
+  ctx.translate(skX, skY);
+
+  drawBg();
+  drawBlockWarn();
+
+  // Gates (render order: back to front)
+  for (const g of gates) drawGate(g);
+
+  // Player
+  if (state === 'playing') drawPlayer();
+
+  // Effects
+  drawParts();
+  drawFloats();
 
   // Vignette
-  const vigGrad = ctx.createRadialGradient(cW/2, cH/2, cW*0.3, cW/2, cH/2, cW*0.9);
-  vigGrad.addColorStop(0, 'rgba(0,0,0,0)');
-  vigGrad.addColorStop(1, 'rgba(0,0,0,0.4)');
-  ctx.fillStyle = vigGrad;
-  ctx.fillRect(0, 0, cW, cH);
-
-  // Road
-  ctx.fillStyle = 'rgba(255,255,255,0.04)';
-  ctx.fillRect(ROAD_LEFT, 0, ROAD_W, cH);
-
-  // Lane separators
-  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-  ctx.lineWidth = 1;
-  ctx.setLineDash([8, 12]);
-  for(let i = 1; i < LANE_COUNT; i++){
-    const x = ROAD_LEFT + i * LANE_W;
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, cH);
-    ctx.stroke();
-  }
-  ctx.setLineDash([]);
-
-  // Road edges
-  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(ROAD_LEFT, 0); ctx.lineTo(ROAD_LEFT, cH);
-  ctx.moveTo(ROAD_RIGHT, 0); ctx.lineTo(ROAD_RIGHT, cH);
-  ctx.stroke();
-
-  if(state === 'playing' || state === 'gameover'){
-    drawGates();
-    drawPlayer();
-    drawRings();
-    drawParticles();
-    drawPops();
-    drawUI();
-
-    // Heat edge tint
-    if(heat > 40){
-      const a = (heat - 40) / 60 * 0.25;
-      ctx.fillStyle = `rgba(255,50,30,${a})`;
-      ctx.fillRect(0, 0, 8, cH);
-      ctx.fillRect(cW - 8, 0, 8, cH);
-      ctx.fillRect(0, 0, cW, 6);
-      ctx.fillRect(0, cH - 6, cW, 6);
-    }
-
-    // Near miss flash
-    if(nearMissFlash > 0){
-      ctx.fillStyle = `rgba(255,255,255,${nearMissFlash * 0.15})`;
-      ctx.fillRect(0, 0, cW, cH);
-    }
-  }
-
-  if(state === 'start') drawStartScreen();
-  if(state === 'gameover') drawGameOverScreen();
+  const vig = ctx.createRadialGradient(W/2, H/2, W*0.3, W/2, H/2, W*0.85);
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(1, 'rgba(0,0,0,.35)');
+  ctx.fillStyle = vig;
+  ctx.fillRect(0, 0, W, H);
 
   ctx.restore();
 }
 
-/* ── DRAW GATES ── */
-function drawGates(){
-  for(const g of gates){
-    for(let i = 0; i < 3; i++){
-      const lane = g.lanes[i];
-      const lx = laneLeft(i);
-      const ly = g.y;
-      const lw = LANE_W;
-      const lh = GATE_HEIGHT;
-
-      // Panel background
-      ctx.fillStyle = hsl(lane.color, 0.25);
-      ctx.fillRect(lx + 2, ly, lw - 4, lh);
-
-      // Lane type framing
-      if(lane.type === 'safe'){
-        // Clear solid border
-        ctx.strokeStyle = hsl(lane.color, 0.8);
-        ctx.lineWidth = 3;
-        ctx.strokeRect(lx + 2, ly, lw - 4, lh);
-      } else if(lane.type === 'risk'){
-        // Hatch/diagonal pattern border
-        ctx.strokeStyle = hslStr(40, 90, 60, 0.7);
-        ctx.lineWidth = 2.5;
-        ctx.strokeRect(lx + 2, ly, lw - 4, lh);
-        // Diagonal lines
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(lx + 2, ly, lw - 4, lh);
-        ctx.clip();
-        ctx.strokeStyle = hslStr(40, 90, 60, 0.2);
-        ctx.lineWidth = 1.5;
-        for(let d = -lh; d < lw + lh; d += 10){
-          ctx.beginPath();
-          ctx.moveTo(lx + 2 + d, ly);
-          ctx.lineTo(lx + 2 + d - lh, ly + lh);
-          ctx.stroke();
-        }
-        ctx.restore();
-      } else if(lane.type === 'bonus'){
-        // Shard icon border – golden glow
-        ctx.strokeStyle = 'rgba(255,220,60,0.8)';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(lx + 2, ly, lw - 4, lh);
-        // Small shard icon in corner
-        ctx.fillStyle = 'rgba(255,220,60,0.9)';
-        ctx.font = 'bold 12px sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('◇', lx + 6, ly + 14);
-      }
-
-      // Symbol in center
-      ctx.fillStyle = hsl(lane.color, 0.9);
-      ctx.font = 'bold 22px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(lane.symbol, lx + lw/2, ly + lh/2);
-
-      // Accessibility: small label under symbol
-      ctx.fillStyle = 'rgba(255,255,255,0.35)';
-      ctx.font = '8px sans-serif';
-      ctx.fillText(SYMBOL_LABELS[lane.symbol] || '', lx + lw/2, ly + lh/2 + 16);
-
-      // Lane type label at top
-      ctx.fillStyle = 'rgba(255,255,255,0.4)';
-      ctx.font = 'bold 7px sans-serif';
-      const label = lane.type === 'safe' ? 'SAFE' : lane.type === 'risk' ? 'RISK' : 'BONUS';
-      ctx.fillText(label, lx + lw/2, ly + 9);
-    }
-  }
-}
-
-/* ── DRAW PLAYER ── */
-function drawPlayer(){
-  const px = laneX(playerLane);
-  const py = cH - 90;
-
-  // Pulse when heat > 60
-  let pulseR = 0;
-  if(heat > 60){
-    pulseR = Math.sin(gameTime * 10) * 4 * ((heat - 60) / 40);
-  }
-
-  const r = PLAYER_SIZE + pulseR;
-
-  // Outline thickness scales with heat
-  const outlineW = 2 + heat / 20;
-
-  // Glow
-  ctx.shadowColor = hsl(playerColor, 0.6);
-  ctx.shadowBlur = 12 + heat * 0.15;
-
-  // Body
-  ctx.beginPath();
-  ctx.arc(px, py, r, 0, Math.PI * 2);
-  ctx.fillStyle = hsl(playerColor, 0.85);
-  ctx.fill();
-
-  // Outline
-  ctx.lineWidth = outlineW;
-  ctx.strokeStyle = hsl(playerColor, 1);
-  ctx.stroke();
-
-  ctx.shadowColor = 'transparent';
-  ctx.shadowBlur = 0;
-
-  // Symbol inside
-  ctx.fillStyle = '#fff';
-  ctx.font = `bold ${Math.round(r * 0.9)}px sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(playerSymbol, px, py + 1);
-}
-
-/* ── DRAW EFFECTS ── */
-function drawRings(){
-  for(const r of rings){
-    const a = r.life / r.maxLife;
-    ctx.beginPath();
-    ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
-    ctx.strokeStyle = typeof r.col === 'string' && r.col.startsWith('rgba') ? r.col : r.col;
-    ctx.globalAlpha = a * 0.6;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-  }
-}
-
-function drawParticles(){
-  for(const p of particles){
-    const a = p.life / p.maxLife;
-    ctx.globalAlpha = a;
-    ctx.fillStyle = p.col;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r * a, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-}
-
-function drawPops(){
-  for(const p of pops){
-    const a = p.life / p.maxLife;
-    ctx.globalAlpha = a;
-    ctx.fillStyle = p.col;
-    ctx.font = `bold 14px sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(p.text, p.x, p.y);
-  }
-  ctx.globalAlpha = 1;
-}
-
-/* ── DRAW UI ── */
-function drawUI(){
-  // Score – top center
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 28px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-  ctx.fillText(score, cW / 2, 16);
-
-  // Best – under score
-  ctx.fillStyle = 'rgba(255,255,255,0.4)';
-  ctx.font = '12px sans-serif';
-  ctx.fillText(`BEST: ${best}`, cW / 2, 48);
-
-  // Combo – top left
-  if(combo > 0){
-    ctx.fillStyle = comboMult >= 4 ? '#ffdd44' : comboMult >= 3 ? '#ff8844' : comboMult >= 2 ? '#66ddff' : '#aaa';
-    ctx.font = 'bold 16px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText(`x${comboMult}`, 12, 18);
-    ctx.fillStyle = 'rgba(255,255,255,0.35)';
-    ctx.font = '10px sans-serif';
-    ctx.fillText(`${combo} streak`, 12, 38);
-  }
-
-  // Shards – under combo
-  if(shards > 0){
-    ctx.fillStyle = '#ffdd44';
-    ctx.font = '12px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText(`◇ ${shards}`, 12, 56);
-  }
-
-  // Heat bar – top right
-  const barW = 80, barH = 10;
-  const barX = cW - barW - 12;
-  const barY = 18;
-  ctx.fillStyle = 'rgba(255,255,255,0.1)';
-  ctx.fillRect(barX, barY, barW, barH);
-
-  const heatFrac = heat / HEAT_MAX;
-  const heatColor = heatFrac > 0.7 ? '#ff3333' : heatFrac > 0.4 ? '#ff8833' : '#44cc44';
-  ctx.fillStyle = heatColor;
-  ctx.fillRect(barX, barY, barW * heatFrac, barH);
-
-  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(barX, barY, barW, barH);
-
-  ctx.fillStyle = 'rgba(255,255,255,0.5)';
-  ctx.font = '8px sans-serif';
-  ctx.textAlign = 'right';
-  ctx.fillText('HEAT', barX + barW, barY + barH + 10);
-
-  // Heat percentage
-  ctx.fillStyle = heatColor;
-  ctx.font = 'bold 10px sans-serif';
-  ctx.fillText(`${Math.round(heat)}%`, barX - 4, barY + barH - 1);
-}
-
-/* ── SCREENS ── */
-function drawStartScreen(){
-  // Dim overlay
-  ctx.fillStyle = 'rgba(0,0,0,0.3)';
-  ctx.fillRect(0, 0, cW, cH);
-
-  // Title
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 42px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('Color Dash', cW/2, cH * 0.3);
-
-  // Subtitle
-  ctx.fillStyle = 'rgba(255,255,255,0.5)';
-  ctx.font = '15px sans-serif';
-  ctx.fillText('Match colors & symbols through gates', cW/2, cH * 0.3 + 40);
-
-  // Symbols decoration
-  ctx.font = '28px sans-serif';
-  const deco = SYMBOLS.join('  ');
-  for(let i = 0; i < PALETTE.length; i++){
-    ctx.fillStyle = hsl(PALETTE[i], 0.7);
-    ctx.fillText(SYMBOLS[i], cW/2 - 60 + i * 40, cH * 0.3 + 80);
-  }
-
-  // Instructions
-  ctx.fillStyle = 'rgba(255,255,255,0.6)';
-  ctx.font = '13px sans-serif';
-  ctx.fillText('SAFE = match both (cools heat, builds combo)', cW/2, cH * 0.55);
-  ctx.fillText('RISK = partial match (adds heat)', cW/2, cH * 0.55 + 22);
-  ctx.fillText('BONUS = any lane (shard + big heat)', cW/2, cH * 0.55 + 44);
-
-  // Tap to start
-  const pulse = 0.6 + Math.sin(performance.now() * 0.004) * 0.4;
-  ctx.globalAlpha = pulse;
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 20px sans-serif';
-  ctx.fillText('Tap to Start', cW/2, cH * 0.78);
-  ctx.globalAlpha = 1;
-
-  // Best score
-  if(best > 0){
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.font = '14px sans-serif';
-    ctx.fillText(`Best: ${best}`, cW/2, cH * 0.85);
-  }
-
-  // Controls hint
-  ctx.fillStyle = 'rgba(255,255,255,0.3)';
-  ctx.font = '11px sans-serif';
-  ctx.fillText('Tap / Space / Enter to switch lanes', cW/2, cH * 0.92);
-}
-
-function drawGameOverScreen(){
-  // Overlay
-  ctx.fillStyle = 'rgba(0,0,0,0.55)';
-  ctx.fillRect(0, 0, cW, cH);
-
-  // Reason
-  ctx.fillStyle = '#ff5555';
-  ctx.font = 'bold 32px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(overReason, cW/2, cH * 0.28);
-
-  // Score
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 48px sans-serif';
-  ctx.fillText(score, cW/2, cH * 0.4);
-
-  ctx.fillStyle = 'rgba(255,255,255,0.5)';
-  ctx.font = '14px sans-serif';
-  ctx.fillText('SCORE', cW/2, cH * 0.4 - 35);
-
-  // Best
-  ctx.fillStyle = score >= best ? '#ffdd44' : 'rgba(255,255,255,0.6)';
-  ctx.font = 'bold 20px sans-serif';
-  ctx.fillText(`Best: ${best}`, cW/2, cH * 0.5);
-  if(score >= best && score > 0){
-    ctx.fillStyle = '#ffdd44';
-    ctx.font = '13px sans-serif';
-    ctx.fillText('★ NEW BEST! ★', cW/2, cH * 0.5 + 24);
-  }
-
-  // Stats
-  ctx.fillStyle = 'rgba(255,255,255,0.4)';
-  ctx.font = '13px sans-serif';
-  ctx.fillText(`Shards: ${shards}  |  Max Combo: x${comboMult}`, cW/2, cH * 0.6);
-
-  // Retry
-  const elapsed = performance.now() - retryLockTime;
-  if(elapsed > RETRY_LOCK_MS){
-    const pulse = 0.6 + Math.sin(performance.now() * 0.004) * 0.4;
-    ctx.globalAlpha = pulse;
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 20px sans-serif';
-    ctx.fillText('Tap to Retry', cW/2, cH * 0.75);
-    ctx.globalAlpha = 1;
-  } else {
-    ctx.fillStyle = 'rgba(255,255,255,0.2)';
-    ctx.font = '16px sans-serif';
-    ctx.fillText('...', cW/2, cH * 0.75);
-  }
-}
-
-/* ── GAME LOOP ── */
-let lastFrame = performance.now();
-function loop(now){
-  const dt = Math.min((now - lastFrame) / 1000, 0.05);
-  lastFrame = now;
-
-  update(dt);
-  draw();
-
+// ==================== MAIN LOOP ====================
+function loop(ts) {
+  if (!lastTs) lastTs = ts;
+  lastTs = ts;
+  update();
+  render();
   requestAnimationFrame(loop);
 }
-requestAnimationFrame(loop);
 
-})();
+// ==================== INPUT ROUTING ====================
+function handleInput() {
+  if (state === 'start') {
+    state = 'playing';
+    overlay.classList.remove('visible');
+    hud.classList.add('visible');
+    init();
+  } else if (state === 'playing') {
+    switchLane();
+  } else if (state === 'gameover') {
+    state = 'playing';
+    overlay.classList.remove('visible');
+    hud.classList.add('visible');
+    init();
+  }
+}
+
+shell.addEventListener('pointerdown', e => { e.preventDefault(); handleInput(); });
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); handleInput(); }
+});
+shell.addEventListener('contextmenu', e => e.preventDefault());
+
+// ==================== BOOT ====================
+resize();
+best = loadBest();
+requestAnimationFrame(loop);
 </script>
 </body>
 </html>
