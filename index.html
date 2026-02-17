@@ -2,801 +2,830 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Color Dash - Free HTML5 Game</title>
 <meta name="description" content="Play Color Dash - Run through color gates matching your current color. Tap to switch between colors. Speed increases every 10 points.">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0d0d2b">
+<meta name="theme-color" content="#1a1a2e">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Color Dash - Free HTML5 Game">
-<meta property="og:description" content="Run through color gates matching your current color. Tap to switch between colors. Speed increases every 10 points.">
+<meta property="og:description" content="Play Color Dash - Run through color gates matching your current color. Tap to switch between colors. Speed increases every 10 points.">
 <meta property="og:url" content="https://balinti.github.io/color-dash/">
 <meta property="og:image" content="https://balinti.github.io/color-dash/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Color Dash - Free HTML5 Game">
+<meta name="twitter:description" content="Play Color Dash - Run through color gates matching your current color. Tap to switch between colors. Speed increases every 10 points.">
+<meta name="twitter:image" content="https://balinti.github.io/color-dash/og.png">
+<link rel="canonical" href="https://balinti.github.io/color-dash/">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4099346100621490" crossorigin="anonymous"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#0a0a1a;font-family:'Segoe UI',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;color:#ccc}
-header{width:100%;max-width:420px;text-align:center;padding:6px 10px 2px;font-size:11px;color:#555;flex-shrink:0;z-index:1;letter-spacing:1px}
-header a{color:#667;text-decoration:none}
-#game-wrap{flex:1;width:100%;max-width:420px;max-height:750px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
-canvas{display:block;width:100%;height:100%;touch-action:none;cursor:pointer}
-footer{width:100%;max-width:420px;text-align:center;padding:2px 10px 6px;font-size:10px;color:#444;flex-shrink:0;z-index:1}
-#hc-btn{position:absolute;top:6px;right:6px;z-index:10;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#888;font-size:10px;padding:3px 7px;border-radius:4px;cursor:pointer;font-family:inherit;transition:all .2s}
-#hc-btn:hover{background:rgba(255,255,255,0.15)}
-#hc-btn.on{background:rgba(255,200,0,0.15);border-color:rgba(255,200,0,0.35);color:#fc0}
+html,body{width:100%;height:100%;overflow-x:hidden;background:#0a0a1a;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#fff;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
+body{display:flex;flex-direction:column;align-items:center;min-height:100svh;background:linear-gradient(170deg,#0a0a1a 0%,#16213e 40%,#0f3460 100%)}
+#game-container{position:relative;width:100%;max-width:420px;height:100svh;max-height:750px;overflow:hidden;margin:0 auto}
+canvas{display:block;width:100%;height:100%;position:absolute;top:0;left:0}
+#hud{position:absolute;top:0;left:0;right:0;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;pointer-events:none;z-index:10}
+#score-display{font-size:28px;font-weight:800;text-shadow:0 2px 8px rgba(0,0,0,0.5);letter-spacing:1px}
+#multiplier{font-size:14px;font-weight:700;color:#ffd700;margin-left:6px;opacity:0;transition:opacity 0.2s}
+#hearts{font-size:22px;letter-spacing:2px;text-shadow:0 2px 8px rgba(0,0,0,0.5)}
+#combo-display{position:absolute;top:48px;left:16px;font-size:13px;font-weight:600;color:#aaa;pointer-events:none;z-index:10;opacity:0;transition:opacity 0.3s}
+#center-overlay{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;z-index:20}
+#overlay-title{font-size:42px;font-weight:900;letter-spacing:3px;text-shadow:0 4px 20px rgba(0,0,0,0.6);margin-bottom:8px}
+#overlay-subtitle{font-size:16px;font-weight:400;color:#bbb;margin-bottom:24px}
+#overlay-prompt{font-size:18px;font-weight:600;color:#fff;opacity:0.8;animation:pulse 1.5s ease-in-out infinite}
+#challenge-banner{font-size:15px;font-weight:700;color:#ffd700;margin-bottom:12px;display:none;text-shadow:0 2px 8px rgba(255,215,0,0.3)}
+#gameover-stats{text-align:center;margin-bottom:16px;display:none}
+#gameover-stats div{font-size:14px;color:#aaa;margin:4px 0}
+#gameover-stats span{color:#fff;font-weight:700}
+#share-section{display:none;flex-direction:column;gap:8px;align-items:center;margin-top:12px;pointer-events:auto}
+#share-section button{padding:10px 24px;border:none;border-radius:24px;font-size:14px;font-weight:700;cursor:pointer;transition:transform 0.15s,opacity 0.15s}
+#share-section button:active{transform:scale(0.95)}
+#btn-share{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
+#btn-challenge{background:linear-gradient(135deg,#f093fb,#f5576c);color:#fff}
+#perfect-text{position:absolute;font-size:22px;font-weight:900;color:#ffd700;text-shadow:0 0 12px rgba(255,215,0,0.6);pointer-events:none;z-index:15;opacity:0}
+@keyframes pulse{0%,100%{opacity:0.5}50%{opacity:1}}
+
+.seo-content{max-width:420px;margin:20px auto;padding:20px 16px;color:#8899aa}
+.seo-content h2{font-size:20px;color:#ccd;margin-bottom:10px}
+.seo-content p{font-size:14px;line-height:1.6;margin-bottom:12px}
+.seo-content ul{padding-left:20px;margin-bottom:12px}
+.seo-content li{font-size:13px;line-height:1.5;margin-bottom:4px}
 </style>
 </head>
 <body>
-<header><a href="https://balinti.github.io/color-dash/">COLOR DASH</a> &mdash; Phase Lanes</header>
-<div id="game-wrap">
-<button id="hc-btn" title="High Contrast Mode">HC</button>
-<canvas id="c"></canvas>
+<div id="game-container">
+  <canvas id="gc"></canvas>
+  <div id="hud">
+    <div><span id="score-display">0</span><span id="multiplier">x1</span></div>
+    <div id="hearts">&#10084;&#10084;&#10084;</div>
+  </div>
+  <div id="combo-display">COMBO <span id="combo-val">0</span></div>
+  <div id="center-overlay">
+    <div id="challenge-banner"></div>
+    <div id="overlay-title">COLOR DASH</div>
+    <div id="overlay-subtitle">Split Decision</div>
+    <div id="gameover-stats">
+      <div>Score: <span id="stat-score">0</span></div>
+      <div>Best: <span id="stat-best">0</span></div>
+      <div>Perfects: <span id="stat-perfects">0</span></div>
+      <div>Max Combo: <span id="stat-maxcombo">0</span></div>
+    </div>
+    <div id="overlay-prompt">Tap to Start</div>
+    <div id="share-section">
+      <button id="btn-share">Share Score</button>
+      <button id="btn-challenge">Challenge a Friend</button>
+    </div>
+  </div>
+  <div id="perfect-text">PERFECT</div>
 </div>
-<footer>&copy; 2026 Color Dash &bull; Tap or Space to swap lane &amp; phase</footer>
+
+<section class="seo-content">
+  <h2>How to Play Color Dash</h2>
+  <p>Color Dash: Split Decision is a free hyper-casual HTML5 game that tests your reflexes and timing. Your runner automatically cycles through three colors &mdash; each with a unique shape for colorblind accessibility. Tap or press Space to switch lanes and match the incoming gate&rsquo;s color.</p>
+  <h2>Game Features</h2>
+  <ul>
+    <li>Simple one-tap controls &mdash; switch between left and right lanes</li>
+    <li>Auto-cycling colors with icon shapes (circle, square, triangle)</li>
+    <li>Combo system with score multiplier up to x4</li>
+    <li>Perfect hits through center boost strips for bonus points</li>
+    <li>Increasing difficulty with faster speeds and complex patterns</li>
+    <li>3-heart health system &mdash; survive mistakes and keep going</li>
+    <li>High score saved locally &mdash; challenge yourself to beat your best</li>
+    <li>Share scores and challenge friends with a link</li>
+  </ul>
+  <h2>Tips for High Scores</h2>
+  <p>Watch the color ring around your runner to anticipate which lane to be in. Aim for the center boost strip when passing through correct gates to build your combo multiplier. Plan ahead by watching the next gate&rsquo;s colors. The game speeds up over time, so stay focused and react quickly!</p>
+</section>
+
 <script>
 'use strict';
-(()=>{
+(() => {
 
-/* ═══════════════ SETUP ═══════════════ */
-const canvas = document.getElementById('c');
+// === DOM refs ===
+const canvas = document.getElementById('gc');
 const ctx = canvas.getContext('2d');
-const wrap = document.getElementById('game-wrap');
-const hcBtn = document.getElementById('hc-btn');
+const container = document.getElementById('game-container');
+const scoreDisplay = document.getElementById('score-display');
+const multiplierDisplay = document.getElementById('multiplier');
+const heartsDisplay = document.getElementById('hearts');
+const comboDisplay = document.getElementById('combo-display');
+const comboVal = document.getElementById('combo-val');
+const centerOverlay = document.getElementById('center-overlay');
+const overlayTitle = document.getElementById('overlay-title');
+const overlaySub = document.getElementById('overlay-subtitle');
+const overlayPrompt = document.getElementById('overlay-prompt');
+const challengeBanner = document.getElementById('challenge-banner');
+const gameoverStats = document.getElementById('gameover-stats');
+const shareSection = document.getElementById('share-section');
+const btnShare = document.getElementById('btn-share');
+const btnChallenge = document.getElementById('btn-challenge');
+const perfectTextEl = document.getElementById('perfect-text');
 
-let W, H, DPR;
-let HC = localStorage.getItem('cd_hc') === '1';
-if (HC) hcBtn.classList.add('on');
+const statScore = document.getElementById('stat-score');
+const statBest = document.getElementById('stat-best');
+const statPerfects = document.getElementById('stat-perfects');
+const statMaxCombo = document.getElementById('stat-maxcombo');
 
-hcBtn.addEventListener('click', e => {
-  e.stopPropagation();
-  HC = !HC;
-  localStorage.setItem('cd_hc', HC ? '1' : '0');
-  hcBtn.classList.toggle('on', HC);
+// === Constants ===
+const TEAMS = [
+  { h: 0,   s: 75, l: 55, icon: 'circle',   label: '\u25CF' },
+  { h: 130, s: 65, l: 45, icon: 'square',   label: '\u25A0' },
+  { h: 220, s: 75, l: 55, icon: 'triangle', label: '\u25B2' },
+];
+const LS_KEY = 'colorDash_splitDecision_best';
+const HEART_FULL = '\u2764';
+const HEART_EMPTY = '\u2661';
+const MAX_MULT = 4;
+const COMBO_FOR_MULT = [0, 3, 8, 15];
+const COLOR_CYCLE_BASE = 0.7;
+const BASE_SPEED = 2.8;
+const GATE_SPACING_BASE = 240;
+const PERFECT_STRIP_FRAC = 0.14;
+
+// === Game state ===
+let W, H, dpr;
+let state = 'start';
+let score, bestScore, hp, combo, maxCombo, perfects, multiplier;
+let lane;
+let laneX, targetLaneX, laneSwapT;
+let playerY;
+let playerColor;
+let colorTimer, colorCycleSpeed;
+let speed;
+let gates, particles, trailParticles;
+let shakeX, shakeY, shakeDur, shakeIntensity;
+let invulnTimer;
+let slowmoTimer, slowmoFactor;
+let perfectAnim;
+let distanceTraveled;
+let lastTime;
+let vignetteAlpha;
+let challengeScore = null;
+let nextGateId;
+let startAnimTime = 0;
+
+// === Resize ===
+function resize() {
+  const rect = container.getBoundingClientRect();
+  dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+  W = rect.width;
+  H = rect.height;
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  playerY = H * 0.75;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// === Helpers ===
+function hsl(team, a) {
+  const t = TEAMS[team];
+  if (a !== undefined) return 'hsla(' + t.h + ',' + t.s + '%,' + t.l + '%,' + a + ')';
+  return 'hsl(' + t.h + ',' + t.s + '%,' + t.l + '%)';
+}
+function hslBright(team) {
+  const t = TEAMS[team];
+  return 'hsl(' + t.h + ',' + t.s + '%,' + Math.min(t.l + 20, 85) + '%)';
+}
+function hslDark(team) {
+  const t = TEAMS[team];
+  return 'hsl(' + t.h + ',' + t.s + '%,' + Math.max(t.l - 15, 10) + '%)';
+}
+function laneCenter(l) { return W * (l === 0 ? 0.27 : 0.73); }
+function getLaneWidth() { return W * 0.40; }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+function easeOutBack(t) {
+  const c1 = 1.70158, c3 = c1 + 1;
+  return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+}
+function easeOutQuad(t) { return 1 - (1 - t) * (1 - t); }
+function rand(a, b) { return a + Math.random() * (b - a); }
+function randInt(a, b) { return Math.floor(rand(a, b + 1)); }
+
+// === Draw icon ===
+function drawIcon(cx, cy, r, team, alpha) {
+  ctx.globalAlpha = alpha !== undefined ? alpha : 1;
+  const icon = TEAMS[team].icon;
+  ctx.fillStyle = '#fff';
+  if (icon === 'circle') {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (icon === 'square') {
+    const s = r * 1.6;
+    ctx.fillRect(cx - s / 2, cy - s / 2, s, s);
+  } else {
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - r * 1.1);
+    ctx.lineTo(cx + r, cy + r * 0.7);
+    ctx.lineTo(cx - r, cy + r * 0.7);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+// === Particles ===
+function spawnParticles(x, y, color, count, spd, life) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const v = rand(1, spd);
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * v,
+      vy: Math.sin(angle) * v - rand(0.5, 2),
+      life: rand(life * 0.5, life),
+      maxLife: life,
+      color,
+      r: rand(2, 5),
+    });
+  }
+}
+
+function spawnTrail(x, y, color) {
+  trailParticles.push({
+    x, y, life: 0.35, maxLife: 0.35, color, r: rand(3, 7),
+  });
+}
+
+// === Gate generation ===
+function createGate(y) {
+  let leftTeam = randInt(0, 2);
+  let rightTeam;
+  do { rightTeam = randInt(0, 2); } while (rightTeam === leftTeam);
+  return {
+    id: nextGateId++,
+    y,
+    leftTeam,
+    rightTeam,
+    passed: false,
+    squash: 0,
+    height: 54,
+  };
+}
+
+function refillGates() {
+  const topBound = -H;
+  let topY = gates.length > 0 ? gates[gates.length - 1].y : playerY - 200;
+
+  const spacing = Math.max(GATE_SPACING_BASE - distanceTraveled * 0.015, 130);
+
+  while (topY > topBound) {
+    topY -= spacing;
+    gates.push(createGate(topY));
+  }
+}
+
+// === Shake ===
+function triggerShake(intensity, duration) {
+  shakeIntensity = Math.max(shakeIntensity, intensity);
+  shakeDur = Math.max(shakeDur, duration);
+}
+
+// === Perfect anim ===
+function showPerfect(x, y) {
+  perfectAnim = { x, y, t: 0, dur: 0.9 };
+}
+
+// === Init ===
+function initGame() {
+  score = 0;
+  hp = 3;
+  combo = 0;
+  maxCombo = 0;
+  perfects = 0;
+  multiplier = 1;
+  lane = 0;
+  laneX = laneCenter(0);
+  targetLaneX = laneX;
+  laneSwapT = 1;
+  playerColor = 0;
+  colorTimer = 0;
+  colorCycleSpeed = COLOR_CYCLE_BASE;
+  speed = BASE_SPEED;
+  gates = [];
+  particles = [];
+  trailParticles = [];
+  shakeX = 0; shakeY = 0; shakeDur = 0; shakeIntensity = 0;
+  invulnTimer = 0;
+  slowmoTimer = 0;
+  slowmoFactor = 1;
+  perfectAnim = null;
+  distanceTraveled = 0;
+  vignetteAlpha = 0;
+  nextGateId = 0;
+  refillGates();
+  updateHUD();
+}
+
+// === HUD ===
+function updateHUD() {
+  scoreDisplay.textContent = score;
+  multiplierDisplay.textContent = 'x' + multiplier;
+  multiplierDisplay.style.opacity = multiplier > 1 ? '1' : '0';
+
+  let h = '';
+  for (let i = 0; i < 3; i++) h += i < hp ? HEART_FULL : HEART_EMPTY;
+  heartsDisplay.textContent = h;
+
+  if (combo > 1) {
+    comboDisplay.style.opacity = '1';
+    comboVal.textContent = combo;
+  } else {
+    comboDisplay.style.opacity = '0';
+  }
+}
+
+function updateMultiplier() {
+  let m = 1;
+  for (let i = COMBO_FOR_MULT.length - 1; i >= 0; i--) {
+    if (combo >= COMBO_FOR_MULT[i]) { m = i + 1; break; }
+  }
+  multiplier = Math.min(m, MAX_MULT);
+}
+
+// === State ===
+function setState(s) {
+  state = s;
+  if (s === 'start') {
+    centerOverlay.style.display = 'flex';
+    overlayTitle.textContent = 'COLOR DASH';
+    overlaySub.textContent = 'Split Decision';
+    overlayPrompt.textContent = 'Tap to Start';
+    overlayPrompt.style.display = 'block';
+    gameoverStats.style.display = 'none';
+    shareSection.style.display = 'none';
+
+    const params = new URLSearchParams(window.location.search);
+    const ch = params.get('challenge');
+    if (ch && !isNaN(parseInt(ch))) {
+      challengeScore = parseInt(ch);
+      challengeBanner.textContent = '\uD83C\uDFAF Beat ' + challengeScore + ' points!';
+      challengeBanner.style.display = 'block';
+    } else {
+      challengeBanner.style.display = 'none';
+    }
+  } else if (s === 'playing') {
+    centerOverlay.style.display = 'none';
+    perfectTextEl.style.opacity = '0';
+    initGame();
+  } else if (s === 'gameover') {
+    bestScore = Math.max(score, bestScore);
+    try { localStorage.setItem(LS_KEY, String(bestScore)); } catch(e) {}
+
+    centerOverlay.style.display = 'flex';
+    overlayTitle.textContent = 'GAME OVER';
+    overlaySub.textContent = '';
+    overlayPrompt.textContent = 'Tap to Retry';
+    overlayPrompt.style.display = 'block';
+
+    statScore.textContent = score;
+    statBest.textContent = bestScore;
+    statPerfects.textContent = perfects;
+    statMaxCombo.textContent = maxCombo;
+    gameoverStats.style.display = 'block';
+    shareSection.style.display = 'flex';
+
+    triggerShake(10, 0.5);
+    spawnParticles(laneX, playerY, hsl(playerColor), 35, 7, 1.2);
+  }
+}
+
+// === Input ===
+function handleInput(e) {
+  if (e) e.preventDefault();
+  if (state === 'start') {
+    setState('playing');
+  } else if (state === 'playing') {
+    lane = lane === 0 ? 1 : 0;
+    targetLaneX = laneCenter(lane);
+    laneSwapT = 0;
+  } else if (state === 'gameover') {
+    setState('playing');
+  }
+}
+
+container.addEventListener('pointerdown', handleInput);
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' || e.code === 'Enter') handleInput(e);
 });
 
-function resize() {
-  const r = wrap.getBoundingClientRect();
-  W = r.width; H = r.height;
-  DPR = Math.min(window.devicePixelRatio || 1, 3);
-  canvas.width = W * DPR;
-  canvas.height = H * DPR;
-}
-resize();
-window.addEventListener('resize', resize);
-
-/* ═══════════════ COLORS ═══════════════ */
-function colSolid()     { return HC ? '#00ddff' : '#4499ff'; }
-function colSolidLt()   { return HC ? '#88eeff' : '#88bbff'; }
-function colGhost()     { return HC ? '#ffaa00' : '#ff8844'; }
-function colGhostLt()   { return HC ? '#ffcc55' : '#ffaa66'; }
-function colNeutral()   { return HC ? '#ff1144' : '#ff3366'; }
-function colCorrect()   { return '#44ff88'; }
-function colWrong()     { return '#ff5544'; }
-
-/* ═══════════════ CONSTANTS ═══════════════ */
-const PLAYER_R = 15;
-const OBS_H = 30;
-const GATE_H = 20;
-const LANE_PAD = 12;
-const MAX_COMBO = 12;
-const SPAWN_BASE = 230;
-const SPAWN_MIN = 105;
-
-/* ═══════════════ STATE ═══════════════ */
-let state = 'start';
-let score, best, combo, comboTimer, comboPulse, comboDisplay;
-let speed, baseSpeed, distance, spawnDist;
-let playerLane, playerPhase, playerY;
-let obstacles, particles, textPops, motionLines;
-let shakeX, shakeY, shakeMag;
-let freezeTimer, deathFlash, nearMissTimer;
-let gridOffset, startPulse, lastTime;
-
-best = parseInt(localStorage.getItem('cd_best')) || 0;
-
-function laneX(l) {
-  const lw = (W - LANE_PAD * 3) / 2;
-  return LANE_PAD + lw / 2 + l * (lw + LANE_PAD);
-}
-function laneW() { return (W - LANE_PAD * 3) / 2; }
-
-function initState() {
-  score = 0; combo = 1; comboTimer = 0; comboPulse = 0; comboDisplay = 1;
-  speed = 2.5; baseSpeed = 2.5; distance = 0; spawnDist = 0;
-  playerLane = 0; playerPhase = 0;
-  playerY = H * 0.78;
-  obstacles = []; particles = []; textPops = []; motionLines = [];
-  shakeX = 0; shakeY = 0; shakeMag = 0;
-  freezeTimer = 0; deathFlash = 0; nearMissTimer = 0;
-  gridOffset = 0; startPulse = 0;
-}
-
-/* ═══════════════ SPAWNING ═══════════════ */
-function spawnObstacle() {
-  const d = distance;
-  const lw = laneW();
-  const types = ['solid', 'ghost', 'neutral', 'gate'];
-  let wt;
-  if (d < 600)       wt = [3, 3, 0.5, 3];
-  else if (d < 2000) wt = [3, 3, 1.5, 2.5];
-  else               wt = [3, 3, 2.5, 2];
-
-  const tot = wt.reduce((a, b) => a + b, 0);
-  let r = Math.random() * tot;
-  let type = 'solid';
-  for (let i = 0; i < types.length; i++) {
-    r -= wt[i];
-    if (r <= 0) { type = types[i]; break; }
+// === Share ===
+btnShare.addEventListener('pointerdown', (e) => {
+  e.stopPropagation();
+  const text = 'I scored ' + score + ' in Color Dash! Can you beat me?\n' +
+    window.location.origin + window.location.pathname + '?challenge=' + score;
+  if (navigator.share) {
+    navigator.share({ title: 'Color Dash', text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => {
+      btnShare.textContent = 'Copied!';
+      setTimeout(() => { btnShare.textContent = 'Share Score'; }, 1500);
+    }).catch(() => {});
   }
+});
 
-  if (type === 'gate') {
-    // Split gate after score 100
-    if (d > 4000 && Math.random() < 0.18) {
-      obstacles.push({ type:'gate', lane:0, gatePhase:0, x:laneX(0), y:-GATE_H, w:lw-8, h:GATE_H, passed:false });
-      obstacles.push({ type:'gate', lane:1, gatePhase:1, x:laneX(1), y:-GATE_H, w:lw-8, h:GATE_H, passed:false });
-      return;
+btnChallenge.addEventListener('pointerdown', (e) => {
+  e.stopPropagation();
+  const url = window.location.origin + window.location.pathname + '?challenge=' + score;
+  if (navigator.share) {
+    navigator.share({ title: 'Beat my Color Dash score!', text: 'Can you beat ' + score + ' points?', url }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(url).then(() => {
+      btnChallenge.textContent = 'Link Copied!';
+      setTimeout(() => { btnChallenge.textContent = 'Challenge a Friend'; }, 1500);
+    }).catch(() => {});
+  }
+});
+
+// === Damage ===
+function takeDamage() {
+  if (invulnTimer > 0) return;
+  hp--;
+  combo = 0;
+  multiplier = 1;
+  invulnTimer = 1.5;
+  vignetteAlpha = 0.6;
+  triggerShake(5, 0.3);
+  spawnParticles(laneX, playerY, '#ff4444', 18, 5, 0.7);
+  updateHUD();
+  if (hp <= 0) setState('gameover');
+}
+
+// === Gate check ===
+function checkGatePass(gate) {
+  if (gate.passed) return;
+  const gTop = gate.y;
+  const gBot = gate.y + gate.height;
+  const pTop = playerY - 14;
+  const pBot = playerY + 14;
+
+  if (gBot >= pTop && gTop <= pBot) {
+    gate.passed = true;
+    const myTeam = lane === 0 ? gate.leftTeam : gate.rightTeam;
+
+    if (myTeam === playerColor) {
+      // Check perfect
+      const lc = laneCenter(lane);
+      const lw = getLaneWidth();
+      const stripHalf = lw * PERFECT_STRIP_FRAC / 2;
+      const isPerfect = Math.abs(laneX - lc) < stripHalf;
+
+      combo++;
+      if (combo > maxCombo) maxCombo = combo;
+      updateMultiplier();
+
+      let pts = multiplier;
+      if (isPerfect) {
+        pts += 2;
+        perfects++;
+        slowmoTimer = 0.18;
+        slowmoFactor = 0.25;
+        showPerfect(laneX, playerY - 45);
+        triggerShake(2.5, 0.12);
+        spawnParticles(laneX, playerY, '#ffd700', 14, 5, 0.8);
+      }
+
+      score += pts;
+      gate.squash = 1;
+      spawnParticles(laneX, playerY - 5, hsl(playerColor), 10, 3.5, 0.5);
+
+      // Difficulty ramp every 10 points
+      speed = BASE_SPEED + Math.floor(score / 10) * 0.35;
+      speed = Math.min(speed, 10);
+      colorCycleSpeed = Math.max(COLOR_CYCLE_BASE - Math.floor(score / 10) * 0.04, 0.32);
+    } else {
+      takeDamage();
     }
-    const gp = Math.random() < 0.5 ? 0 : 1;
-    const lane = Math.floor(Math.random() * 2);
-    obstacles.push({ type:'gate', lane, gatePhase:gp, x:laneX(lane), y:-GATE_H, w:lw-8, h:GATE_H, passed:false });
+    updateHUD();
+  }
+}
+
+// === Update ===
+function update(dt) {
+  if (state !== 'playing') {
+    startAnimTime += dt;
+    // Idle particles on start screen
+    if (state === 'start' && Math.random() < 0.05) {
+      const sx = rand(20, W - 20);
+      const sy = rand(H * 0.3, H * 0.5);
+      spawnParticles(sx, sy, hsl(randInt(0, 2), 0.4), 2, 1.5, 0.8);
+    }
+    // Update particles even when not playing
+    updateParticles(dt);
     return;
   }
 
-  // Can place in one or both lanes
-  if (Math.random() < 0.3 && d > 900) {
-    for (let l = 0; l < 2; l++) {
-      obstacles.push({ type, lane:l, x:laneX(l), y:-OBS_H, w:lw-10, h:OBS_H, passed:false });
-    }
+  // Slowmo
+  let effDt = dt;
+  if (slowmoTimer > 0) {
+    slowmoTimer -= dt;
+    effDt = dt * slowmoFactor;
+  }
+
+  // Color cycling
+  colorTimer += effDt;
+  if (colorTimer >= colorCycleSpeed) {
+    colorTimer -= colorCycleSpeed;
+    playerColor = (playerColor + 1) % 3;
+  }
+
+  // Lane easing
+  if (laneSwapT < 1) {
+    laneSwapT = Math.min(laneSwapT + effDt * 8, 1);
+  }
+  const easedT = easeOutBack(clamp(laneSwapT, 0, 1));
+  laneX = lerp(laneX, targetLaneX, easedT * 0.35);
+  if (Math.abs(laneX - targetLaneX) < 0.3) laneX = targetLaneX;
+
+  // Move gates
+  const moveAmt = speed * 60 * effDt;
+  distanceTraveled += moveAmt;
+
+  for (let i = gates.length - 1; i >= 0; i--) {
+    const g = gates[i];
+    g.y += moveAmt;
+    if (g.squash > 0) g.squash = Math.max(g.squash - effDt * 5, 0);
+    checkGatePass(g);
+    if (g.y > H + 120) gates.splice(i, 1);
+  }
+
+  refillGates();
+
+  // Invuln
+  if (invulnTimer > 0) invulnTimer -= dt;
+
+  // Vignette
+  if (vignetteAlpha > 0) vignetteAlpha = Math.max(vignetteAlpha - dt * 1.5, 0);
+
+  // Shake
+  if (shakeDur > 0) {
+    shakeDur -= dt;
+    shakeX = (Math.random() - 0.5) * shakeIntensity * 2;
+    shakeY = (Math.random() - 0.5) * shakeIntensity * 2;
+    shakeIntensity *= 0.9;
   } else {
-    const lane = Math.floor(Math.random() * 2);
-    obstacles.push({ type, lane, x:laneX(lane), y:-OBS_H, w:lw-10, h:OBS_H, passed:false });
-  }
-}
-
-/* ═══════════════ INPUT ═══════════════ */
-function swap() {
-  playerLane = 1 - playerLane;
-  playerPhase = 1 - playerPhase;
-  for (let i = 0; i < 8; i++) {
-    const a = Math.random() * Math.PI * 2;
-    particles.push({
-      x: laneX(playerLane), y: playerY,
-      vx: Math.cos(a) * (1 + Math.random() * 3),
-      vy: Math.sin(a) * (1 + Math.random() * 3),
-      life: 0.25 + Math.random() * 0.15, maxLife: 0.4,
-      r: 2 + Math.random() * 2,
-      color: playerPhase === 0 ? colSolid() : colGhost()
-    });
-  }
-}
-
-function handleInput() {
-  if (state === 'start') { initState(); state = 'playing'; }
-  else if (state === 'playing') { swap(); }
-  else if (state === 'gameover') { initState(); state = 'playing'; }
-}
-
-canvas.addEventListener('pointerdown', e => { e.preventDefault(); handleInput(); });
-document.addEventListener('keydown', e => {
-  if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); handleInput(); }
-});
-
-/* ═══════════════ COLLISION ═══════════════ */
-function circRect(cx, cy, cr, rx, ry, rw, rh) {
-  const nx = Math.max(rx - rw/2, Math.min(cx, rx + rw/2));
-  const ny = Math.max(ry - rh/2, Math.min(cy, ry + rh/2));
-  const dx = cx - nx, dy = cy - ny;
-  return dx*dx + dy*dy < cr*cr;
-}
-
-/* ═══════════════ EFFECTS ═══════════════ */
-function die() {
-  state = 'gameover';
-  if (score > best) { best = score; localStorage.setItem('cd_best', best); }
-  shakeMag = 14; freezeTimer = 0.12; deathFlash = 0.35;
-  for (let i = 0; i < 35; i++) {
-    const a = Math.random() * Math.PI * 2;
-    const sp = 1 + Math.random() * 6;
-    particles.push({
-      x: laneX(playerLane), y: playerY,
-      vx: Math.cos(a)*sp, vy: Math.sin(a)*sp,
-      life: 0.5 + Math.random() * 0.5, maxLife: 1,
-      r: 2 + Math.random() * 5,
-      color: playerPhase === 0 ? colSolid() : colGhost()
-    });
-  }
-  // White shards
-  for (let i = 0; i < 10; i++) {
-    const a = Math.random() * Math.PI * 2;
-    particles.push({
-      x: laneX(playerLane), y: playerY,
-      vx: Math.cos(a)*4, vy: Math.sin(a)*4 - 2,
-      life: 0.4, maxLife: 0.4, r: 1.5 + Math.random() * 2, color: '#fff'
-    });
-  }
-}
-
-function spawnGateParticles(x, y, correct) {
-  const col = correct ? colCorrect() : colWrong();
-  const n = correct ? 14 : 10;
-  for (let i = 0; i < n; i++) {
-    const a = Math.random() * Math.PI * 2;
-    const sp = 1 + Math.random() * 3.5;
-    particles.push({
-      x, y, vx: Math.cos(a)*sp, vy: Math.sin(a)*sp - 1.5,
-      life: 0.35 + Math.random() * 0.25, maxLife: 0.6,
-      r: 2 + Math.random() * 3, color: col
-    });
-  }
-}
-
-function spawnNearMissParticles(x, y) {
-  for (let i = 0; i < 6; i++) {
-    particles.push({
-      x, y, vx: (Math.random()-0.5)*4, vy: -1.5 - Math.random()*2,
-      life: 0.3, maxLife: 0.3, r: 1.5 + Math.random()*1.5, color: '#ffff44'
-    });
-  }
-}
-
-function addTextPop(text, x, y, color, size) {
-  textPops.push({ text, x, y, vy: -1.8, life: 0.9, maxLife: 0.9, color, scale: 1.3, size: size || 13 });
-}
-
-/* ═══════════════ UPDATE ═══════════════ */
-function update(dt) {
-  startPulse += dt;
-  if (state !== 'playing') return;
-  if (freezeTimer > 0) { freezeTimer -= dt; return; }
-
-  const moveAmt = speed * 60 * dt;
-  distance += moveAmt;
-  gridOffset = (gridOffset + moveAmt) % 40;
-
-  // Speed ramp
-  baseSpeed = 2.5 + distance * 0.00008;
-  speed = baseSpeed;
-
-  // Spawning
-  spawnDist += moveAmt;
-  const spawnInt = Math.max(SPAWN_MIN, SPAWN_BASE - distance * 0.006);
-  if (spawnDist >= spawnInt) {
-    spawnDist -= spawnInt;
-    spawnObstacle();
+    shakeX = 0; shakeY = 0;
   }
 
-  const px = laneX(playerLane);
-  const py = playerY;
+  // Trail
+  if (Math.random() < 0.6) {
+    spawnTrail(laneX + rand(-5, 5), playerY + 14, hsl(playerColor, 0.25));
+  }
 
-  for (let i = obstacles.length - 1; i >= 0; i--) {
-    const o = obstacles[i];
-    o.y += moveAmt;
+  updateParticles(dt);
 
-    // Pass detection
-    if (!o.passed && o.y - o.h/2 > py + PLAYER_R) {
-      o.passed = true;
-
-      if (o.type === 'gate') {
-        if (o.lane === playerLane) {
-          const correct = o.gatePhase === playerPhase;
-          if (correct) {
-            combo = Math.min(combo + 1, MAX_COMBO);
-            comboTimer = 2; comboPulse = 0.35;
-            speed = baseSpeed + 0.4;
-            spawnGateParticles(o.x, o.y, true);
-            addTextPop('+' + combo, o.x, o.y - 18, colCorrect(), 15);
-            if (combo >= 5) addTextPop('BOOST!', o.x + 20, o.y - 30, '#fff', 11);
-          } else {
-            const old = combo;
-            combo = 1; comboTimer = 0;
-            spawnGateParticles(o.x, o.y, false);
-            if (old > 2) addTextPop('BREAK!', o.x, o.y - 18, colWrong(), 14);
-          }
-        }
-      } else {
-        // Score for passing obstacles
-        score += combo;
-      }
+  // Perfect text
+  if (perfectAnim) {
+    perfectAnim.t += dt;
+    if (perfectAnim.t >= perfectAnim.dur) {
+      perfectAnim = null;
+      perfectTextEl.style.opacity = '0';
+    } else {
+      const prog = perfectAnim.t / perfectAnim.dur;
+      perfectTextEl.style.left = (perfectAnim.x - 44) + 'px';
+      perfectTextEl.style.top = (perfectAnim.y - prog * 55) + 'px';
+      perfectTextEl.style.opacity = String(Math.max(1 - prog * 1.3, 0));
+      perfectTextEl.style.transform = 'scale(' + (1 + prog * 0.3) + ')';
     }
-
-    // Near-miss detection for phased-through obstacles
-    if (!o.passed && o.type !== 'gate' && o.lane === playerLane) {
-      const canHurt = (o.type === 'neutral') ||
-                      (o.type === 'solid' && playerPhase === 0) ||
-                      (o.type === 'ghost' && playerPhase === 1);
-      if (!canHurt) {
-        const dy = Math.abs(o.y - py);
-        if (dy < OBS_H * 0.7 && dy > OBS_H * 0.15 && nearMissTimer <= 0) {
-          nearMissTimer = 0.35;
-          spawnNearMissParticles(px, py);
-          addTextPop('PHASE!', px + (Math.random()-0.5)*30, py - 18, '#ffff44', 11);
-          // Small combo bump on near-miss
-          if (combo < MAX_COMBO) { combo = Math.min(combo + 0.5, MAX_COMBO); comboTimer = 2; }
-        }
-      }
-    }
-
-    // Collision check
-    if (o.type !== 'gate' && o.lane === playerLane && !o.passed) {
-      const canCollide = (o.type === 'neutral') ||
-                         (o.type === 'solid' && playerPhase === 0) ||
-                         (o.type === 'ghost' && playerPhase === 1);
-      if (canCollide && circRect(px, py, PLAYER_R, o.x, o.y, o.w, o.h)) {
-        die(); return;
-      }
-    }
-
-    if (o.y > H + 60) obstacles.splice(i, 1);
-  }
-
-  // Combo decay
-  if (comboTimer > 0) {
-    comboTimer -= dt;
-    if (comboTimer <= 0 && combo > 1) { combo = Math.max(1, combo - 1); comboTimer = 2; }
-  }
-  nearMissTimer -= dt;
-
-  // Motion lines
-  if (Math.random() < speed * 0.06) {
-    motionLines.push({
-      x: Math.random() * W, y: -10,
-      len: 10 + speed * 4 + Math.random() * 15,
-      speed: speed * 50 + Math.random() * 80,
-      life: 0.4 + Math.random() * 0.4
-    });
   }
 }
 
-function updateEffects(dt) {
-  // Particles
+function updateParticles(dt) {
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
-    p.x += p.vx * 60 * dt;
-    p.y += p.vy * 60 * dt;
-    p.vy += 1.5 * dt; // tiny gravity
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 2.5 * dt;
     p.life -= dt;
     if (p.life <= 0) particles.splice(i, 1);
   }
-  // Text pops
-  for (let i = textPops.length - 1; i >= 0; i--) {
-    const t = textPops[i];
-    t.y += t.vy * 60 * dt;
-    t.life -= dt;
-    t.scale = Math.max(0.8, t.scale - dt * 0.6);
-    if (t.life <= 0) textPops.splice(i, 1);
-  }
-  // Motion lines
-  for (let i = motionLines.length - 1; i >= 0; i--) {
-    const m = motionLines[i];
-    m.y += m.speed * dt;
-    m.life -= dt;
-    if (m.life <= 0 || m.y > H + 30) motionLines.splice(i, 1);
-  }
-  // Shake decay
-  if (shakeMag > 0) {
-    shakeMag *= Math.pow(0.85, 60 * dt);
-    shakeX = (Math.random() - 0.5) * shakeMag * 2;
-    shakeY = (Math.random() - 0.5) * shakeMag * 2;
-    if (shakeMag < 0.3) { shakeMag = 0; shakeX = 0; shakeY = 0; }
-  }
-  if (deathFlash > 0) deathFlash -= dt * 1.5;
-  if (comboPulse > 0) comboPulse -= dt;
-  comboDisplay += (Math.floor(combo) - comboDisplay) * Math.min(1, 6 * dt);
-}
-
-/* ═══════════════ DRAWING ═══════════════ */
-function drawBg() {
-  const hue = (startPulse * 8) % 360;
-  const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, `hsl(${(hue+220)%360},25%,7%)`);
-  g.addColorStop(1, `hsl(${(hue+240)%360},30%,4%)`);
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, W, H);
-
-  // Grid
-  ctx.strokeStyle = 'rgba(255,255,255,0.025)';
-  ctx.lineWidth = 1;
-  const gs = 40;
-  for (let y = (gridOffset % gs) - gs; y < H + gs; y += gs) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-  }
-  for (let x = 0; x < W; x += gs) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
-  }
-
-  // Lane divider
-  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
-  ctx.lineWidth = 2;
-  ctx.setLineDash([10, 10]);
-  ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); ctx.stroke();
-  ctx.setLineDash([]);
-
-  // Motion lines
-  for (const m of motionLines) {
-    const a = Math.min(1, m.life) * 0.25;
-    ctx.strokeStyle = `rgba(255,255,255,${a})`;
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(m.x, m.y); ctx.lineTo(m.x, m.y - m.len); ctx.stroke();
+  for (let i = trailParticles.length - 1; i >= 0; i--) {
+    const p = trailParticles[i];
+    p.life -= dt;
+    if (p.life <= 0) trailParticles.splice(i, 1);
   }
 }
 
-function drawPlayer() {
-  const px = laneX(playerLane);
-  const py = playerY;
-  const col = playerPhase === 0 ? colSolid() : colGhost();
-
-  // Glow
-  const glow = ctx.createRadialGradient(px, py, PLAYER_R * 0.2, px, py, PLAYER_R * 3);
-  glow.addColorStop(0, col + '55');
-  glow.addColorStop(1, 'transparent');
-  ctx.fillStyle = glow;
-  ctx.beginPath(); ctx.arc(px, py, PLAYER_R * 3, 0, Math.PI * 2); ctx.fill();
-
-  if (playerPhase === 0) {
-    // SOLID: filled circle + filled square icon
-    ctx.fillStyle = col;
-    ctx.beginPath(); ctx.arc(px, py, PLAYER_R, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(px, py, PLAYER_R, 0, Math.PI * 2); ctx.stroke();
-    ctx.fillStyle = '#fff';
-    const s = 6;
-    ctx.fillRect(px - s, py - s, s * 2, s * 2);
-  } else {
-    // GHOST: outlined circle + circle icon
-    ctx.strokeStyle = col; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(px, py, PLAYER_R, 0, Math.PI * 2); ctx.stroke();
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.arc(px, py, PLAYER_R + 0.5, 0, Math.PI * 2); ctx.stroke();
-    // Dashed inner to reinforce "ghost"
-    ctx.setLineDash([4, 3]);
-    ctx.strokeStyle = col + '88'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(px, py, PLAYER_R - 3, 0, Math.PI * 2); ctx.stroke();
-    ctx.setLineDash([]);
-    // Circle icon
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2); ctx.stroke();
-  }
-}
-
-function drawObstacle(o) {
-  const a = o.passed ? 0.25 : 1;
-  ctx.save();
-  ctx.globalAlpha = a;
-
-  if (o.type === 'solid') {
-    ctx.fillStyle = colSolid();
-    ctx.fillRect(o.x - o.w/2, o.y - o.h/2, o.w, o.h);
-    ctx.strokeStyle = colSolidLt(); ctx.lineWidth = 1.5;
-    ctx.strokeRect(o.x - o.w/2, o.y - o.h/2, o.w, o.h);
-    // Filled square icon
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.fillRect(o.x - 5, o.y - 5, 10, 10);
-    // Label
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx.font = 'bold 8px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-    ctx.fillText('SOLID', o.x, o.y + o.h/2 - 2);
-  } else if (o.type === 'ghost') {
-    ctx.strokeStyle = colGhost(); ctx.lineWidth = 2.5;
-    ctx.setLineDash([6, 4]);
-    ctx.strokeRect(o.x - o.w/2, o.y - o.h/2, o.w, o.h);
-    ctx.setLineDash([]);
-    // Outlined circle icon
-    ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.arc(o.x, o.y, 5, 0, Math.PI * 2); ctx.stroke();
-    // Label
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx.font = 'bold 8px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-    ctx.fillText('GHOST', o.x, o.y + o.h/2 - 2);
-  } else if (o.type === 'neutral') {
-    ctx.fillStyle = colNeutral();
-    // Diamond shape
-    ctx.beginPath();
-    ctx.moveTo(o.x, o.y - o.h/2);
-    ctx.lineTo(o.x + o.w/2, o.y);
-    ctx.lineTo(o.x, o.y + o.h/2);
-    ctx.lineTo(o.x - o.w/2, o.y);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
-    // Warning icon
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('!', o.x, o.y + 1);
-  } else if (o.type === 'gate') {
-    const gcol = o.gatePhase === 0 ? colSolid() : colGhost();
-    const glt = o.gatePhase === 0 ? colSolidLt() : colGhostLt();
-    // Gate background
-    ctx.fillStyle = gcol + '33';
-    ctx.fillRect(o.x - o.w/2, o.y - o.h/2, o.w, o.h);
-    // Gate border with glow
-    ctx.shadowColor = gcol; ctx.shadowBlur = 8;
-    ctx.strokeStyle = glt; ctx.lineWidth = 2;
-    ctx.strokeRect(o.x - o.w/2, o.y - o.h/2, o.w, o.h);
-    ctx.shadowBlur = 0;
-    // Chevron arrows
-    ctx.fillStyle = glt;
-    const cx = o.x, cy = o.y;
-    // Left chevron
-    ctx.beginPath();
-    ctx.moveTo(o.x - o.w/2 + 5, cy - 4); ctx.lineTo(o.x - o.w/2 + 11, cy); ctx.lineTo(o.x - o.w/2 + 5, cy + 4);
-    ctx.fill();
-    // Right chevron
-    ctx.beginPath();
-    ctx.moveTo(o.x + o.w/2 - 5, cy - 4); ctx.lineTo(o.x + o.w/2 - 11, cy); ctx.lineTo(o.x + o.w/2 - 5, cy + 4);
-    ctx.fill();
-    // Phase icon in center
-    if (o.gatePhase === 0) {
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(cx - 4, cy - 4, 8, 8);
-    } else {
-      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2); ctx.stroke();
-    }
-  }
-  ctx.restore();
-}
-
-function drawParticles() {
-  for (const p of particles) {
-    const a = Math.max(0, p.life / p.maxLife);
-    ctx.globalAlpha = a;
-    ctx.fillStyle = p.color;
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (0.5 + a * 0.5), 0, Math.PI * 2); ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-}
-
-function drawTextPops() {
-  for (const t of textPops) {
-    const a = Math.max(0, t.life / t.maxLife);
-    ctx.globalAlpha = a;
-    ctx.fillStyle = t.color;
-    ctx.font = `bold ${Math.round(t.size * t.scale)}px sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    // Shadow for readability
-    ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 4;
-    ctx.fillText(t.text, t.x, t.y);
-    ctx.shadowBlur = 0;
-  }
-  ctx.globalAlpha = 1;
-}
-
-function drawHUD() {
-  // Score
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 24px sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-  ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 6;
-  ctx.fillText(score, 14, 14);
-  ctx.shadowBlur = 0;
-
-  // Best
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
-  ctx.font = '11px sans-serif';
-  ctx.fillText('BEST: ' + best, 14, 42);
-
-  // Combo
-  const cd = Math.floor(comboDisplay);
-  if (cd > 1) {
-    const ps = 1 + Math.max(0, comboPulse) * 0.6;
-    ctx.save();
-    ctx.translate(W - 14, 28);
-    ctx.scale(ps, ps);
-    ctx.fillStyle = colCorrect();
-    ctx.font = 'bold 22px sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-    ctx.shadowColor = colCorrect() + '66'; ctx.shadowBlur = 10;
-    ctx.fillText('x' + cd, 0, 0);
-    ctx.shadowBlur = 0;
-    ctx.restore();
-  }
-
-  // Phase indicator
-  const pcol = playerPhase === 0 ? colSolid() : colGhost();
-  const plbl = playerPhase === 0 ? 'SOLID' : 'GHOST';
-  ctx.fillStyle = pcol;
-  ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  ctx.fillText(plbl, W / 2, 10);
-
-  // Phase icon
-  if (playerPhase === 0) {
-    ctx.fillStyle = pcol;
-    ctx.fillRect(W/2 + 24, 12, 8, 8);
-  } else {
-    ctx.strokeStyle = pcol; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.arc(W/2 + 28, 16, 4, 0, Math.PI * 2); ctx.stroke();
-  }
-
-  // Lane indicator arrows at bottom
-  ctx.fillStyle = 'rgba(255,255,255,0.15)';
-  ctx.font = '16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-  const arrowY = H - 8;
-  if (playerLane === 0) {
-    ctx.fillStyle = pcol + '44';
-    ctx.fillText('\u25C0', W * 0.25, arrowY);
-  } else {
-    ctx.fillStyle = pcol + '44';
-    ctx.fillText('\u25B6', W * 0.75, arrowY);
-  }
-}
-
-function drawStartScreen() {
-  drawBg();
-
-  const cy = H * 0.28;
-  // Title
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 38px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.shadowColor = 'rgba(100,150,255,0.3)'; ctx.shadowBlur = 20;
-  ctx.fillText('COLOR DASH', W/2, cy);
-  ctx.shadowBlur = 0;
-
-  ctx.fillStyle = 'rgba(255,255,255,0.45)';
-  ctx.font = '15px sans-serif';
-  ctx.fillText('Phase Lanes', W/2, cy + 30);
-
-  // Instructions
-  const iy = H * 0.46;
-  ctx.fillStyle = 'rgba(255,255,255,0.65)';
-  ctx.font = '12px sans-serif';
-  ctx.fillText('Tap / Space to swap lane & phase', W/2, iy);
-
-  // Visual legend
-  const ly = iy + 35;
-  // Solid
-  ctx.fillStyle = colSolid();
-  ctx.fillRect(W/2 - 85, ly - 6, 12, 12);
-  ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.textAlign = 'left';
-  ctx.font = '11px sans-serif';
-  ctx.fillText('SOLID phase', W/2 - 68, ly + 2);
-
-  // Ghost
-  ctx.strokeStyle = colGhost(); ctx.lineWidth = 2;
-  ctx.setLineDash([4, 3]);
-  ctx.strokeRect(W/2 - 85, ly + 16, 12, 12);
-  ctx.setLineDash([]);
-  ctx.fillStyle = 'rgba(255,255,255,0.55)';
-  ctx.fillText('GHOST phase', W/2 - 68, ly + 24);
-
-  // Neutral
-  ctx.fillStyle = colNeutral();
-  ctx.beginPath();
-  ctx.moveTo(W/2 - 79, ly + 38); ctx.lineTo(W/2 - 73, ly + 44);
-  ctx.lineTo(W/2 - 79, ly + 50); ctx.lineTo(W/2 - 85, ly + 44);
-  ctx.closePath(); ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,0.55)';
-  ctx.fillText('SPIKE - always deadly!', W/2 - 68, ly + 46);
-
-  // Gate
-  ctx.fillStyle = colSolid() + '44';
-  ctx.fillRect(W/2 - 85, ly + 58, 12, 12);
-  ctx.strokeStyle = colSolidLt(); ctx.lineWidth = 1.5;
-  ctx.strokeRect(W/2 - 85, ly + 58, 12, 12);
-  ctx.fillStyle = 'rgba(255,255,255,0.55)';
-  ctx.fillText('GATE - match phase for combo', W/2 - 68, ly + 66);
-
-  // Tap to start
-  const pulse = 0.4 + Math.sin(startPulse * 3.5) * 0.6;
-  ctx.textAlign = 'center';
-  ctx.fillStyle = `rgba(255,255,255,${Math.max(0.3, pulse)})`;
-  ctx.font = 'bold 20px sans-serif';
-  ctx.fillText('TAP TO START', W/2, H * 0.82);
-
-  if (best > 0) {
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
-    ctx.font = '13px sans-serif';
-    ctx.fillText('Best: ' + best, W/2, H * 0.88);
-  }
-}
-
-function drawGameOverScreen() {
-  ctx.fillStyle = 'rgba(0,0,0,0.55)';
-  ctx.fillRect(0, 0, W, H);
-
-  const cy = H * 0.35;
-  ctx.fillStyle = '#ff4466';
-  ctx.font = 'bold 34px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.shadowColor = 'rgba(255,50,80,0.4)'; ctx.shadowBlur = 15;
-  ctx.fillText('GAME OVER', W/2, cy);
-  ctx.shadowBlur = 0;
-
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 52px sans-serif';
-  ctx.fillText(score, W/2, cy + 58);
-
-  ctx.fillStyle = 'rgba(255,255,255,0.45)';
-  ctx.font = '15px sans-serif';
-  ctx.fillText('Best: ' + best, W/2, cy + 100);
-
-  if (score >= best && score > 0) {
-    ctx.fillStyle = '#ffcc44';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.shadowColor = 'rgba(255,200,0,0.3)'; ctx.shadowBlur = 10;
-    ctx.fillText('NEW BEST!', W/2, cy + 125);
-    ctx.shadowBlur = 0;
-  }
-
-  // Combo reached
-  const cd = Math.floor(combo);
-  if (cd > 1) {
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx.font = '12px sans-serif';
-    ctx.fillText('Max combo: x' + cd, W/2, cy + 145);
-  }
-
-  const pulse = 0.4 + Math.sin(startPulse * 3.5) * 0.6;
-  ctx.fillStyle = `rgba(255,255,255,${Math.max(0.3, pulse)})`;
-  ctx.font = 'bold 19px sans-serif';
-  ctx.fillText('TAP TO RETRY', W/2, H * 0.75);
-}
-
-function draw() {
-  ctx.save();
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  ctx.clearRect(0, 0, W, H);
-
-  if (state === 'start') {
-    drawStartScreen();
-    ctx.restore();
-    return;
-  }
-
-  // Shake
+// === Render ===
+function render() {
   ctx.save();
   ctx.translate(shakeX, shakeY);
 
-  drawBg();
+  // Background
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+  bgGrad.addColorStop(0, '#080818');
+  bgGrad.addColorStop(0.5, '#0e0e2a');
+  bgGrad.addColorStop(1, '#080818');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(-20, -20, W + 40, H + 40);
 
-  // Draw obstacles sorted by y (further first)
-  for (const o of obstacles) drawObstacle(o);
-
-  drawParticles();
-  drawTextPops();
-
-  if (state === 'playing') drawPlayer();
-
-  ctx.restore(); // shake
-
-  // Death flash overlay
-  if (deathFlash > 0) {
-    ctx.fillStyle = `rgba(255,40,40,${Math.max(0, deathFlash * 0.5)})`;
-    ctx.fillRect(0, 0, W, H);
+  // Lane backgrounds
+  for (let l = 0; l < 2; l++) {
+    const lc = laneCenter(l);
+    const lw = getLaneWidth();
+    ctx.fillStyle = 'rgba(255,255,255,0.015)';
+    ctx.fillRect(lc - lw / 2, 0, lw, H);
   }
 
-  // HUD always on top
-  if (state === 'playing') drawHUD();
+  // Center divider
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([10, 14]);
+  ctx.beginPath();
+  ctx.moveTo(W / 2, 0);
+  ctx.lineTo(W / 2, H);
+  ctx.stroke();
+  ctx.setLineDash([]);
 
-  if (state === 'gameover') {
-    // Faded player
-    ctx.save();
-    ctx.translate(shakeX, shakeY);
-    ctx.globalAlpha = 0.25;
-    drawPlayer();
-    ctx.globalAlpha = 1;
-    ctx.restore();
-    drawHUD();
-    drawGameOverScreen();
+  // Road tick marks
+  if (state === 'playing') {
+    ctx.fillStyle = 'rgba(255,255,255,0.035)';
+    const tickSpacing = 45;
+    const offset = distanceTraveled % tickSpacing;
+    for (let y = -tickSpacing + offset; y < H + tickSpacing; y += tickSpacing) {
+      for (let l = 0; l < 2; l++) {
+        const lc = laneCenter(l);
+        ctx.fillRect(lc - 8, y, 16, 2);
+      }
+    }
+  }
+
+  // Trail particles
+  for (const p of trailParticles) {
+    const a = p.life / p.maxLife;
+    ctx.globalAlpha = a * 0.35;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r * a, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // Gates
+  for (const g of gates) {
+    if (g.y > H + 60 || g.y + g.height < -60) continue;
+    const gh = g.height;
+    const squashScaleY = g.squash > 0 ? 1 - g.squash * 0.35 : 1;
+    const squashScaleX = g.squash > 0 ? 1 + g.squash * 0.12 : 1;
+
+    for (let l = 0; l < 2; l++) {
+      const team = l === 0 ? g.leftTeam : g.rightTeam;
+      const lc = laneCenter(l);
+      const lw = getLaneWidth();
+
+      ctx.save();
+      ctx.translate(lc, g.y + gh / 2);
+      ctx.scale(squashScaleX, squashScaleY);
+
+      const halfW = lw / 2 - 6;
+      const halfH = gh / 2 - 2;
+
+      // Gate fill
+      ctx.fillStyle = hsl(team, 0.18);
+      ctx.beginPath();
+      ctx.roundRect(-halfW, -halfH, halfW * 2, halfH * 2, 10);
+      ctx.fill();
+
+      // Gate border
+      ctx.strokeStyle = hsl(team, 0.65);
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(-halfW, -halfH, halfW * 2, halfH * 2, 10);
+      ctx.stroke();
+
+      // Perfect strip glow
+      const stripW = lw * PERFECT_STRIP_FRAC;
+      ctx.fillStyle = 'rgba(255,215,0,0.1)';
+      ctx.fillRect(-stripW / 2, -halfH, stripW, halfH * 2);
+
+      // Side color bars
+      ctx.fillStyle = hsl(team, 0.55);
+      ctx.fillRect(-halfW, -halfH, 5, halfH * 2);
+      ctx.fillRect(halfW - 5, -halfH, 5, halfH * 2);
+
+      // Icon
+      drawIcon(0, 0, 10, team, 0.75);
+
+      ctx.restore();
+    }
+  }
+
+  // Particles
+  for (const p of particles) {
+    const a = p.life / p.maxLife;
+    ctx.globalAlpha = a;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r * a, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // Player
+  if (state === 'playing' || state === 'gameover') {
+    const flash = invulnTimer > 0 && Math.sin(invulnTimer * 22) > 0;
+    if (!flash) {
+      const px = laneX;
+      const py = playerY;
+
+      // Outer ring - current color
+      ctx.strokeStyle = hsl(playerColor);
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(px, py, 26, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Progress arc - next color preview
+      const prog = colorTimer / colorCycleSpeed;
+      const nextC = (playerColor + 1) % 3;
+      ctx.strokeStyle = hsl(nextC, 0.45);
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(px, py, 26, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * prog);
+      ctx.stroke();
+
+      // Body glow
+      ctx.shadowColor = hsl(playerColor);
+      ctx.shadowBlur = 20;
+
+      // Body gradient
+      const grad = ctx.createRadialGradient(px, py - 2, 0, px, py, 16);
+      grad.addColorStop(0, hslBright(playerColor));
+      grad.addColorStop(1, hslDark(playerColor));
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(px, py, 15, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.shadowBlur = 0;
+
+      // Icon
+      drawIcon(px, py, 6, playerColor, 0.95);
+    }
+  }
+
+  // Start screen runner preview
+  if (state === 'start') {
+    const t = startAnimTime;
+    const previewY = H * 0.55;
+    for (let i = 0; i < 3; i++) {
+      const px = W * 0.22 + i * W * 0.28;
+      const py = previewY + Math.sin(t * 2.5 + i * 2.1) * 8;
+      const a = 0.35 + Math.sin(t * 1.5 + i) * 0.15;
+
+      ctx.strokeStyle = hsl(i, a);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(px, py, 18, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = hsl(i, a);
+      ctx.beginPath();
+      ctx.arc(px, py, 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      drawIcon(px, py, 5, i, a);
+    }
+  }
+
+  // Vignette
+  if (vignetteAlpha > 0.01) {
+    const vGrad = ctx.createRadialGradient(W / 2, H / 2, W * 0.15, W / 2, H / 2, W * 0.9);
+    vGrad.addColorStop(0, 'rgba(255,0,0,0)');
+    vGrad.addColorStop(1, 'rgba(255,0,0,' + vignetteAlpha + ')');
+    ctx.fillStyle = vGrad;
+    ctx.fillRect(-20, -20, W + 40, H + 40);
   }
 
   ctx.restore();
 }
 
-/* ═══════════════ GAME LOOP ═══════════════ */
-function gameLoop(ts) {
-  if (!lastTime) lastTime = ts;
-  let dt = (ts - lastTime) / 1000;
-  lastTime = ts;
-  dt = Math.min(dt, 0.05);
+// === Game Loop ===
+function loop(timestamp) {
+  if (!lastTime) lastTime = timestamp;
+  let dt = (timestamp - lastTime) / 1000;
+  lastTime = timestamp;
+  dt = Math.min(dt, 0.06);
 
-  resize();
   update(dt);
-  updateEffects(dt);
-  draw();
-
-  requestAnimationFrame(gameLoop);
+  render();
+  requestAnimationFrame(loop);
 }
 
-// Initialize for start screen
-startPulse = 0;
-lastTime = 0;
-requestAnimationFrame(gameLoop);
+// === Init ===
+try { bestScore = parseInt(localStorage.getItem(LS_KEY)) || 0; } catch(e) { bestScore = 0; }
+
+// Init arrays for start-screen particle rendering
+particles = [];
+trailParticles = [];
+shakeX = 0; shakeY = 0; shakeDur = 0; shakeIntensity = 0;
+
+setState('start');
+requestAnimationFrame(loop);
 
 })();
 </script>
