@@ -2,688 +2,745 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Color Dash - Free HTML5 Game</title>
 <meta name="description" content="Play Color Dash - Run through color gates matching your current color. Tap to switch between colors. Speed increases every 10 points.">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0b1020">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://balinti.github.io/color-dash/">
+<meta name="theme-color" content="#1a1a2e">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Color Dash - Free HTML5 Game">
-<meta property="og:description" content="Tap to flip between Sun and Moon modes. Match gates, grab bonuses, build multiplier combos. How far can you glide?">
-<meta property="og:url" content="https://Balinti.github.io/color-dash/">
-<meta property="og:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='315' viewBox='0 0 600 315'%3E%3Crect fill='%230b1020' width='600' height='315'/%3E%3Ctext x='300' y='130' text-anchor='middle' font-size='64' fill='%23f4c542'%3E%E2%98%80%3C/text%3E%3Ctext x='300' y='210' text-anchor='middle' font-size='64' fill='%2388ccff'%3E%E2%98%BD%3C/text%3E%3Ctext x='300' y='285' text-anchor='middle' font-size='30' fill='white' font-family='sans-serif'%3EColor Dash%3C/text%3E%3C/svg%3E">
-<script type="application/ld+json">
-{
-  "@context":"https://schema.org",
-  "@type":"VideoGame",
-  "name":"Color Dash",
-  "description":"A hyper-casual HTML5 game. Tap to flip between Sun and Moon modes, match color gates, grab bonuses, and build multiplier combos.",
-  "genre":"Casual",
-  "gamePlatform":"Web Browser",
-  "applicationCategory":"Game",
-  "operatingSystem":"Any",
-  "url":"https://Balinti.github.io/color-dash/",
-  "playMode":"SinglePlayer",
-  "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}
-}
-</script>
+<meta property="og:description" content="Play Color Dash - Run through color gates matching your current color. Tap to switch between colors. Speed increases every 10 points.">
+<meta property="og:url" content="https://balinti.github.io/color-dash/">
+<meta property="og:image" content="https://balinti.github.io/color-dash/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Color Dash - Free HTML5 Game">
+<meta name="twitter:description" content="Play Color Dash - Run through color gates matching your current color. Tap to switch between colors. Speed increases every 10 points.">
+<meta name="twitter:image" content="https://balinti.github.io/color-dash/og.jpg">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4099346100621490" crossorigin="anonymous"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#0b1020;font-family:'Segoe UI',system-ui,sans-serif;color:#eee;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
-#wrap{position:relative;max-width:420px;width:100%;height:100vh;max-height:750px;margin:0 auto;overflow:hidden}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a0a1a;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#fff;touch-action:none;user-select:none;-webkit-user-select:none}
+#game-container{position:relative;max-width:420px;max-height:750px;width:100%;height:100vh;margin:0 auto;padding-bottom:70px;overflow:hidden}
 canvas{display:block;width:100%;height:100%}
-#about{position:fixed;bottom:0;left:0;right:0;background:rgba(11,16,32,.96);max-width:420px;margin:0 auto;font-size:12px;line-height:1.5;z-index:10}
-#about summary{padding:8px 14px;cursor:pointer;font-size:13px;color:#aaa}
-#about .inner{padding:4px 14px 14px;color:#888;max-height:200px;overflow-y:auto}
-@media(min-height:760px){#wrap{margin-top:calc((100vh - 750px)/2)}}
+#hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:20px 18px 0;pointer-events:none;z-index:2}
+#hud .score{font-size:30px;font-weight:800;text-shadow:0 2px 10px rgba(0,0,0,.6)}
+#hud .combo{font-size:13px;font-weight:600;opacity:.85;margin-top:2px;text-shadow:0 1px 4px rgba(0,0,0,.5)}
+#hud .right-col{text-align:right}
+#hud .shield-indicator{font-size:16px;text-shadow:0 1px 4px rgba(0,0,0,.5)}
+#hud .high-score{font-size:12px;opacity:.5;margin-top:2px}
+.overlay{position:absolute;top:0;left:0;right:0;bottom:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;pointer-events:auto;background:rgba(10,10,26,.88);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.overlay.hidden{display:none;pointer-events:none}
+.overlay h1{font-size:38px;font-weight:800;letter-spacing:-1.5px;background:linear-gradient(135deg,#6366f1,#ec4899,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.overlay h2{font-size:24px;font-weight:700;margin-bottom:4px}
+.overlay .subtitle{font-size:15px;opacity:.6;margin-top:4px;margin-bottom:28px;font-weight:400}
+.overlay .score-display{font-size:52px;font-weight:800;margin:8px 0 4px}
+.overlay .stats{font-size:13px;opacity:.55;margin-bottom:22px}
+.overlay .new-best{color:#fbbf24;font-size:14px;font-weight:700;margin-bottom:8px}
+.overlay .btn{padding:14px 40px;font-size:16px;font-weight:700;border:none;border-radius:14px;cursor:pointer;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;margin:5px;transition:transform .1s,box-shadow .1s;box-shadow:0 4px 20px rgba(99,102,241,.35);letter-spacing:.3px}
+.overlay .btn:hover{box-shadow:0 6px 25px rgba(99,102,241,.5)}
+.overlay .btn:active{transform:scale(.96)}
+.overlay .btn.secondary{background:rgba(255,255,255,.1);box-shadow:none;font-size:13px;padding:10px 26px;border-radius:10px}
+.overlay .btn.secondary:hover{background:rgba(255,255,255,.15)}
+.overlay .hint{font-size:11px;opacity:.35;margin-top:18px;line-height:1.4;max-width:260px;text-align:center}
+.overlay .new-best.hidden{display:none}
+#seo-block{max-width:420px;margin:20px auto;padding:18px 22px;color:#777;font-size:13px;line-height:1.7;background:#0f0f1a;border-radius:10px;display:none}
+#seo-block strong{color:#aaa}
+@media(min-height:820px){#seo-block{display:block}}
 </style>
 </head>
 <body>
-<div id="wrap"><canvas id="c"></canvas></div>
-<details id="about">
-<summary>About Color Dash</summary>
-<div class="inner">
-<p><strong>Color Dash</strong> is a free hyper-casual HTML5 game. Tap or press Space/Enter to flip between <em>Sun &#9728;</em> and <em>Moon &#9789;</em> modes. Match the correct gate to score points.</p>
-<p>Grab risky <strong>bonus gates</strong> for multiplier combos and overdrive charge. Wrong gates break your shield energy. Lose all energy and it's game over!</p>
-<p><strong>Controls:</strong> Tap the screen, or press Space / Enter to switch mode.</p>
-<p><strong>Tips:</strong> Bonus gates are tighter but build your multiplier up to x8 and charge overdrive. Safe gates are wider with smaller rewards. Decoy gates appear later as visual tricks - they're faint and won't collide.</p>
-<p><strong>Accessibility:</strong> Keyboard-friendly, high-contrast glyphs, works on mobile and desktop browsers.</p>
+<div id="game-container">
+  <canvas id="gc"></canvas>
+  <div id="hud">
+    <div>
+      <div class="score" id="hud-score">0</div>
+      <div class="combo" id="hud-combo"></div>
+    </div>
+    <div class="right-col">
+      <div class="shield-indicator" id="hud-shield"></div>
+      <div class="high-score" id="hud-high"></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="start-screen">
+    <h1>Color Dash</h1>
+    <div class="subtitle">Split Decision</div>
+    <button class="btn" id="btn-start">Play</button>
+    <div class="hint">
+      Tap or press Space to switch lanes<br>
+      Match your color to the gate<br>
+      Your color changes to whatever you pass
+    </div>
+    <div style="font-size:11px;opacity:.3;margin-top:14px" id="start-high"></div>
+  </div>
+
+  <div class="overlay hidden" id="gameover-screen">
+    <h2>Game Over</h2>
+    <div class="score-display" id="go-score">0</div>
+    <div class="new-best hidden" id="go-newbest">New Best!</div>
+    <div class="stats" id="go-stats"></div>
+    <button class="btn" id="btn-retry">Play Again</button>
+    <button class="btn secondary" id="btn-share">Challenge a Friend</button>
+  </div>
 </div>
-</details>
+
+<div id="seo-block">
+  <strong>How to Play Color Dash</strong><br>
+  Tap or press Space/Enter to switch between left and right lanes. Match your runner&rsquo;s color and symbol to the incoming gate. Your color changes to whatever gate you pass through, so plan ahead! Build combos by staying in one lane, and aim for perfect near-miss switches for bonus points.<br><br>
+  <strong>Tips</strong><br>
+  &bull; Start slow: learn the color&ndash;symbol pairs (Red = Triangle, Blue = Circle, Yellow = Stripe).<br>
+  &bull; Watch upcoming gate colors to plan your lane switches.<br>
+  &bull; You get one shield per run &mdash; save it for tricky double-pair bursts!<br>
+  &bull; Speed increases every 10 points; stay focused.<br><br>
+  <strong>Accessibility</strong><br>
+  Each color has a unique shape symbol for colorblind-friendly play. The game supports both touch and keyboard input (Space or Enter).
+</div>
+
 <script>
 'use strict';
-(function(){
+(()=>{
 
-/* ════ Helpers ════ */
-var clamp=function(v,lo,hi){return v<lo?lo:v>hi?hi:v};
-var lerp=function(a,b,t){return a+(b-a)*t};
-var rand=function(lo,hi){return Math.random()*(hi-lo)+lo};
-var hsl=function(h,s,l){return'hsl('+((h%360+360)%360)+','+s+'%,'+l+'%)'};
-var hsla=function(h,s,l,a){return'hsla('+((h%360+360)%360)+','+s+'%,'+l+'%,'+a+')'};
-var TAU=Math.PI*2;
+/* ── DOM refs ── */
+const canvas = document.getElementById('gc');
+const ctx    = canvas.getContext('2d');
+const container    = document.getElementById('game-container');
+const hudScore     = document.getElementById('hud-score');
+const hudCombo     = document.getElementById('hud-combo');
+const hudShield    = document.getElementById('hud-shield');
+const hudHigh      = document.getElementById('hud-high');
+const startScreen  = document.getElementById('start-screen');
+const gameoverScreen = document.getElementById('gameover-screen');
+const goScore      = document.getElementById('go-score');
+const goNewBest    = document.getElementById('go-newbest');
+const goStats      = document.getElementById('go-stats');
+const btnStart     = document.getElementById('btn-start');
+const btnRetry     = document.getElementById('btn-retry');
+const btnShare     = document.getElementById('btn-share');
+const startHighEl  = document.getElementById('start-high');
 
-/* ════ Constants ════ */
-var LS_KEY='color_dash_highscore_v1';
-var MAX_DPR=2;
-var DESIGN_W=420,DESIGN_H=750;
+/* ── Color definitions (colorblind-friendly symbols) ── */
+const COLORS = [
+  { name:'Red',    h:0,   s:72, l:58, symbol:'triangle' },
+  { name:'Blue',   h:220, s:72, l:58, symbol:'circle'   },
+  { name:'Yellow', h:48,  s:90, l:58, symbol:'stripe'   }
+];
 
-var SUN_HUE=45,MOON_HUE=200;
-var SUN_GLYPH='\u2600',MOON_GLYPH='\u263D';
+/* ── State ── */
+let W, H, dpr;
+let state = 'start';
+let score, combo, maxCombo, shields, lean;
+let runnerColor;
+let gates       = [];
+let particles   = [];
+let trailSparks = [];
+let ringPulses  = [];
+let screenShake = { x:0, y:0, t:0, mag:0, dur:0 };
+let flashAlpha  = 0;
+let perfectActive = false;
+let perfectTimer  = 0;
+let hueShift    = 0;
+let gameTime    = 0;
+let speed, baseSpeed;
+let gateTimer   = 0;
+let highScore   = parseInt(localStorage.getItem('cd_sd_hi')) || 0;
+let lastTime    = 0;
+let animId      = 0;
+let leanSwitchTime = 0; // time since last lean switch (for perfect detection)
 
-var ENERGY_MAX=2;
-var MULTI_MAX=8;
-var OVERDRIVE_DUR=3.5;
-var FLIP_CD=0.12;
-var INPUT_BUFFER_WINDOW=0.14;
-var GATE_WIN_SAFE=54;
-var GATE_WIN_BONUS_BASE=36;
+/* ── Constants ── */
+const RUNNER_Y   = 0.78;
+const LANE_OFF   = 0.22;
+const GATE_W     = 0.36;
+const GATE_H     = 52;
+const RUNNER_R   = 22;
+const MAX_PARTS  = 180;
+const MAX_TRAIL  = 50;
+const MAX_RINGS  = 8;
 
-/* ════ Canvas ════ */
-var canvas=document.getElementById('c');
-var ctx=canvas.getContext('2d');
-var wrap=document.getElementById('wrap');
-var dpr=1,cw=DESIGN_W,ch=DESIGN_H,scaleX=1,scaleY=1;
-
-function resize(){
-  var r=wrap.getBoundingClientRect();
-  cw=r.width;ch=r.height;
-  dpr=Math.min(window.devicePixelRatio||1,MAX_DPR);
-  canvas.width=Math.round(cw*dpr);
-  canvas.height=Math.round(ch*dpr);
-  scaleX=cw/DESIGN_W;
-  scaleY=ch/DESIGN_H;
+/* ── Resize ── */
+function resize() {
+  const r = container.getBoundingClientRect();
+  dpr = window.devicePixelRatio || 1;
+  W = r.width;
+  H = r.height - 70;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
-window.addEventListener('resize',resize);
+window.addEventListener('resize', resize);
 resize();
 
-/* ════ State ════ */
-var state='start';
-var score=0,best=0;
-try{best=parseInt(localStorage.getItem(LS_KEY))||0}catch(e){}
-var dist=0;
-var mode=0; // 0=SUN, 1=MOON
-var energy=ENERGY_MAX;
-var multiplier=1;
-var odCharge=0,odActive=false,odTimer=0;
-var flipCD=0;
-var lastInputT=0,inputBuffered=false;
-var bgHue=220;
-var gameTime=0;
-
-/* Shake */
-var shakeX=0,shakeY=0,shakeI=0;
-
-/* Hitstop */
-var hitstopT=0;
-
-/* Gates */
-var gates=[];
-var gateSpawnAcc=0;
-var gateId=0;
-
-/* Particles */
-var particles=[];
-
-/* Player */
-var PX=DESIGN_W/2,PY=DESIGN_H*0.82,PR=18;
-
-/* ════ Mode helpers ════ */
-function modeHue(){return mode===0?SUN_HUE:MOON_HUE}
-function modeGlyph(){return mode===0?SUN_GLYPH:MOON_GLYPH}
-function gateHue(m){return m===0?SUN_HUE:MOON_HUE}
-function gateGlyph(m){return m===0?SUN_GLYPH:MOON_GLYPH}
-
-/* ════ Difficulty ════ */
-function diff(){
-  var t=clamp(dist/28000,0,1);
-  return{
-    speed:lerp(2.4,5.8,t),
-    interval:lerp(105,55,t),
-    bonusOff:lerp(8,60,t),
-    bonusWin:lerp(GATE_WIN_BONUS_BASE,18,clamp(t*1.4,0,1)),
-    decoyP:lerp(0,0.38,clamp((t-0.2)/0.8,0,1))
-  };
+/* ── Helpers ── */
+function hsl(ci, a) {
+  const c = COLORS[ci];
+  const h = (c.h + hueShift) % 360;
+  return a !== undefined
+    ? `hsla(${h},${c.s}%,${c.l}%,${a})`
+    : `hsl(${h},${c.s}%,${c.l}%)`;
 }
 
-/* ════ Gate spawn ════ */
-function spawnGate(){
-  var d=diff();
-  var isBonus=Math.random()<0.42;
-  var gMode=Math.random()<0.5?0:1;
-  var bOff=isBonus?d.bonusOff:0;
-  var win=isBonus?d.bonusWin:GATE_WIN_SAFE;
-  gates.push({
-    id:gateId++,y:-65-bOff,
-    mode:gMode,bonus:isBonus,
-    win:win,scored:false,
-    w:isBonus?rand(85,115):rand(125,170),
-    decoy:false
-  });
-  if(d.decoyP>0&&Math.random()<d.decoyP){
-    gates.push({
-      id:gateId++,y:-65-rand(0,35),
-      mode:Math.random()<0.5?0:1,
-      bonus:false,win:GATE_WIN_SAFE,
-      scored:true,w:rand(100,140),
-      decoy:true
+function rr(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+function laneX(side) {
+  return W / 2 + (side === 0 ? -1 : 1) * W * LANE_OFF;
+}
+
+function runnerY() { return H * RUNNER_Y; }
+
+/* ── Draw symbols ── */
+function drawSym(cx, cy, sz, ci, style) {
+  const c = COLORS[ci];
+  ctx.save();
+  if (style === 'white') {
+    ctx.strokeStyle = 'rgba(255,255,255,.9)';
+    ctx.fillStyle   = 'rgba(255,255,255,.9)';
+    ctx.lineWidth   = 2.2;
+  } else {
+    ctx.fillStyle   = '#fff';
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth   = 2;
+  }
+  if (c.symbol === 'triangle') {
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - sz * 0.5);
+    ctx.lineTo(cx + sz * 0.45, cy + sz * 0.35);
+    ctx.lineTo(cx - sz * 0.45, cy + sz * 0.35);
+    ctx.closePath();
+    style === 'white' ? ctx.stroke() : ctx.fill();
+  } else if (c.symbol === 'circle') {
+    ctx.beginPath();
+    ctx.arc(cx, cy, sz * 0.38, 0, Math.PI * 2);
+    style === 'white' ? ctx.stroke() : ctx.fill();
+  } else {
+    const w = sz * 0.38;
+    const th = style === 'white' ? 2.5 : 4;
+    for (let i = -1; i <= 1; i++) {
+      ctx.fillRect(cx - w, cy + i * sz * 0.24 - th/2, w * 2, th);
+    }
+  }
+  ctx.restore();
+}
+
+/* ── Colored symbol for gates ── */
+function drawSymColored(cx, cy, sz, ci, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha || 1;
+  ctx.fillStyle   = hsl(ci);
+  ctx.strokeStyle = hsl(ci);
+  ctx.lineWidth   = 2.5;
+  const c = COLORS[ci];
+  if (c.symbol === 'triangle') {
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - sz * 0.5);
+    ctx.lineTo(cx + sz * 0.45, cy + sz * 0.35);
+    ctx.lineTo(cx - sz * 0.45, cy + sz * 0.35);
+    ctx.closePath();
+    ctx.fill();
+  } else if (c.symbol === 'circle') {
+    ctx.beginPath();
+    ctx.arc(cx, cy, sz * 0.38, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    const w = sz * 0.38;
+    for (let i = -1; i <= 1; i++) {
+      ctx.fillRect(cx - w, cy + i * sz * 0.24 - 2, w * 2, 4);
+    }
+  }
+  ctx.restore();
+}
+
+/* ── Draw runner ── */
+function drawRunner() {
+  const cx = laneX(lean);
+  const cy = runnerY();
+
+  // glow
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, RUNNER_R * 2.5);
+  g.addColorStop(0, hsl(runnerColor, 0.3));
+  g.addColorStop(1, hsl(runnerColor, 0));
+  ctx.fillStyle = g;
+  ctx.fillRect(cx - RUNNER_R * 3, cy - RUNNER_R * 3, RUNNER_R * 6, RUNNER_R * 6);
+
+  // body
+  ctx.fillStyle = hsl(runnerColor);
+  ctx.beginPath();
+  ctx.arc(cx, cy, RUNNER_R, 0, Math.PI * 2);
+  ctx.fill();
+
+  // ring
+  ctx.strokeStyle = 'rgba(255,255,255,.45)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(cx, cy, RUNNER_R, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // inner symbol
+  drawSym(cx, cy, RUNNER_R * 0.85, runnerColor, 'white');
+
+  // trail sparks when perfect
+  if (perfectActive) {
+    for (let i = 0; i < 2; i++) {
+      if (trailSparks.length < MAX_TRAIL) {
+        trailSparks.push({
+          x: cx + (Math.random() - .5) * RUNNER_R,
+          y: cy + RUNNER_R * (.4 + Math.random() * .4),
+          vx: (Math.random() - .5) * 1.5,
+          vy: 1 + Math.random() * 2,
+          life: .35 + Math.random() * .25,
+          ml: .35 + Math.random() * .25,
+          ci: runnerColor
+        });
+      }
+    }
+  }
+}
+
+/* ── Draw gate ── */
+function drawGate(gate, side) {
+  const gw  = W * GATE_W;
+  const cx  = laneX(side);
+  const x   = cx - gw / 2;
+  const y   = gate.y;
+  const ci  = gate.colors[side];
+
+  ctx.save();
+  ctx.globalAlpha = .88;
+
+  // fill
+  const gr = ctx.createLinearGradient(x, y, x + gw, y + GATE_H);
+  gr.addColorStop(0, hsl(ci, .85));
+  gr.addColorStop(1, hsl(ci, .55));
+  ctx.fillStyle = gr;
+  rr(ctx, x, y, gw, GATE_H, 10);
+  ctx.fill();
+
+  // border
+  ctx.strokeStyle = 'rgba(255,255,255,.25)';
+  ctx.lineWidth = 1.5;
+  rr(ctx, x, y, gw, GATE_H, 10);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // symbol
+  drawSymColored(cx, y + GATE_H / 2, GATE_H * 0.55, ci, .85);
+
+  ctx.restore();
+}
+
+/* ── Telegraph ── */
+function drawTelegraph() {
+  if (!gates.length) return;
+  const ng = gates[0];
+  if (ng.passed) return;
+  const ry   = runnerY();
+  const dist = ry - (ng.y + GATE_H);
+  const ahead = speed * 0.28;
+  if (dist > 0 && dist < ahead) {
+    for (let s = 0; s < 2; s++) {
+      if (ng.colors[s] === runnerColor) {
+        const cx = laneX(s);
+        const gr = ctx.createLinearGradient(cx, ry - 50, cx, ry + 20);
+        gr.addColorStop(0, hsl(runnerColor, 0));
+        gr.addColorStop(.5, hsl(runnerColor, .07));
+        gr.addColorStop(1, hsl(runnerColor, 0));
+        ctx.fillStyle = gr;
+        ctx.fillRect(cx - W * GATE_W / 2, ry - 50, W * GATE_W, 70);
+      }
+    }
+  }
+}
+
+/* ── Background ── */
+function drawBg() {
+  const gr = ctx.createLinearGradient(0, 0, 0, H);
+  gr.addColorStop(0, '#0d0d20');
+  gr.addColorStop(.5, '#1a1a2e');
+  gr.addColorStop(1, '#14203a');
+  ctx.fillStyle = gr;
+  ctx.fillRect(0, 0, W, H);
+
+  // lane separator
+  ctx.save();
+  ctx.setLineDash([8, 14]);
+  ctx.strokeStyle = 'rgba(255,255,255,.05)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(W / 2, 0);
+  ctx.lineTo(W / 2, H);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // lane bg
+  for (let s = 0; s < 2; s++) {
+    ctx.fillStyle = 'rgba(255,255,255,.015)';
+    const cx = laneX(s);
+    ctx.fillRect(cx - W * GATE_W / 2 - 4, 0, W * GATE_W + 8, H);
+  }
+}
+
+/* ── Particles ── */
+function spawnParts(x, y, ci, n, type) {
+  for (let i = 0; i < n && particles.length < MAX_PARTS; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const sp = type === 'perfect' ? 3 + Math.random() * 5 :
+               type === 'shield'  ? 2 + Math.random() * 3 :
+               2 + Math.random() * 3.5;
+    particles.push({
+      x, y,
+      vx: Math.cos(a) * sp,
+      vy: Math.sin(a) * sp - (type === 'perfect' ? 2 : 0),
+      life: .4 + Math.random() * .5,
+      ml:   .4 + Math.random() * .5,
+      sz: type === 'shield' ? 3 : 2 + Math.random() * 3,
+      ci, type: type || 'normal'
     });
   }
 }
 
-/* ════ Particles ════ */
-function addP(x,y,vx,vy,life,col,sz){
-  if(particles.length>300)return;
-  particles.push({x:x,y:y,vx:vx,vy:vy,life:life,ml:life,col:col,sz:sz});
+function spawnRing(x, y, ci) {
+  if (ringPulses.length < MAX_RINGS)
+    ringPulses.push({ x, y, r: RUNNER_R, mr: RUNNER_R * 5, life: .55, ml: .55, ci });
 }
-function emitTrail(){
-  var h=modeHue();
-  addP(PX+rand(-6,6),PY+rand(4,12),rand(-0.4,0.4),rand(0.8,2.2),rand(0.4,0.8),hsla(h,80,65,0.7),rand(2,4.5));
+
+function shake(mag, dur) {
+  screenShake.mag = mag;
+  screenShake.t   = dur;
+  screenShake.dur = dur;
 }
-function emitClear(bonus){
-  var n=bonus?30:14;var h=modeHue();
-  for(var i=0;i<n;i++){
-    var a=rand(0,TAU),sp=rand(1.5,bonus?7:4);
-    addP(PX,PY,Math.cos(a)*sp,Math.sin(a)*sp,rand(0.5,1.1),hsla(h+rand(-30,30),90,60,0.9),rand(2,5.5));
+
+function updateParts(dt) {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy;
+    p.vy += 4 * dt;
+    p.life -= dt;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+  for (let i = trailSparks.length - 1; i >= 0; i--) {
+    const s = trailSparks[i];
+    s.x += s.vx; s.y += s.vy;
+    s.life -= dt;
+    if (s.life <= 0) trailSparks.splice(i, 1);
+  }
+  for (let i = ringPulses.length - 1; i >= 0; i--) {
+    const r = ringPulses[i];
+    r.life -= dt;
+    r.r += (r.mr - RUNNER_R) * dt / r.ml;
+    if (r.life <= 0) ringPulses.splice(i, 1);
   }
 }
-function emitShieldBreak(){
-  for(var i=0;i<24;i++){
-    var a=rand(0,TAU),sp=rand(2,6);
-    addP(PX,PY,Math.cos(a)*sp,Math.sin(a)*sp,rand(0.45,0.9),hsla(0,90,55,0.9),rand(2.5,5));
-  }
-}
-function emitOD(){
-  for(var i=0;i<5;i++){
-    addP(PX+rand(-16,16),PY+rand(-16,16),rand(-1.2,1.2),rand(-2.5,0.5),rand(0.3,0.6),hsla(rand(0,360),90,70,0.7),rand(2,4));
-  }
-}
 
-/* ════ Shake ════ */
-function shake(v){shakeI=Math.max(shakeI,v)}
-
-/* ════ Input ════ */
-function handleInput(e){
-  if(e&&e.type==='keydown'){
-    if(e.code!=='Space'&&e.code!=='Enter')return;
-    e.preventDefault();
-  }
-  if(e&&e.type==='pointerdown')e.preventDefault();
-  if(state==='start'){startGame();return}
-  if(state==='gameover'){startGame();return}
-  var now=performance.now()/1000;
-  if(now-flipCD<FLIP_CD){
-    inputBuffered=true;lastInputT=now;return;
-  }
-  doFlip(now);
-}
-function doFlip(now){
-  mode=mode===0?1:0;
-  flipCD=now||performance.now()/1000;
-  inputBuffered=false;
-}
-
-wrap.addEventListener('pointerdown',handleInput);
-document.addEventListener('keydown',handleInput);
-document.addEventListener('touchmove',function(e){e.preventDefault()},{passive:false});
-
-/* ════ Lifecycle ════ */
-function startGame(){
-  state='playing';score=0;dist=0;
-  mode=0;energy=ENERGY_MAX;multiplier=1;
-  odCharge=0;odActive=false;odTimer=0;
-  gates=[];particles=[];
-  gateSpawnAcc=0;gateId=0;
-  shakeI=0;hitstopT=0;
-  inputBuffered=false;gameTime=0;
-  flipCD=0;lastInputT=0;
-}
-function gameOver(){
-  state='gameover';
-  if(score>best){best=score;try{localStorage.setItem(LS_KEY,String(best))}catch(e){}}
-  shake(16);
-}
-
-/* ════ Update ════ */
-function update(dt){
-  if(hitstopT>0){hitstopT-=dt;return}
-
-  bgHue+=dt*5;
-  gameTime+=dt;
-
-  // Input buffer
-  if(inputBuffered){
-    var now=performance.now()/1000;
-    if(now-lastInputT<INPUT_BUFFER_WINDOW&&now-flipCD>=FLIP_CD){
-      doFlip(now);
-    }else if(now-lastInputT>=INPUT_BUFFER_WINDOW){
-      inputBuffered=false;
+function drawParts() {
+  for (const p of particles) {
+    const a = Math.max(0, p.life / p.ml);
+    ctx.save();
+    ctx.globalAlpha = a;
+    if (p.type === 'shield') {
+      ctx.fillStyle = '#ff4444';
+      ctx.font = 'bold ' + Math.round(p.sz * 4) + 'px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('X', p.x, p.y);
+    } else {
+      ctx.fillStyle = hsl(p.ci);
+      if (p.type === 'perfect') {
+        ctx.shadowBlur  = 8;
+        ctx.shadowColor = hsl(p.ci);
+      }
+      ctx.fillRect(p.x - p.sz / 2, p.y - p.sz / 2, p.sz, p.sz);
     }
+    ctx.restore();
+  }
+  for (const s of trailSparks) {
+    const a = Math.max(0, s.life / s.ml) * .7;
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.fillStyle = hsl(s.ci);
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+  for (const r of ringPulses) {
+    const a = Math.max(0, r.life / r.ml) * .55;
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.strokeStyle = hsl(r.ci);
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function drawFlash() {
+  if (flashAlpha > 0) {
+    ctx.save();
+    ctx.globalAlpha = flashAlpha;
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+  }
+}
+
+/* ── Difficulty curve ── */
+function diff() {
+  if (score < 10)  return { sm: 1,    sp: 230 };
+  if (score < 25)  return { sm: 1.18, sp: 200 };
+  if (score < 50)  return { sm: 1.4,  sp: 175 };
+  return { sm: 1.6 + Math.min((score - 50) * 0.006, 0.55), sp: 150 };
+}
+
+/* ── Gate spawning ── */
+function spawnGate() {
+  let leftC, rightC;
+  const other = () => { let o; do { o = (Math.random() * 3) | 0; } while (o === runnerColor); return o; };
+
+  if (score >= 10 && Math.random() < 0.3) {
+    // bait: both could match or create interesting choices
+    leftC  = (Math.random() * 3) | 0;
+    rightC = (Math.random() * 3) | 0;
+    // ensure at least one matches
+    if (leftC !== runnerColor && rightC !== runnerColor) {
+      if (Math.random() < .5) leftC = runnerColor; else rightC = runnerColor;
+    }
+  } else {
+    const ms = Math.random() < .5 ? 0 : 1;
+    leftC  = ms === 0 ? runnerColor : other();
+    rightC = ms === 1 ? runnerColor : other();
   }
 
-  var d=diff();
-  var spd=d.speed;
-  if(odActive)spd*=1.15;
+  gates.push({ y: -GATE_H - 12, colors: [leftC, rightC], passed: false, scored: false });
 
-  // Distance + score
-  dist+=spd*60*dt;
-  var dScore=Math.floor(spd*0.13*multiplier*(odActive?2:1));
-  score+=dScore;
-
-  // Overdrive
-  if(odActive){
-    odTimer-=dt;
-    emitOD();
-    if(odTimer<=0){odActive=false;odTimer=0}
+  // double-pair burst 50+
+  if (score >= 50 && Math.random() < .22) {
+    const d = diff();
+    const futureC = gates[gates.length - 1].colors[lean];
+    let l2 = (Math.random() * 3) | 0;
+    let r2 = (Math.random() * 3) | 0;
+    if (l2 !== futureC && r2 !== futureC) {
+      if (Math.random() < .5) l2 = futureC; else r2 = futureC;
+    }
+    gates.push({ y: -GATE_H - 12 - d.sp * .55, colors: [l2, r2], passed: false, scored: false });
   }
+}
 
-  // Spawn
-  gateSpawnAcc+=spd*60*dt;
-  if(gateSpawnAcc>=d.interval){
-    spawnGate();
-    gateSpawnAcc-=d.interval;
-  }
+/* ── Collision ── */
+function checkHit(g) {
+  const ry = runnerY();
+  if (g.y + GATE_H >= ry - RUNNER_R && g.y <= ry + RUNNER_R && !g.passed) {
+    g.passed = true;
+    const cx = laneX(lean);
+    const hitC = g.colors[lean];
 
-  // Move + collide gates
-  for(var i=gates.length-1;i>=0;i--){
-    var g=gates[i];
-    g.y+=spd*60*dt/60;
-    if(!g.scored&&!g.decoy){
-      var dy=g.y-PY;
-      if(Math.abs(dy)<g.win){
-        g.scored=true;
-        if(g.mode===mode){
-          if(g.bonus){
-            score+=Math.floor(30*multiplier);
-            multiplier=Math.min(multiplier+1,MULTI_MAX);
-            odCharge=clamp(odCharge+0.22,0,1);
-            hitstopT=0.06;
-            shake(5);
-          }else{
-            score+=Math.floor(10*multiplier);
-          }
-          emitClear(g.bonus);
-          shake(g.bonus?5:2);
-        }else{
-          energy--;
-          multiplier=1;
-          emitShieldBreak();
-          shake(9);
-          if(energy<=0){gameOver();return}
-        }
-      }else if(dy>g.win+15){
-        g.scored=true;
+    // perfect timing check: switched lean very recently AND gate center close to runner
+    const gcY = g.y + GATE_H / 2;
+    const closeEnough = Math.abs(gcY - ry) < RUNNER_R * 0.7;
+    const recentSwitch = leanSwitchTime < 0.22;
+    const isPerfect = closeEnough && recentSwitch;
+
+    if (hitC === runnerColor) {
+      score++;
+      combo++;
+      if (combo > maxCombo) maxCombo = combo;
+      runnerColor = hitC;
+      spawnParts(cx, ry, hitC, isPerfect ? 28 : 14, isPerfect ? 'perfect' : 'normal');
+      if (isPerfect) {
+        spawnRing(cx, ry, hitC);
+        flashAlpha = .12;
+        perfectActive = true;
+        perfectTimer  = .5;
+        shake(3, .15);
+        score++;
+      }
+      g.scored = true;
+      updateHUD();
+    } else {
+      combo = 0;
+      // color changes to whatever we hit
+      runnerColor = hitC;
+      if (shields > 0) {
+        shields--;
+        spawnParts(cx, ry, hitC, 18, 'shield');
+        shake(7, .3);
+        updateHUD();
+      } else {
+        endGame();
       }
     }
-    if(g.y>DESIGN_H+90)gates.splice(i,1);
   }
-
-  // OD activation
-  if(!odActive&&odCharge>=1){
-    odActive=true;odTimer=OVERDRIVE_DUR;odCharge=0;shake(6);
-  }
-
-  // Trail
-  if(Math.random()<0.6)emitTrail();
-
-  // Particles
-  for(var j=particles.length-1;j>=0;j--){
-    var p=particles[j];
-    p.x+=p.vx;p.y+=p.vy;
-    p.vy+=0.02; // tiny gravity
-    p.life-=dt;
-    if(p.life<=0)particles.splice(j,1);
-  }
-
-  // Shake decay
-  if(shakeI>0.15){
-    shakeX=rand(-shakeI,shakeI);
-    shakeY=rand(-shakeI,shakeI);
-    shakeI*=Math.pow(0.06,dt);
-  }else{shakeX=shakeY=0;shakeI=0}
 }
 
-/* ════ Draw ════ */
-function drawBG(){
-  var h=(bgHue%360+360)%360;
-  var g=ctx.createLinearGradient(0,0,0,DESIGN_H);
-  g.addColorStop(0,hsl(h,30,9));
-  g.addColorStop(0.5,hsl((h+18)%360,25,6));
-  g.addColorStop(1,hsl((h+36)%360,20,4));
-  ctx.fillStyle=g;
-  ctx.fillRect(0,0,DESIGN_W,DESIGN_H);
+/* ── HUD ── */
+function updateHUD() {
+  hudScore.textContent = score;
+  hudCombo.textContent = combo >= 3 ? combo + 'x combo' : '';
+  hudShield.textContent = shields > 0 ? '\u{1F6E1}\uFE0F Shield' : '';
+  hudHigh.textContent = 'Best: ' + highScore;
 }
 
-function drawDotPat(x,y,w,h,hu){
-  ctx.save();ctx.globalAlpha=0.2;
-  var step=11;
-  for(var px=x;px<x+w;px+=step){
-    for(var py=y;py<y+h;py+=step){
-      ctx.beginPath();ctx.arc(px+3,py+3,1.8,0,TAU);
-      ctx.fillStyle=hsl(hu,60,70);ctx.fill();
+/* ── Shake ── */
+function updateShake(dt) {
+  if (screenShake.t > 0) {
+    screenShake.t -= dt;
+    const i = screenShake.mag * Math.max(0, screenShake.t / screenShake.dur);
+    screenShake.x = (Math.random() - .5) * i * 2;
+    screenShake.y = (Math.random() - .5) * i * 2;
+  } else {
+    screenShake.x = 0;
+    screenShake.y = 0;
+  }
+}
+
+/* ── Game flow ── */
+function initGame() {
+  score = 0; combo = 0; maxCombo = 0; shields = 1; lean = 0;
+  runnerColor = (Math.random() * 3) | 0;
+  gates = []; particles = []; trailSparks = []; ringPulses = [];
+  screenShake = { x:0, y:0, t:0, mag:0, dur:0 };
+  flashAlpha = 0; perfectActive = false; perfectTimer = 0;
+  gameTime = 0; baseSpeed = 150; speed = baseSpeed;
+  gateTimer = 0; hueShift = 0; leanSwitchTime = 10;
+}
+
+function startGame() {
+  initGame();
+  state = 'playing';
+  startScreen.classList.add('hidden');
+  gameoverScreen.classList.add('hidden');
+  updateHUD();
+  lastTime = performance.now();
+  cancelAnimationFrame(animId);
+  animId = requestAnimationFrame(loop);
+}
+
+function endGame() {
+  state = 'gameover';
+  shake(14, .55);
+  spawnParts(laneX(lean), runnerY(), runnerColor, 45, 'normal');
+  const best = score > highScore;
+  if (best) { highScore = score; localStorage.setItem('cd_sd_hi', highScore); }
+  goScore.textContent = score;
+  goStats.textContent = 'Best combo: ' + maxCombo + 'x \u00B7 High score: ' + highScore;
+  if (best) goNewBest.classList.remove('hidden');
+  else goNewBest.classList.add('hidden');
+  setTimeout(() => { if (state === 'gameover') gameoverScreen.classList.remove('hidden'); }, 650);
+}
+
+/* ── Main loop ── */
+function loop(now) {
+  let dt = (now - lastTime) / 1000;
+  lastTime = now;
+  if (dt > .05) dt = .05;
+
+  if (state === 'playing') {
+    gameTime += dt;
+    hueShift += dt * 8;
+    leanSwitchTime += dt;
+    const d = diff();
+    speed = baseSpeed * d.sm;
+
+    gateTimer -= dt;
+    if (gateTimer <= 0) {
+      spawnGate();
+      gateTimer = d.sp / speed;
     }
-  }
-  ctx.restore();
-}
-function drawStripePat(x,y,w,h,hu){
-  ctx.save();ctx.globalAlpha=0.16;
-  ctx.strokeStyle=hsl(hu,60,70);ctx.lineWidth=1.8;
-  ctx.beginPath();
-  var step=9;
-  for(var d=-h;d<w+h;d+=step){
-    ctx.moveTo(x+d,y);ctx.lineTo(x+d-h,y+h);
-  }
-  ctx.stroke();ctx.restore();
-}
 
-function drawGate(g){
-  var gw=g.w;
-  var gh=38;
-  var gy=g.y-gh/2;
-  var hu=gateHue(g.mode);
-  var cx=DESIGN_W/2;
+    for (const g of gates) g.y += speed * dt;
+    for (const g of gates) { if (!g.passed) checkHit(g); }
+    gates = gates.filter(g => g.y < H + 60);
+
+    if (perfectActive) { perfectTimer -= dt; if (perfectTimer <= 0) perfectActive = false; }
+    if (flashAlpha > 0) flashAlpha = Math.max(0, flashAlpha - dt * 1.8);
+  }
+
+  updateShake(dt);
+  updateParts(dt);
 
   ctx.save();
-  if(g.decoy){
-    ctx.globalAlpha=0.14+Math.sin(g.y*0.06)*0.06;
-  }
+  ctx.translate(screenShake.x, screenShake.y);
+  drawBg();
 
-  var barW=(DESIGN_W-gw)/2;
+  if (state === 'playing') drawTelegraph();
+  for (const g of gates) { drawGate(g, 0); drawGate(g, 1); }
+  if (state === 'playing') drawRunner();
 
-  // Left bar
-  ctx.fillStyle=hsla(hu,65,g.bonus?45:35,g.bonus?0.9:0.7);
-  ctx.fillRect(0,gy,barW+4,gh);
-
-  // Right bar
-  ctx.fillRect(DESIGN_W-barW-4,gy,barW+4,gh);
-
-  // Gate opening border
-  ctx.strokeStyle=hsl(hu,80,g.bonus?72:55);
-  ctx.lineWidth=g.bonus?4.5:3;
-  ctx.strokeRect(barW,gy,gw,gh);
-
-  // Inner fill
-  ctx.fillStyle=hsla(hu,50,g.bonus?25:18,0.5);
-  ctx.fillRect(barW+2,gy+2,gw-4,gh-4);
-
-  // Pattern
-  if(g.mode===0){
-    drawDotPat(barW+3,gy+3,gw-6,gh-6,hu);
-  }else{
-    drawStripePat(barW+3,gy+3,gw-6,gh-6,hu);
-  }
-
-  // Glyph
-  ctx.font=(g.bonus?'bold 26px':'22px')+' sans-serif';
-  ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillStyle=hsl(hu,85,g.bonus?82:66);
-  ctx.fillText(gateGlyph(g.mode),cx,g.y);
-
-  // Bonus label
-  if(g.bonus&&!g.decoy){
-    ctx.font='bold 10px sans-serif';
-    ctx.fillStyle=hsl(hu,90,80);
-    ctx.fillText('BONUS',cx,gy-7);
-  }
-
-  // Decoy shimmer
-  if(g.decoy){
-    ctx.font='9px sans-serif';
-    ctx.fillStyle=hsla(hu,40,60,0.3);
-    ctx.fillText('~',cx,g.y);
-  }
-
-  ctx.restore();
-}
-
-function drawPlayer(){
-  var h=modeHue();
-
-  // Glow
-  var gr=ctx.createRadialGradient(PX,PY,PR*0.3,PX,PY,PR*2.8);
-  gr.addColorStop(0,hsla(h,80,60,odActive?0.55:0.32));
-  gr.addColorStop(1,hsla(h,80,60,0));
-  ctx.fillStyle=gr;
-  ctx.beginPath();ctx.arc(PX,PY,PR*2.8,0,TAU);ctx.fill();
-
-  // Orb shadow
-  ctx.fillStyle=hsla(h,60,20,0.4);
-  ctx.beginPath();ctx.arc(PX+1,PY+2,PR+1,0,TAU);ctx.fill();
-
-  // Orb
-  ctx.fillStyle=hsl(h,75,55);
-  ctx.beginPath();ctx.arc(PX,PY,PR,0,TAU);ctx.fill();
-
-  // Inner highlight
-  var ig=ctx.createRadialGradient(PX-4,PY-5,1,PX,PY,PR);
-  ig.addColorStop(0,'rgba(255,255,255,0.35)');
-  ig.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.fillStyle=ig;
-  ctx.beginPath();ctx.arc(PX,PY,PR,0,TAU);ctx.fill();
-
-  // Glyph
-  ctx.font='bold 20px sans-serif';
-  ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillStyle='#fff';
-  ctx.fillText(modeGlyph(),PX,PY+1);
-
-  // OD ring
-  if(odActive){
-    ctx.strokeStyle=hsla(((gameTime*200)%360),90,70,0.75);
-    ctx.lineWidth=3;
-    ctx.beginPath();ctx.arc(PX,PY,PR+7+Math.sin(gameTime*8)*3,0,TAU);ctx.stroke();
-  }
-}
-
-function drawParticles(){
-  for(var i=0;i<particles.length;i++){
-    var p=particles[i];
-    var t=clamp(p.life/p.ml,0,1);
-    ctx.globalAlpha=t;
-    ctx.fillStyle=p.col;
-    ctx.beginPath();
-    ctx.arc(p.x,p.y,p.sz*t,0,TAU);
-    ctx.fill();
-  }
-  ctx.globalAlpha=1;
-}
-
-function drawHUD(){
-  // Score
-  ctx.font='bold 22px sans-serif';
-  ctx.textAlign='center';ctx.textBaseline='top';
-  ctx.fillStyle='#fff';
-  ctx.fillText(score,DESIGN_W/2,14);
-
-  // Best
-  ctx.font='11px sans-serif';
-  ctx.fillStyle='#999';
-  ctx.fillText('BEST: '+best,DESIGN_W/2,40);
-
-  // Multiplier
-  if(multiplier>1){
-    ctx.font='bold 16px sans-serif';
-    ctx.fillStyle=hsl(modeHue(),90,72);
-    ctx.textAlign='right';
-    ctx.fillText('x'+multiplier,DESIGN_W-14,16);
-  }
-
-  // Current glyph
-  ctx.font='28px sans-serif';
-  ctx.textAlign='left';
-  ctx.fillStyle=hsl(modeHue(),80,65);
-  ctx.fillText(modeGlyph(),12,10);
-
-  // Energy pips
-  for(var i=0;i<ENERGY_MAX;i++){
-    var ex=14+i*20;
-    var ey=50;
-    ctx.beginPath();ctx.arc(ex,ey,6,0,TAU);
-    if(i<energy){
-      ctx.fillStyle=hsl(130,70,50);ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,0.3)';ctx.lineWidth=1.5;ctx.stroke();
-    }else{
-      ctx.fillStyle='rgba(255,255,255,0.1)';ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1;ctx.stroke();
-    }
-  }
-  ctx.font='8px sans-serif';ctx.textAlign='left';ctx.fillStyle='#666';
-  ctx.fillText('SHIELD',12,62);
-
-  // Overdrive bar
-  var bw=82,bh=7;
-  var bx=DESIGN_W-bw-14,by=44;
-  ctx.fillStyle='rgba(255,255,255,0.08)';
-  ctx.fillRect(bx,by,bw,bh);
-  var charge=odActive?1:odCharge;
-  ctx.fillStyle=odActive?hsl(((gameTime*120)%360),90,60):hsl(48,80,52);
-  ctx.fillRect(bx,by,bw*charge,bh);
-  ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1;
-  ctx.strokeRect(bx,by,bw,bh);
-  ctx.font='8px sans-serif';ctx.textAlign='right';ctx.fillStyle='#666';
-  ctx.fillText(odActive?'OVERDRIVE':'CHARGE',DESIGN_W-14,by+bh+10);
-}
-
-function drawStartScreen(){
-  drawBG();
-
-  // Floating glyphs animation
-  var t=gameTime;
-  ctx.save();
-  ctx.globalAlpha=0.15;
-  for(var i=0;i<6;i++){
-    var fx=DESIGN_W*0.15+i*(DESIGN_W*0.14);
-    var fy=DESIGN_H*0.35+Math.sin(t*1.2+i*1.1)*30;
-    ctx.font='32px sans-serif';ctx.textAlign='center';
-    ctx.fillStyle=hsl(i%2===0?SUN_HUE:MOON_HUE,70,60);
-    ctx.fillText(i%2===0?SUN_GLYPH:MOON_GLYPH,fx,fy);
-  }
+  drawParts();
+  drawFlash();
   ctx.restore();
 
-  // Title
-  ctx.font='bold 44px sans-serif';
-  ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillStyle='#fff';
-  ctx.fillText('Color Dash',DESIGN_W/2,DESIGN_H*0.24);
-
-  // Subtitle
-  ctx.font='16px sans-serif';
-  ctx.fillStyle='#aaa';
-  ctx.fillText('Glyph Glide',DESIGN_W/2,DESIGN_H*0.24+34);
-
-  // Mode icons
-  ctx.font='52px sans-serif';
-  ctx.fillStyle=hsl(SUN_HUE,80,65);
-  ctx.fillText(SUN_GLYPH,DESIGN_W/2-42,DESIGN_H*0.44);
-  ctx.fillStyle=hsl(MOON_HUE,80,65);
-  ctx.fillText(MOON_GLYPH,DESIGN_W/2+42,DESIGN_H*0.44);
-
-  // Instructions
-  ctx.font='15px sans-serif';
-  ctx.fillStyle='#bbb';
-  ctx.fillText('Tap to flip between Sun & Moon',DESIGN_W/2,DESIGN_H*0.555);
-  ctx.font='12px sans-serif';ctx.fillStyle='#888';
-  ctx.fillText('Match gates \u2022 Grab bonuses \u2022 Build combos',DESIGN_W/2,DESIGN_H*0.59);
-
-  // Tap prompt
-  var pulse=0.5+Math.sin(gameTime*4)*0.5;
-  ctx.globalAlpha=0.4+pulse*0.6;
-  ctx.font='21px sans-serif';
-  ctx.fillStyle='#fff';
-  ctx.fillText('Tap to Start',DESIGN_W/2,DESIGN_H*0.70);
-  ctx.globalAlpha=1;
-
-  if(best>0){
-    ctx.font='13px sans-serif';ctx.fillStyle='#777';
-    ctx.fillText('Best: '+best,DESIGN_W/2,DESIGN_H*0.78);
+  // keep loop alive while effects are still running
+  if (state === 'playing' || screenShake.t > 0 || particles.length || trailSparks.length || ringPulses.length || flashAlpha > 0) {
+    animId = requestAnimationFrame(loop);
   }
-
-  ctx.font='11px sans-serif';ctx.fillStyle='#555';
-  ctx.fillText('Space / Enter / Tap',DESIGN_W/2,DESIGN_H*0.86);
 }
 
-function drawGameOverScreen(){
-  drawBG();
-  drawParticles();
-
-  ctx.font='bold 38px sans-serif';
-  ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillStyle='#e55';
-  ctx.fillText('Game Over',DESIGN_W/2,DESIGN_H*0.25);
-
-  ctx.font='bold 56px sans-serif';
-  ctx.fillStyle='#fff';
-  ctx.fillText(score,DESIGN_W/2,DESIGN_H*0.38);
-
-  ctx.font='14px sans-serif';
-  ctx.fillStyle='#aaa';
-  ctx.fillText('SCORE',DESIGN_W/2,DESIGN_H*0.445);
-
-  ctx.font='bold 28px sans-serif';
-  ctx.fillStyle=score>=best?hsl(50,90,65):'#ccc';
-  ctx.fillText(best,DESIGN_W/2,DESIGN_H*0.54);
-
-  ctx.font='13px sans-serif';
-  ctx.fillStyle=score>=best?hsl(50,80,70):'#888';
-  ctx.fillText(score>=best?'NEW BEST!':'BEST',DESIGN_W/2,DESIGN_H*0.59);
-
-  var pulse=0.4+Math.sin(gameTime*4)*0.6;
-  ctx.globalAlpha=clamp(pulse,0.3,1);
-  ctx.font='20px sans-serif';
-  ctx.fillStyle='#fff';
-  ctx.fillText('Tap to Retry',DESIGN_W/2,DESIGN_H*0.73);
-  ctx.globalAlpha=1;
+/* ── Input ── */
+function doInput(e) {
+  if (e) e.preventDefault();
+  if (state === 'playing') { lean = lean === 0 ? 1 : 0; leanSwitchTime = 0; }
 }
 
-/* ════ Main Loop ════ */
-var lastT=0;
-function frame(ts){
-  requestAnimationFrame(frame);
-  var dt=lastT?(ts-lastT)/1000:1/60;
-  lastT=ts;
-  if(dt>0.08)dt=0.08;
-  gameTime+=dt;
+canvas.addEventListener('pointerdown', doInput);
 
-  // Always update shake + particles in gameover
-  if(state==='gameover'){
-    // Shake decay
-    if(shakeI>0.15){
-      shakeX=rand(-shakeI,shakeI);shakeY=rand(-shakeI,shakeI);
-      shakeI*=Math.pow(0.04,dt);
-    }else{shakeX=shakeY=0;shakeI=0}
-    // Particles
-    for(var j=particles.length-1;j>=0;j--){
-      var pp=particles[j];
-      pp.x+=pp.vx;pp.y+=pp.vy;pp.vy+=0.02;
-      pp.life-=dt;
-      if(pp.life<=0)particles.splice(j,1);
-    }
-    bgHue+=dt*5;
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' || e.code === 'Enter') {
+    e.preventDefault();
+    if (state === 'start') startGame();
+    else if (state === 'playing') doInput();
+    else if (state === 'gameover' && !gameoverScreen.classList.contains('hidden')) startGame();
   }
+});
 
-  if(state==='playing')update(dt);
-
-  // Render
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.save();
-  // Scale to design coords
-  ctx.scale(scaleX,scaleY);
-  ctx.translate(shakeX,shakeY);
-
-  if(state==='start'){
-    drawStartScreen();
-  }else if(state==='playing'){
-    drawBG();
-    for(var i=0;i<gates.length;i++)drawGate(gates[i]);
-    drawParticles();
-    drawPlayer();
-    drawHUD();
-  }else if(state==='gameover'){
-    drawGameOverScreen();
+btnStart.addEventListener('click', e => { e.stopPropagation(); startGame(); });
+btnRetry.addEventListener('click', e => { e.stopPropagation(); startGame(); });
+btnShare.addEventListener('click', e => {
+  e.stopPropagation();
+  const txt = 'I scored ' + score + ' in Color Dash: Split Decision! Can you beat me?\nhttps://balinti.github.io/color-dash/';
+  if (navigator.share) {
+    navigator.share({ title: 'Color Dash', text: txt }).catch(() => {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(txt).then(() => {
+      btnShare.textContent = 'Copied!';
+      setTimeout(() => { btnShare.textContent = 'Challenge a Friend'; }, 2000);
+    }).catch(() => {});
   }
+});
 
-  ctx.restore();
+/* ── Init ── */
+function showStart() {
+  state = 'start';
+  startScreen.classList.remove('hidden');
+  gameoverScreen.classList.add('hidden');
+  startHighEl.textContent = highScore > 0 ? 'High Score: ' + highScore : '';
+  drawBg();
 }
-requestAnimationFrame(frame);
+
+showStart();
+
+// idle anim
+(function idle(t) {
+  if (state !== 'start') return;
+  hueShift += .12;
+  drawBg();
+  requestAnimationFrame(idle);
+})(0);
 
 })();
 </script>
