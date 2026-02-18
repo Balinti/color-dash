@@ -8,1013 +8,750 @@
 <meta name="theme-color" content="#1a1a2e">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Color Dash - Free HTML5 Game">
-<meta property="og:description" content="Run through sync gates matching your color and shape. Tap to switch lanes and cycle your badge. How far can you dash?">
+<meta property="og:description" content="Play Color Dash - Run through color gates matching your current color. Tap to switch between colors. Speed increases every 10 points.">
 <meta property="og:url" content="https://balinti.github.io/color-dash/">
 <meta property="og:image" content="https://balinti.github.io/color-dash/og-image.png">
-<meta name="twitter:card" content="summary_large_image">
-<link rel="canonical" href="https://balinti.github.io/color-dash/">
+<meta name="twitter:card" content="summary">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4099346100621490" crossorigin="anonymous"></script>
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"VideoGame",
+  "name":"Color Dash",
+  "description":"Hyper-casual HTML5 game. Swap lanes and cycle signals to pass through gates. Tap to sync!",
+  "genre":"Casual",
+  "gamePlatform":"Web Browser",
+  "applicationCategory":"Game",
+  "operatingSystem":"Any",
+  "playMode":"SinglePlayer",
+  "url":"https://balinti.github.io/color-dash/",
+  "author":{"@type":"Person","name":"Balinti"}
+}
+</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow-x:hidden;background:#0a0a1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;touch-action:none;user-select:none;-webkit-user-select:none}
-#wrap{display:flex;flex-direction:column;align-items:center;width:100%;min-height:100vh;overflow-y:auto;background:linear-gradient(180deg,#0a0a1a 0%,#16213e 50%,#0f3460 100%)}
-#game-container{position:relative;width:100%;max-width:420px;flex-shrink:0}
-canvas{display:block;width:100%;height:100%;touch-action:none}
-#seo-content{max-width:420px;width:100%;padding:18px 16px 32px;color:#b0b8d0;font-size:13px;line-height:1.6;flex-shrink:0}
-#seo-content h2{color:#e0e6f0;font-size:16px;margin:14px 0 6px}
-#seo-content h3{color:#c8d0e4;font-size:14px;margin:12px 0 4px}
-#seo-content p,#seo-content li{margin-bottom:4px}
-#seo-content ul{padding-left:18px}
+html,body{width:100%;height:100%;overflow-x:hidden;background:#0f0f1a;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#ccc}
+body{display:flex;flex-direction:column;align-items:center;min-height:100vh;min-height:100dvh}
+#wrap{width:100%;max-width:420px;flex:0 0 auto}
+canvas{display:block;width:100%;touch-action:none;cursor:pointer}
+#seo{max-width:420px;width:100%;padding:12px 16px;font-size:12px;line-height:1.6;color:#777;text-align:center}
+#seo h2{font-size:14px;color:#999;margin-bottom:4px}
 </style>
 </head>
 <body>
-<div id="wrap">
-<div id="game-container">
-<canvas id="gc"></canvas>
-</div>
-<div id="seo-content">
-<h2>How to Play Color Dash</h2>
-<p>Tap or press Space to shift lanes and cycle your color+shape badge. Match the incoming Sync Gates to score points. Hit the center sweet spot for a Perfect bonus and build your streak multiplier!</p>
-<h3>Tips</h3>
-<ul>
-<li>Watch the telegraph strip at the top to plan ahead for the next gates.</li>
-<li>Build up Perfect streaks to increase your multiplier and fill the Sync Meter.</li>
-<li>During Overdrive, only shapes matter &mdash; dash through any color!</li>
-<li>Speed increases over time, so stay focused and react quickly.</li>
-</ul>
-<h3>FAQ</h3>
-<p><strong>Q: Is Color Dash free?</strong><br>A: Yes! It runs entirely in your browser with no downloads needed.</p>
-<p><strong>Q: How do I get a high score?</strong><br>A: Chain Perfect passes to build streak multipliers. The Sync Meter grants Overdrive for even more points.</p>
-<p><strong>Q: Does it work on mobile?</strong><br>A: Absolutely. Tap anywhere on the screen to play.</p>
-<p><strong>Q: What is Overdrive?</strong><br>A: Fill the Sync Meter with Perfect passes. During Overdrive, color matching is ignored &mdash; only shape matters, making it easier to score big.</p>
-</div>
-</div>
+<div id="wrap"><canvas id="c"></canvas></div>
+<section id="seo">
+<h2>Color Dash: Dash Sync</h2>
+<p>A hyper-casual HTML5 browser game. Tap to swap lanes and cycle your signal shape. Match the gate&rsquo;s lane and signal to score. Perfect timing earns bonus points and streak multipliers. Three hearts &mdash; three mistakes allowed. How far can you dash?</p>
+</section>
 <script>
-(function(){
-"use strict";
+'use strict';
+(()=>{
 
-const canvas = document.getElementById('gc');
+/* ====== CANVAS SETUP ====== */
+const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
-const container = document.getElementById('game-container');
+let W, H, dpr;
 
-// --- Constants ---
-const MAX_W = 420, MAX_H = 750;
-const DPR = Math.min(window.devicePixelRatio || 1, 2);
-const TRACK_PAD = 18;
-const GATE_H = 74;
-const LS_KEY = 'color_dash_highscore';
-
-// Badge cycle: 6 combos of 3 hues x 3 shapes
-const HUES = [200, 330, 120];
-const BADGE_CYCLE = [
-  { hue: 200, shape: 0 }, // blue circle
-  { hue: 330, shape: 1 }, // pink triangle
-  { hue: 120, shape: 2 }, // green square
-  { hue: 200, shape: 1 }, // blue triangle
-  { hue: 330, shape: 2 }, // pink square
-  { hue: 120, shape: 0 }, // green circle
-];
-
-// --- State variables ---
-let W, H, laneW;
-let state = 'start';
-let score, bestScore, badgeIdx, laneIdx;
-let gates, particles, sparks;
-let speed, spawnTimer, spawnDt;
-let perfectWinPx, tier, pSplit;
-let streakPerfect, multiplier, syncMeter;
-let overdrive, overdriveTTL;
-let screenShakeX, screenShakeY, shakeTimer;
-let hitStopTimer;
-let gameOverLock;
-let elapsedTime;
-let flashAlpha;
-let bgHueShift;
-let uiPopScale, uiPopTimer;
-
-// --- Resize ---
 function resize() {
-  const vw = Math.min(window.innerWidth, MAX_W);
-  const vh = Math.min(window.innerHeight, MAX_H);
-  W = vw;
-  H = vh;
-  canvas.style.width = W + 'px';
-  canvas.style.height = H + 'px';
-  canvas.width = Math.round(W * DPR);
-  canvas.height = Math.round(H * DPR);
-  container.style.width = W + 'px';
-  container.style.height = H + 'px';
-  laneW = (W - TRACK_PAD * 2) / 3;
+  dpr = window.devicePixelRatio || 1;
+  const maxW = 420, maxH = 750;
+  const w = Math.min(window.innerWidth, maxW);
+  const h = Math.min(window.innerHeight, maxH);
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  W = canvas.width = Math.round(w * dpr);
+  H = canvas.height = Math.round(h * dpr);
 }
 window.addEventListener('resize', resize);
 resize();
 
-// --- Helpers ---
-function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
-function rand(a, b) { return a + Math.random() * (b - a); }
-function randInt(a, b) { return Math.floor(rand(a, b + 1)); }
-function hsl(h, s, l, a) {
-  h = ((h % 360) + 360) % 360;
-  return a !== undefined
-    ? 'hsla(' + (h|0) + ',' + (s|0) + '%,' + (l|0) + '%,' + a + ')'
-    : 'hsl(' + (h|0) + ',' + (s|0) + '%,' + (l|0) + '%)';
+/* ====== CONSTANTS ====== */
+const LS_KEY = 'cdash_sync_hs_v3';
+const MAX_HEARTS = 3;
+const SIGNAL_COUNT = 3;
+const SIG_NAMES = ['Circle', 'Triangle', 'Square'];
+const PLAYER_X_FRAC = 0.17;
+
+// Colors
+const BG_TOP   = '#1a1a2e';
+const BG_BOT   = '#16162a';
+const LANE_DIV = '#2e2e48';
+const SIG_COL  = ['#4fc3f7', '#ce93d8', '#81c784'];
+const HIT_COL  = '#ef5350';
+const PERF_COL = '#ffd54f';
+const HEART_ON = '#ef5350';
+const HEART_OFF= '#333346';
+const TXT      = '#e8e8e8';
+const DIM      = '#888';
+
+/* ====== STATE ====== */
+let state = 'start';
+let score, highScore, hearts;
+let lane, signal;
+let speed, gates, particles, trails;
+let streak, multi;
+let shakeX, shakeY, shakeDur, shakeAmt;
+let hue;
+let frame, lastSpawn, spawnInt;
+let perfWin, hitWin;
+let tutDone;
+let playerY, playerTgtY, playerVY;
+let toastTxt, toastT;
+let shareBounds;
+let justTapped;
+
+function loadHS() { try { highScore = parseInt(localStorage.getItem(LS_KEY)) || 0; } catch(e) { highScore = 0; } }
+function saveHS() { try { localStorage.setItem(LS_KEY, String(highScore)); } catch(e) {} }
+loadHS();
+
+function initGame() {
+  score = 0; hearts = MAX_HEARTS;
+  lane = 0; signal = 0;
+  speed = 2.2;
+  gates = []; particles = []; trails = [];
+  streak = 0; multi = 1;
+  shakeX = 0; shakeY = 0; shakeDur = 0; shakeAmt = 0;
+  hue = 200; frame = 0; lastSpawn = -60;
+  spawnInt = 110; perfWin = 26; hitWin = 38;
+  tutDone = 0;
+  playerTgtY = laneY(0); playerY = playerTgtY; playerVY = 0;
+  toastTxt = ''; toastT = 0;
+  shareBounds = null;
+  justTapped = false;
 }
 
-function loadBest() {
-  try { return parseInt(localStorage.getItem(LS_KEY)) || 0; } catch(e) { return 0; }
-}
-function saveBest(s) {
-  try { localStorage.setItem(LS_KEY, String(s)); } catch(e) {}
+function laneY(l) {
+  return l === 0 ? H * 0.38 : H * 0.62;
 }
 
-// --- Shape drawing ---
-function drawShape(cx, cy, shape, size, fill, stroke) {
-  ctx.fillStyle = fill;
-  ctx.beginPath();
-  if (shape === 0) {
-    ctx.arc(cx, cy, size, 0, Math.PI * 2);
-  } else if (shape === 1) {
-    ctx.moveTo(cx, cy - size);
-    ctx.lineTo(cx + size * 0.95, cy + size * 0.7);
-    ctx.lineTo(cx - size * 0.95, cy + size * 0.7);
-    ctx.closePath();
-  } else {
-    const hs = size * 0.85;
-    ctx.rect(cx - hs, cy - hs, hs * 2, hs * 2);
-  }
-  ctx.fill();
-  if (stroke) {
-    ctx.strokeStyle = stroke;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  }
+function diffTier() {
+  if (score < 10) return 0;
+  if (score < 25) return 1;
+  if (score < 50) return 2;
+  if (score < 80) return 3;
+  return 4;
 }
 
-function drawShapeOutline(cx, cy, shape, size, color, lw) {
-  ctx.strokeStyle = color;
-  ctx.lineWidth = lw || 2;
-  ctx.beginPath();
-  if (shape === 0) {
-    ctx.arc(cx, cy, size, 0, Math.PI * 2);
-  } else if (shape === 1) {
-    ctx.moveTo(cx, cy - size);
-    ctx.lineTo(cx + size * 0.95, cy + size * 0.7);
-    ctx.lineTo(cx - size * 0.95, cy + size * 0.7);
-    ctx.closePath();
-  } else {
-    const hs = size * 0.85;
-    ctx.rect(cx - hs, cy - hs, hs * 2, hs * 2);
-  }
-  ctx.stroke();
+/* ====== INPUT ====== */
+function doTap() {
+  if (state === 'start') { state = 'playing'; initGame(); return; }
+  if (state === 'gameover') { state = 'start'; return; }
+  lane = 1 - lane;
+  signal = (signal + 1) % SIGNAL_COUNT;
+  playerTgtY = laneY(lane);
+  justTapped = true;
 }
 
-// --- Particles ---
-function spawnParticles(x, y, color, count, spdMult) {
-  spdMult = spdMult || 1;
-  for (let i = 0; i < count && particles.length < 300; i++) {
-    const angle = rand(0, Math.PI * 2);
-    const spd = rand(40, 160) * spdMult;
-    particles.push({
-      x: x, y: y,
-      vx: Math.cos(angle) * spd,
-      vy: Math.sin(angle) * spd,
-      life: 1, decay: rand(1.2, 2.5),
-      r: rand(2, 5), color: color, sparkle: false
-    });
-  }
-}
-
-function spawnSparkles(x, y, count) {
-  for (let i = 0; i < count && particles.length < 300; i++) {
-    const angle = rand(0, Math.PI * 2);
-    const spd = rand(30, 120);
-    particles.push({
-      x: x, y: y,
-      vx: Math.cos(angle) * spd,
-      vy: Math.sin(angle) * spd,
-      life: 1, decay: rand(1.5, 3.0),
-      r: rand(1.5, 3.5), color: '#fff', sparkle: true
-    });
-  }
-}
-
-function updateParticles(dt) {
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const p = particles[i];
-    p.x += p.vx * dt;
-    p.y += p.vy * dt;
-    p.vy += 80 * dt;
-    p.life -= p.decay * dt;
-    if (p.life <= 0) { particles[i] = particles[particles.length - 1]; particles.pop(); }
-  }
-}
-
-function drawParticles() {
-  for (let i = 0; i < particles.length; i++) {
-    const p = particles[i];
-    const a = clamp(p.life, 0, 1);
-    ctx.globalAlpha = a;
-    if (p.sparkle) {
-      ctx.fillStyle = '#fff';
-      const sz = p.r * (0.5 + 0.5 * Math.sin(p.life * 12));
-      ctx.fillRect(p.x - sz, p.y - sz, sz * 2, sz * 2);
-    } else {
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r * a, 0, Math.PI * 2);
-      ctx.fill();
+canvas.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  if (state === 'gameover' && shareBounds) {
+    const r = canvas.getBoundingClientRect();
+    const mx = e.clientX - r.left, my = e.clientY - r.top;
+    const b = shareBounds;
+    if (mx >= b.x && mx <= b.x + b.w && my >= b.y && my <= b.y + b.h) {
+      doShare();
+      return;
     }
   }
-  ctx.globalAlpha = 1;
+  doTap();
+});
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); doTap(); }
+});
+
+function doShare() {
+  const txt = `I scored ${score} in Color Dash: Dash Sync! \u{1F3AE}\nhttps://balinti.github.io/color-dash/`;
+  if (navigator.share) {
+    navigator.share({ title: 'Color Dash', text: txt }).catch(() => {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(txt).then(() => toast('Copied!')).catch(() => {});
+  }
 }
 
-// --- Overdrive sparks ---
-function spawnOverdriveSpark(x, y) {
-  if (sparks.length > 60) return;
-  sparks.push({
-    x: x + rand(-10, 10), y: y,
-    vx: rand(-25, 25), vy: rand(-70, -20),
-    life: 1, decay: rand(2, 4), r: rand(2, 4)
+function toast(m) { toastTxt = m; toastT = 100; }
+
+/* ====== SPAWN ====== */
+function spawnGate() {
+  const tier = diffTier();
+  let gl, gs, partial = false;
+
+  if (tutDone < 3) {
+    if (tutDone === 0) { gl = lane; gs = signal; partial = true; }
+    else { gl = 1 - lane; gs = (signal + 1) % SIGNAL_COUNT; }
+    tutDone++;
+  } else {
+    gl = Math.random() < 0.5 ? 0 : 1;
+    gs = Math.floor(Math.random() * SIGNAL_COUNT);
+    if (tier === 0 && Math.random() < 0.45) {
+      partial = true;
+      if (Math.random() < 0.5) gs = -1; else gl = -1;
+    }
+  }
+
+  const g = {
+    x: W + 60 * dpr,
+    lane: gl,
+    signal: gs,
+    partial,
+    passed: false,
+    hit: false,
+    minDx: Infinity,
+    tele: true,
+    locked: false,
+    lockDist: 0
+  };
+
+  if (tier >= 3 && Math.random() < 0.22 && !partial) {
+    g.tele = false;
+    g.lockDist = W * 0.38;
+  }
+
+  gates.push(g);
+  lastSpawn = frame;
+}
+
+/* ====== PARTICLES ====== */
+function emit(x, y, col, n, spd, burst) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const s = spd * (0.4 + Math.random() * 0.6);
+    particles.push({
+      x, y,
+      vx: Math.cos(a) * s * dpr,
+      vy: Math.sin(a) * s * dpr,
+      life: 1,
+      dec: 0.016 + Math.random() * 0.02,
+      col,
+      r: (2 + Math.random() * 2.5) * dpr,
+      burst: !!burst
+    });
+  }
+}
+
+function emitTrail(x, y) {
+  trails.push({
+    x, y: y + (Math.random() - 0.5) * 6 * dpr,
+    life: 1, dec: 0.045,
+    col: SIG_COL[signal],
+    r: (1.2 + Math.random() * 1.8) * dpr,
+    sig: signal
   });
 }
 
-function updateSparks(dt) {
-  for (let i = sparks.length - 1; i >= 0; i--) {
-    const s = sparks[i];
-    s.x += s.vx * dt;
-    s.y += s.vy * dt;
-    s.life -= s.decay * dt;
-    if (s.life <= 0) { sparks[i] = sparks[sparks.length - 1]; sparks.pop(); }
-  }
-}
+/* ====== SHAKE ====== */
+function shake(amt, dur) { shakeAmt = amt * dpr; shakeDur = dur; }
 
-function drawSparks() {
-  for (let i = 0; i < sparks.length; i++) {
-    const s = sparks[i];
-    const a = clamp(s.life, 0, 1);
-    const h = (elapsedTime * 120) % 360;
-    ctx.globalAlpha = a * 0.8;
-    ctx.fillStyle = hsl(h, 90, 70);
-    ctx.beginPath();
-    ctx.arc(s.x, s.y, s.r * a, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-}
+/* ====== DRAW HELPERS ====== */
+function drawSigIcon(x, y, s, sz, col, al) {
+  ctx.save();
+  ctx.globalAlpha = al != null ? al : 1;
+  ctx.strokeStyle = col;
+  ctx.fillStyle = col;
+  ctx.lineWidth = 2 * dpr;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
 
-// --- Screen shake ---
-function triggerShake(intensity, dur) {
-  shakeTimer = dur;
-  screenShakeX = rand(-intensity, intensity);
-  screenShakeY = rand(-intensity, intensity);
-}
-
-function updateShake(dt) {
-  if (shakeTimer > 0) {
-    shakeTimer -= dt;
-    const intensity = shakeTimer * 10;
-    screenShakeX = rand(-intensity, intensity);
-    screenShakeY = rand(-intensity, intensity);
-  } else {
-    screenShakeX = 0;
-    screenShakeY = 0;
-  }
-}
-
-// --- Difficulty formulas ---
-function calcDifficulty() {
-  speed = Math.min(260 + 6.0 * score + 18 * Math.log2(1 + score / 10), 620);
-  spawnDt = clamp(0.92 - 0.0045 * score, 0.42, 0.92);
-  perfectWinPx = clamp(18 - 0.10 * score, 10, 18);
-  tier = Math.floor(score / 15);
-  pSplit = clamp(0.10 + 0.08 * tier, 0.10, 0.55);
-}
-
-// --- Badge helper ---
-function badgeAt(idx) { return BADGE_CYCLE[((idx % 6) + 6) % 6]; }
-function getPlayerY() { return H * 0.78; }
-function laneX(li) { return TRACK_PAD + laneW * li + laneW / 2; }
-
-// --- Gate logic ---
-function getReqForLane(gate, li) {
-  return gate.type === 'split' ? gate.reqs[li] : gate.req;
-}
-
-function matchGate(gate, li, bi) {
-  const req = getReqForLane(gate, li);
-  const badge = badgeAt(bi);
-  if (overdrive > 0) return badge.shape === req.shape;
-  return badge.hue === req.hue && badge.shape === req.shape;
-}
-
-function isSolvable(gate) {
-  // Check if there exists k in {0,1,2} taps that results in a matching state
-  for (let k = 0; k < 3; k++) {
-    const testLane = (laneIdx + k) % 3;
-    const testBadge = badgeAt(badgeIdx + k);
-    const req = getReqForLane(gate, testLane);
-    if (overdrive > 0) {
-      if (testBadge.shape === req.shape) return true;
-    } else {
-      if (testBadge.hue === req.hue && testBadge.shape === req.shape) return true;
-    }
-  }
-  return false;
-}
-
-function spawnGate() {
-  const isSplit = Math.random() < pSplit;
-  const gate = { y: -GATE_H, scored: false, missed: false };
-
-  if (isSplit) {
-    gate.type = 'split';
-    gate.reqs = [];
+  if (s === 0) {
+    ctx.beginPath(); ctx.arc(x, y, sz, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = col;
     for (let i = 0; i < 3; i++) {
-      const bi = randInt(0, 5);
-      gate.reqs.push({ hue: BADGE_CYCLE[bi].hue, shape: BADGE_CYCLE[bi].shape });
+      const a = i * Math.PI * 2 / 3 - Math.PI / 2;
+      ctx.beginPath(); ctx.arc(x + Math.cos(a) * sz * 0.42, y + Math.sin(a) * sz * 0.42, sz * 0.13, 0, Math.PI * 2); ctx.fill();
+    }
+  } else if (s === 1) {
+    ctx.beginPath();
+    ctx.moveTo(x, y - sz); ctx.lineTo(x + sz * 0.87, y + sz * 0.5); ctx.lineTo(x - sz * 0.87, y + sz * 0.5);
+    ctx.closePath(); ctx.stroke();
+    ctx.lineWidth = 1.5 * dpr;
+    for (let i = -1; i <= 1; i++) {
+      const ly = y + i * sz * 0.22 + sz * 0.08;
+      const hw = sz * 0.32 * (1.1 - i * 0.2);
+      ctx.beginPath(); ctx.moveTo(x - hw, ly); ctx.lineTo(x + hw, ly); ctx.stroke();
     }
   } else {
-    gate.type = 'single';
-    const bi = randInt(0, 5);
-    gate.req = { hue: BADGE_CYCLE[bi].hue, shape: BADGE_CYCLE[bi].shape };
+    const hs = sz * 0.78;
+    ctx.strokeRect(x - hs, y - hs, hs * 2, hs * 2);
+    ctx.lineWidth = 1.5 * dpr;
+    ctx.beginPath();
+    ctx.moveTo(x, y - hs); ctx.lineTo(x, y + hs);
+    ctx.moveTo(x - hs, y); ctx.lineTo(x + hs, y);
+    ctx.stroke();
   }
-
-  // Solvability guarantee
-  if (!isSolvable(gate)) {
-    // Pick a random k in {0,1,2} and force that lane+badge to match
-    const k = randInt(0, 2);
-    const forceLane = (laneIdx + k) % 3;
-    const forceBadge = badgeAt(badgeIdx + k);
-    const forceReq = { hue: forceBadge.hue, shape: forceBadge.shape };
-    if (gate.type === 'split') {
-      gate.reqs[forceLane] = forceReq;
-    } else {
-      gate.req = forceReq;
-    }
-  }
-
-  gates.push(gate);
+  ctx.restore();
 }
 
-// --- Init ---
-function init() {
-  score = 0;
-  bestScore = loadBest();
-  badgeIdx = 0;
-  laneIdx = 1;
-  gates = [];
-  particles = [];
-  sparks = [];
-  spawnTimer = 0.5;
-  streakPerfect = 0;
-  multiplier = 1;
-  syncMeter = 0;
-  overdrive = 0;
-  overdriveTTL = 0;
-  screenShakeX = 0;
-  screenShakeY = 0;
-  shakeTimer = 0;
-  hitStopTimer = 0;
-  gameOverLock = 0;
-  elapsedTime = 0;
-  flashAlpha = 0;
-  bgHueShift = 0;
-  uiPopScale = 1;
-  uiPopTimer = 0;
-  calcDifficulty();
+function drawHeart(x, y, sz, on) {
+  ctx.fillStyle = on ? HEART_ON : HEART_OFF;
+  ctx.beginPath();
+  ctx.moveTo(x, y + sz * 0.35);
+  ctx.bezierCurveTo(x, y, x - sz, y, x - sz, y + sz * 0.35);
+  ctx.bezierCurveTo(x - sz, y + sz * 0.75, x, y + sz * 1.05, x, y + sz * 1.15);
+  ctx.bezierCurveTo(x, y + sz * 1.05, x + sz, y + sz * 0.75, x + sz, y + sz * 0.35);
+  ctx.bezierCurveTo(x + sz, y, x, y, x, y + sz * 0.35);
+  ctx.fill();
 }
 
-// --- Input ---
-function handleInput() {
-  if (state === 'start') {
-    state = 'playing';
-    init();
-    return;
-  }
-  if (state === 'gameover') {
-    if (gameOverLock > 0) return;
-    state = 'playing';
-    init();
-    return;
-  }
-  if (state === 'playing') {
-    laneIdx = (laneIdx + 1) % 3;
-    badgeIdx = (badgeIdx + 1) % BADGE_CYCLE.length;
-  }
+function rrect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
 }
 
-canvas.addEventListener('pointerdown', function(e) {
-  e.preventDefault();
-  handleInput();
-});
-document.addEventListener('keydown', function(e) {
-  if (e.code === 'Space' || e.code === 'Enter') {
-    e.preventDefault();
-    handleInput();
-  }
-});
+/* ====== UPDATE ====== */
+function update() {
+  hue = (hue + 0.25) % 360;
 
-// --- Game Over ---
-function triggerGameOver() {
-  state = 'gameover';
-  gameOverLock = 0.8;
-  if (score > bestScore) {
-    bestScore = score;
-    saveBest(bestScore);
-  }
-  triggerShake(7, 0.5);
-  flashAlpha = 0.6;
-  const px = laneX(laneIdx);
-  const py = getPlayerY();
-  spawnParticles(px, py, '#f44', 30, 1.5);
-}
+  if (shakeDur > 0) {
+    shakeDur--;
+    const f = shakeDur / 12;
+    shakeX = (Math.random() - 0.5) * shakeAmt * f;
+    shakeY = (Math.random() - 0.5) * shakeAmt * f;
+  } else { shakeX = 0; shakeY = 0; }
 
-// --- Update ---
-function update(dt) {
+  // toast
+  if (toastT > 0) toastT--;
+
   if (state !== 'playing') return;
 
-  // Hit-stop
-  if (hitStopTimer > 0) {
-    hitStopTimer -= dt;
-    return;
-  }
+  const tier = diffTier();
 
-  elapsedTime += dt;
-  bgHueShift = (elapsedTime * 8 + multiplier * 15) % 360;
+  // difficulty ramp
+  speed = Math.min(5.5, 2.2 + tier * 0.55 + score * 0.009);
+  spawnInt = Math.max(52, 110 - tier * 10 - score * 0.3);
+  perfWin = Math.max(12, 26 - tier * 2.2);
+  hitWin = Math.max(22, 38 - tier * 2.8);
 
-  // UI pop timer
-  if (uiPopTimer > 0) {
-    uiPopTimer -= dt;
-    uiPopScale = 1 + 0.35 * clamp(uiPopTimer / 0.3, 0, 1);
-  } else {
-    uiPopScale = 1;
-  }
+  // player smooth move
+  const dy = playerTgtY - playerY;
+  playerY += dy * 0.22;
+  if (Math.abs(dy) < 0.5) playerY = playerTgtY;
 
-  // Overdrive countdown
-  if (overdrive > 0) {
-    overdriveTTL -= dt;
-    if (overdriveTTL <= 0) {
-      overdrive = 0;
-      overdriveTTL = 0;
-    }
-    const px = laneX(laneIdx);
-    const py = getPlayerY();
-    if (Math.random() < 0.5) spawnOverdriveSpark(px, py);
-  }
-
-  calcDifficulty();
-
-  // Spawn gates
-  spawnTimer -= dt;
-  if (spawnTimer <= 0) {
+  // spawn
+  if (frame - lastSpawn >= spawnInt) {
     spawnGate();
-    spawnTimer = spawnDt;
+    // double-beat at high score
+    if (score >= 80 && Math.random() < 0.28) {
+      const gap = Math.max(25, spawnInt * 0.45);
+      setTimeout(() => { if (state === 'playing') spawnGate(); }, gap * 16);
+    }
   }
 
-  // Move and evaluate gates
-  const py = getPlayerY();
+  // trail
+  const px = W * PLAYER_X_FRAC;
+  if (frame % 2 === 0) emitTrail(px, playerY);
+
+  const spx = speed * dpr;
+
+  // gates
   for (let i = gates.length - 1; i >= 0; i--) {
     const g = gates[i];
-    g.y += speed * dt;
-    const gCenter = g.y + GATE_H / 2;
+    g.x -= spx;
 
-    if (!g.scored && !g.missed) {
-      // Gate overlapping player zone
-      if (gCenter >= py - GATE_H * 0.5 && gCenter <= py + GATE_H * 0.5) {
-        if (matchGate(g, laneIdx, badgeIdx)) {
-          g.scored = true;
-          const isPerfect = Math.abs(gCenter - py) <= perfectWinPx;
-          const basePoints = isPerfect ? 2 : 1;
-          score += basePoints * multiplier;
+    // juke lock-in
+    if (!g.tele && !g.locked && g.x < W - g.lockDist) {
+      g.tele = true; g.locked = true;
+    }
 
-          if (isPerfect) {
-            streakPerfect++;
-            multiplier = 1 + Math.floor(streakPerfect / 5);
-            syncMeter = Math.min(syncMeter + 0.12, 1);
-            hitStopTimer = 0.06;
-            uiPopTimer = 0.3;
-            const px = laneX(laneIdx);
-            spawnParticles(px, py, hsl(badgeAt(badgeIdx).hue, 80, 60), 22, 1.2);
-            spawnSparkles(px, py, 14);
-            triggerShake(3, 0.15);
-          } else {
-            syncMeter = Math.min(syncMeter + 0.02, 1);
-            const px = laneX(laneIdx);
-            spawnParticles(px, py, hsl(badgeAt(badgeIdx).hue, 70, 55), 10, 0.8);
-            triggerShake(1.5, 0.08);
-          }
+    const dx = g.x - px;
+    const adx = Math.abs(dx);
+    if (adx < g.minDx) g.minDx = adx;
 
-          // Check overdrive activation
-          if (syncMeter >= 1) {
-            overdrive = 1;
-            overdriveTTL = 3.0;
-            syncMeter = 0;
-            triggerShake(5, 0.3);
-            const px = laneX(laneIdx);
-            spawnParticles(px, py, '#fff', 28, 1.5);
-            spawnSparkles(px, py, 22);
-          }
+    // passed the player
+    if (!g.passed && !g.hit && dx < -hitWin * dpr) {
+      const lOk = g.lane === -1 || lane === g.lane;
+      const sOk = g.signal === -1 || signal === g.signal;
+      if (lOk && sOk) {
+        g.passed = true;
+        const perf = g.minDx < perfWin * dpr;
+        if (perf) {
+          streak++;
+          multi = Math.min(5, 1 + Math.floor(streak / 3));
+          score += 2 * multi;
+          emit(px, playerY, PERF_COL, 22, 4.5, true);
+          shake(2.5, 7);
         } else {
-          g.missed = true;
-          triggerGameOver();
-          return;
+          streak = 0; multi = 1;
+          score += 1;
+          emit(px, playerY, SIG_COL[signal], 8, 2.5, false);
+        }
+        if (score > highScore) { highScore = score; saveHS(); }
+      } else {
+        g.hit = true;
+        hearts--;
+        streak = 0; multi = 1;
+        const gy = laneY(g.lane >= 0 ? g.lane : lane);
+        emit(g.x, gy, HIT_COL, 16, 3.5, false);
+        shake(5, 14);
+        if (hearts <= 0) {
+          state = 'gameover';
+          shake(9, 22);
+          emit(px, playerY, HIT_COL, 35, 5.5, true);
         }
       }
     }
 
-    // Miss: gate scrolled past player entirely
-    if (!g.scored && !g.missed && g.y > py + GATE_H) {
-      g.missed = true;
-      streakPerfect = 0;
-      multiplier = 1;
-      triggerGameOver();
-      return;
-    }
-
-    // Remove off-screen
-    if (g.y > H + 60) {
-      gates[i] = gates[gates.length - 1];
-      gates.pop();
-    }
+    if (g.x < -80 * dpr) gates.splice(i, 1);
   }
 
-  updateParticles(dt);
-  updateSparks(dt);
-  updateShake(dt);
+  // particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy;
+    p.vy += 0.06 * dpr; // slight gravity
+    p.life -= p.dec;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+  for (let i = trails.length - 1; i >= 0; i--) {
+    const t = trails[i];
+    t.x -= spx * 0.5;
+    t.life -= t.dec;
+    if (t.life <= 0) trails.splice(i, 1);
+  }
+
+  justTapped = false;
 }
 
-// --- Draw functions ---
-function drawTrack() {
-  // Lane dividers
-  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-  ctx.lineWidth = 1;
-  for (let i = 0; i <= 3; i++) {
-    const x = TRACK_PAD + laneW * i;
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, H);
-    ctx.stroke();
-  }
-
-  // Active lane highlight
-  ctx.fillStyle = 'rgba(255,255,255,0.03)';
-  const alx = TRACK_PAD + laneW * laneIdx;
-  ctx.fillRect(alx, 0, laneW, H);
-
-  // Center dashes
-  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-  ctx.lineWidth = 1;
-  ctx.setLineDash([18, 22]);
-  for (let li = 0; li < 2; li++) {
-    const dx = TRACK_PAD + laneW * (li + 1);
-    ctx.beginPath();
-    ctx.moveTo(dx, 0);
-    ctx.lineTo(dx, H);
-    ctx.stroke();
-  }
-  ctx.setLineDash([]);
-}
-
-function drawGates() {
-  const py = getPlayerY();
-  for (let gi = 0; gi < gates.length; gi++) {
-    const g = gates[gi];
-    if (g.y + GATE_H < -10 || g.y > H + 10) continue;
-    if (g.scored) continue;
-
-    for (let li = 0; li < 3; li++) {
-      const req = getReqForLane(g, li);
-      const gx = TRACK_PAD + laneW * li;
-      const gy = g.y;
-
-      // Gate background
-      const bga = overdrive > 0 ? 0.2 : 0.3;
-      ctx.fillStyle = hsl(req.hue, 55, 22, bga);
-      ctx.fillRect(gx + 1, gy + 1, laneW - 2, GATE_H - 2);
-
-      // Gate border
-      ctx.strokeStyle = hsl(req.hue, 65, 48, 0.55);
-      ctx.lineWidth = 2;
-      ctx.strokeRect(gx + 2, gy + 2, laneW - 4, GATE_H - 4);
-
-      // Inner glow
-      const grad = ctx.createRadialGradient(
-        gx + laneW / 2, gy + GATE_H / 2, 0,
-        gx + laneW / 2, gy + GATE_H / 2, laneW * 0.45
-      );
-      grad.addColorStop(0, hsl(req.hue, 75, 50, 0.12));
-      grad.addColorStop(1, 'transparent');
-      ctx.fillStyle = grad;
-      ctx.fillRect(gx, gy, laneW, GATE_H);
-
-      // Shape icon in gate
-      const scx = gx + laneW / 2;
-      const scy = gy + GATE_H / 2;
-      if (overdrive > 0) {
-        drawShape(scx, scy, req.shape, 14, hsl(0, 0, 80, 0.75));
-        drawShapeOutline(scx, scy, req.shape, 14, hsl(req.hue, 40, 45, 0.35), 1);
-      } else {
-        drawShape(scx, scy, req.shape, 14, hsl(req.hue, 70, 55));
-      }
-    }
-
-    // Perfect zone pulse near player
-    if (!g.scored && !g.missed) {
-      const gCenter = g.y + GATE_H / 2;
-      const dist = Math.abs(gCenter - py);
-      if (dist < GATE_H * 1.2) {
-        const pulse = 0.5 + 0.5 * Math.sin(elapsedTime * 10);
-        const a = clamp((1 - dist / (GATE_H * 1.2)) * 0.25 * pulse, 0, 0.3);
-        ctx.fillStyle = 'rgba(255,255,255,' + a + ')';
-        ctx.fillRect(TRACK_PAD, py - perfectWinPx, W - TRACK_PAD * 2, perfectWinPx * 2);
-      }
-    }
-  }
-}
-
-function drawPlayer() {
-  const px = laneX(laneIdx);
-  const py = getPlayerY();
-  const badge = badgeAt(badgeIdx);
-
-  // Glow
-  const glowR = 30 + 5 * Math.sin(elapsedTime * 4);
-  const glow = ctx.createRadialGradient(px, py, 0, px, py, glowR);
-  if (overdrive > 0) {
-    const oh = (elapsedTime * 200) % 360;
-    glow.addColorStop(0, hsl(oh, 90, 65, 0.45));
-  } else {
-    glow.addColorStop(0, hsl(badge.hue, 80, 58, 0.4));
-  }
-  glow.addColorStop(1, 'transparent');
-  ctx.fillStyle = glow;
-  ctx.beginPath();
-  ctx.arc(px, py, glowR, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Body
-  ctx.beginPath();
-  ctx.arc(px, py, 18, 0, Math.PI * 2);
-  if (overdrive > 0) {
-    const oh = (elapsedTime * 200) % 360;
-    ctx.fillStyle = hsl(oh, 90, 65);
-    ctx.strokeStyle = '#fff';
-  } else {
-    ctx.fillStyle = hsl(badge.hue, 72, 52);
-    ctx.strokeStyle = hsl(badge.hue, 78, 72);
-  }
-  ctx.lineWidth = 2.5;
-  ctx.fill();
-  ctx.stroke();
-
-  // Shape inside player
-  drawShape(px, py, badge.shape, 9, 'rgba(255,255,255,0.9)');
-}
-
-function drawTelegraph() {
-  // Show next 2 upcoming gates as small icons at top
-  const py = getPlayerY();
-  const upcoming = [];
-  for (let i = 0; i < gates.length && upcoming.length < 2; i++) {
-    const g = gates[i];
-    if (!g.scored && !g.missed && g.y + GATE_H / 2 < py - GATE_H) {
-      upcoming.push(g);
-    }
-  }
-  if (upcoming.length === 0) return;
-
-  const ty = 8;
-  const tw = 52, th = 28, gap = 8;
-  const totalW = upcoming.length * tw + (upcoming.length - 1) * gap;
-  const startX = (W - totalW) / 2;
-
-  ctx.globalAlpha = 0.55;
-  for (let i = 0; i < upcoming.length; i++) {
-    const g = upcoming[i];
-    const x = startX + i * (tw + gap);
-
-    if (g.type === 'single') {
-      const req = g.req;
-      ctx.fillStyle = hsl(req.hue, 45, 18, 0.75);
-      roundRect(ctx, x, ty, tw, th, 4);
-      ctx.fill();
-      ctx.strokeStyle = hsl(req.hue, 55, 42, 0.7);
-      ctx.lineWidth = 1;
-      roundRect(ctx, x, ty, tw, th, 4);
-      ctx.stroke();
-      drawShape(x + tw / 2, ty + th / 2, req.shape, 7, hsl(req.hue, 65, 55));
-    } else {
-      const cw = tw / 3;
-      for (let li = 0; li < 3; li++) {
-        const req = g.reqs[li];
-        ctx.fillStyle = hsl(req.hue, 45, 18, 0.75);
-        ctx.fillRect(x + cw * li, ty, cw, th);
-        drawShape(x + cw * li + cw / 2, ty + th / 2, req.shape, 5, hsl(req.hue, 65, 55));
-      }
-      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-      ctx.lineWidth = 1;
-      roundRect(ctx, x, ty, tw, th, 4);
-      ctx.stroke();
-    }
-  }
-  ctx.globalAlpha = 1;
-}
-
-function roundRect(c, x, y, w, h, r) {
-  c.beginPath();
-  c.moveTo(x + r, y);
-  c.lineTo(x + w - r, y);
-  c.quadraticCurveTo(x + w, y, x + w, y + r);
-  c.lineTo(x + w, y + h - r);
-  c.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  c.lineTo(x + r, y + h);
-  c.quadraticCurveTo(x, y + h, x, y + h - r);
-  c.lineTo(x, y + r);
-  c.quadraticCurveTo(x, y, x + r, y);
-  c.closePath();
-}
-
-function drawUI() {
-  const badge = badgeAt(badgeIdx);
-
-  // Score
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'top';
-  ctx.font = 'bold 24px sans-serif';
-  ctx.fillStyle = '#fff';
-  ctx.fillText(String(score), 14, 44);
-
-  // Best
-  ctx.font = '11px sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.45)';
-  ctx.fillText('BEST ' + bestScore, 14, 72);
-
-  // Multiplier
-  if (multiplier > 1) {
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'middle';
-    const fs = Math.round(18 * uiPopScale);
-    ctx.font = 'bold ' + fs + 'px sans-serif';
-    ctx.fillStyle = hsl(50, 90, 65);
-    ctx.fillText('x' + multiplier, W - 14, 50);
-  }
-
-  // Streak
-  if (streakPerfect > 0) {
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'top';
-    const fs = Math.round(12 * uiPopScale);
-    ctx.font = 'bold ' + fs + 'px sans-serif';
-    ctx.fillStyle = hsl(40, 85, 68, 0.9);
-    ctx.fillText(streakPerfect + ' PERFECT', W - 14, 65);
-  }
-
-  // Sync meter
-  const barW = 80, barH = 6;
-  const barX = W - 14 - barW, barY = 84;
-  ctx.fillStyle = 'rgba(255,255,255,0.1)';
-  roundRect(ctx, barX, barY, barW, barH, 3);
-  ctx.fill();
-
-  const fillW = syncMeter * barW;
-  if (fillW > 1) {
-    const wobble = syncMeter > 0.1 ? Math.sin(elapsedTime * 6) * 0.8 : 0;
-    const mg = ctx.createLinearGradient(barX, 0, barX + fillW, 0);
-    mg.addColorStop(0, hsl(180, 80, 55));
-    mg.addColorStop(1, hsl(280, 80, 60));
-    ctx.fillStyle = mg;
-    roundRect(ctx, barX, barY + wobble * 0.3, fillW, barH, 3);
-    ctx.fill();
-  }
-
-  ctx.font = '9px sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
-  ctx.textAlign = 'right';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('SYNC', barX - 4, barY + barH / 2);
-
-  // Overdrive indicator
-  if (overdrive > 0) {
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = 'bold 14px sans-serif';
-    const pulse = 0.7 + 0.3 * Math.sin(elapsedTime * 10);
-    ctx.globalAlpha = pulse;
-    const oh = (elapsedTime * 150) % 360;
-    ctx.fillStyle = hsl(oh, 90, 70);
-    ctx.fillText('OVERDRIVE', W / 2, 44);
-    ctx.font = '10px sans-serif';
-    ctx.fillStyle = '#fff';
-    ctx.fillText(overdriveTTL.toFixed(1) + 's', W / 2, 60);
-    ctx.globalAlpha = 1;
-  }
-
-  // Current badge indicator at bottom
-  ctx.globalAlpha = 0.65;
-  const biX = W / 2, biY = H - 22;
-  drawShape(biX - 14, biY, badge.shape, 7, hsl(badge.hue, 65, 52));
-  ctx.font = '9px sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.5)';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('BADGE', biX, biY);
-  ctx.globalAlpha = 1;
-}
-
-function drawStartScreen() {
-  const t = Date.now() * 0.001;
-
-  // Title
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  const pulse = 1 + 0.03 * Math.sin(t * 3);
-  const fs = Math.round(38 * pulse);
-  ctx.font = 'bold ' + fs + 'px sans-serif';
-
-  const tg = ctx.createLinearGradient(W / 2 - 110, 0, W / 2 + 110, 0);
-  tg.addColorStop(0, hsl(200, 80, 65));
-  tg.addColorStop(0.5, hsl(330, 80, 65));
-  tg.addColorStop(1, hsl(120, 80, 65));
-  ctx.fillStyle = tg;
-  ctx.fillText('COLOR DASH', W / 2, H * 0.20);
-
-  ctx.font = '13px sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.45)';
-  ctx.fillText('Dash Sync Edition', W / 2, H * 0.20 + 34);
-
-  // Animated shapes
-  for (let i = 0; i < 3; i++) {
-    const sx = W / 2 + (i - 1) * 52;
-    const sy = H * 0.36 + Math.sin(t * 1.5 + i * 2.1) * 10;
-    const b = BADGE_CYCLE[i];
-    drawShape(sx, sy, b.shape, 18, hsl(b.hue, 70, 55, 0.8));
-  }
-
-  // Instructions
-  ctx.font = '13px sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.6)';
-  const lines = [
-    'Tap to shift lane + cycle badge',
-    'Match color & shape to pass gates',
-    'Perfect timing = bonus points!',
-    'Fill Sync Meter for Overdrive'
-  ];
-  for (let i = 0; i < lines.length; i++) {
-    ctx.fillText(lines[i], W / 2, H * 0.48 + i * 24);
-  }
-
-  // Best score
-  const best = loadBest();
-  if (best > 0) {
-    ctx.font = 'bold 16px sans-serif';
-    ctx.fillStyle = hsl(50, 80, 65);
-    ctx.fillText('BEST: ' + best, W / 2, H * 0.67);
-  }
-
-  // Tap to start
-  const tapPulse = 0.5 + 0.5 * Math.sin(t * 4);
-  ctx.globalAlpha = 0.5 + tapPulse * 0.5;
-  ctx.font = 'bold 20px sans-serif';
-  ctx.fillStyle = '#fff';
-  ctx.fillText('TAP TO START', W / 2, H * 0.80);
-  ctx.globalAlpha = 1;
-
-  ctx.font = '11px sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.3)';
-  ctx.fillText('or press Space / Enter', W / 2, H * 0.80 + 26);
-}
-
-function drawGameOverScreen() {
-  // Dark overlay
-  ctx.fillStyle = 'rgba(0,0,0,0.55)';
-  ctx.fillRect(0, 0, W, H);
-
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-
-  ctx.font = 'bold 32px sans-serif';
-  ctx.fillStyle = hsl(0, 65, 58);
-  ctx.fillText('GAME OVER', W / 2, H * 0.30);
-
-  ctx.font = '14px sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.5)';
-  ctx.fillText('SCORE', W / 2, H * 0.40);
-
-  ctx.font = 'bold 48px sans-serif';
-  ctx.fillStyle = '#fff';
-  ctx.fillText(String(score), W / 2, H * 0.46);
-
-  ctx.font = 'bold 18px sans-serif';
-  ctx.fillStyle = hsl(50, 80, 65);
-  ctx.fillText('BEST: ' + bestScore, W / 2, H * 0.56);
-
-  if (score === bestScore && score > 0) {
-    ctx.font = 'bold 14px sans-serif';
-    ctx.fillStyle = hsl(50, 90, 72);
-    const np = 0.7 + 0.3 * Math.sin(Date.now() * 0.006);
-    ctx.globalAlpha = np;
-    ctx.fillText('NEW BEST!', W / 2, H * 0.56 + 24);
-    ctx.globalAlpha = 1;
-  }
-
-  if (gameOverLock <= 0) {
-    const tapPulse = 0.5 + 0.5 * Math.sin(Date.now() * 0.004);
-    ctx.globalAlpha = 0.5 + tapPulse * 0.5;
-    ctx.font = 'bold 17px sans-serif';
-    ctx.fillStyle = '#fff';
-    ctx.fillText('TAP TO RETRY', W / 2, H * 0.72);
-    ctx.globalAlpha = 1;
-  }
-}
-
-// --- Main draw ---
+/* ====== DRAW ====== */
 function draw() {
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  ctx.clearRect(0, 0, W, H);
-
   ctx.save();
-  ctx.translate(screenShakeX, screenShakeY);
+  ctx.translate(shakeX, shakeY);
 
-  // Background gradient
-  const bh = (220 + bgHueShift * 0.3) % 360;
+  // background gradient
   const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, hsl(bh, 28, 7));
-  bg.addColorStop(0.5, hsl(bh + 20, 32, 11));
-  bg.addColorStop(1, hsl(bh + 40, 36, 15));
+  bg.addColorStop(0, BG_TOP); bg.addColorStop(1, BG_BOT);
   ctx.fillStyle = bg;
-  ctx.fillRect(-10, -10, W + 20, H + 20);
+  ctx.fillRect(-20, -20, W + 40, H + 40);
 
-  if (state === 'start') {
-    drawStartScreen();
-    ctx.restore();
-    return;
+  if (state === 'start') drawStart();
+  else {
+    drawField();
+    drawTrails();
+    drawGates();
+    drawPlayer();
+    drawHUD();
+    if (state === 'gameover') drawGO();
   }
 
-  // Track, gates, player, effects, UI
-  drawTrack();
-  drawTelegraph();
-  drawGates();
-  drawPlayer();
-  drawParticles();
-  drawSparks();
-  drawUI();
-
-  // Overdrive color overlay
-  if (overdrive > 0) {
-    const a = 0.06 + 0.04 * Math.sin(elapsedTime * 8);
-    ctx.globalAlpha = a;
-    const oh = (elapsedTime * 120) % 360;
-    ctx.fillStyle = hsl(oh, 80, 60);
-    ctx.fillRect(0, 0, W, H);
-    ctx.globalAlpha = 1;
-  }
-
-  // Game over overlay
-  if (state === 'gameover') {
-    drawGameOverScreen();
-  }
-
-  // Flash effect
-  if (flashAlpha > 0) {
-    ctx.globalAlpha = clamp(flashAlpha, 0, 1);
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(0, 0, W, H);
-    ctx.globalAlpha = 1;
-  }
+  drawParts();
+  drawToast();
 
   ctx.restore();
 }
 
-// --- Main Loop ---
-let lastTime = 0;
+/* -- start screen -- */
+function drawStart() {
+  const cx = W / 2, cy = H / 2;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
 
-function loop(ts) {
-  requestAnimationFrame(loop);
+  ctx.fillStyle = TXT;
+  ctx.font = `bold ${34 * dpr}px 'Segoe UI',system-ui,sans-serif`;
+  ctx.fillText('Color Dash', cx, cy - 85 * dpr);
 
-  const rawDt = (ts - lastTime) / 1000;
-  lastTime = ts;
-  const dt = Math.min(rawDt, 0.05);
+  ctx.fillStyle = `hsl(${hue},65%,68%)`;
+  ctx.font = `${15 * dpr}px 'Segoe UI',system-ui,sans-serif`;
+  ctx.fillText('Dash Sync', cx, cy - 52 * dpr);
 
-  // Update game-over timers even when not playing
-  if (state === 'gameover') {
-    gameOverLock -= dt;
-    if (flashAlpha > 0) flashAlpha -= dt * 2;
-    updateParticles(dt);
-    updateSparks(dt);
-    updateShake(dt);
+  // icons
+  for (let i = 0; i < 3; i++) {
+    drawSigIcon(cx + (i - 1) * 50 * dpr, cy - 10 * dpr, i, 14 * dpr, SIG_COL[i], 0.85);
   }
 
-  update(dt);
-  draw();
+  ctx.fillStyle = DIM;
+  ctx.font = `${12 * dpr}px 'Segoe UI',system-ui,sans-serif`;
+  ctx.fillText('Tap / Space / Enter', cx, cy + 40 * dpr);
+  ctx.fillText('Swap lane + cycle signal', cx, cy + 58 * dpr);
+  ctx.fillText('Match the gate to pass!', cx, cy + 76 * dpr);
+
+  if (highScore > 0) {
+    ctx.fillStyle = PERF_COL;
+    ctx.font = `bold ${14 * dpr}px sans-serif`;
+    ctx.fillText('Best: ' + highScore, cx, cy + 108 * dpr);
+  }
+
+  const pulse = 0.5 + 0.5 * Math.sin(frame * 0.06);
+  ctx.globalAlpha = pulse;
+  ctx.fillStyle = TXT;
+  ctx.font = `bold ${17 * dpr}px 'Segoe UI',system-ui,sans-serif`;
+  ctx.fillText('TAP TO START', cx, cy + 148 * dpr);
+  ctx.globalAlpha = 1;
 }
 
-// --- Boot ---
-init();
-bestScore = loadBest();
-requestAnimationFrame(function(ts) {
-  lastTime = ts;
-  loop(ts);
-});
+/* -- field -- */
+function drawField() {
+  const mid = (H * 0.38 + H * 0.62) / 2;
+  // lane divider
+  ctx.strokeStyle = LANE_DIV;
+  ctx.lineWidth = 1.5 * dpr;
+  ctx.setLineDash([10 * dpr, 10 * dpr]);
+  ctx.beginPath(); ctx.moveTo(0, mid); ctx.lineTo(W, mid); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // lane edges
+  ctx.strokeStyle = 'rgba(50,50,70,0.25)';
+  ctx.lineWidth = 1 * dpr;
+  const edgeOff = 48 * dpr;
+  ctx.beginPath();
+  ctx.moveTo(0, H * 0.38 - edgeOff); ctx.lineTo(W, H * 0.38 - edgeOff);
+  ctx.moveTo(0, H * 0.62 + edgeOff); ctx.lineTo(W, H * 0.62 + edgeOff);
+  ctx.stroke();
+}
+
+/* -- trails -- */
+function drawTrails() {
+  for (const t of trails) {
+    ctx.globalAlpha = t.life * 0.45;
+    ctx.fillStyle = t.col;
+    if (t.sig === 0) {
+      ctx.beginPath(); ctx.arc(t.x, t.y, t.r, 0, Math.PI * 2); ctx.fill();
+    } else if (t.sig === 1) {
+      ctx.strokeStyle = t.col; ctx.lineWidth = 1.5 * dpr;
+      ctx.beginPath();
+      ctx.moveTo(t.x - t.r, t.y - t.r); ctx.lineTo(t.x + t.r * 0.3, t.y); ctx.lineTo(t.x - t.r, t.y + t.r);
+      ctx.stroke();
+    } else {
+      ctx.fillRect(t.x - t.r * 0.5, t.y - t.r * 0.5, t.r, t.r);
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+/* -- gates -- */
+function drawGates() {
+  for (const g of gates) {
+    if (g.x > W + 50 * dpr || g.x < -60 * dpr) continue;
+    const gateH = 52 * dpr;
+    const gy = g.lane >= 0 ? laneY(g.lane) : H / 2;
+
+    if (!g.tele) {
+      // mystery gate
+      ctx.globalAlpha = 0.4;
+      ctx.strokeStyle = '#555';
+      ctx.lineWidth = 3 * dpr;
+      ctx.strokeRect(g.x - 5 * dpr, gy - gateH / 2, 10 * dpr, gateH);
+      ctx.fillStyle = '#555';
+      ctx.font = `bold ${18 * dpr}px sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('?', g.x, gy);
+      ctx.globalAlpha = 1;
+      continue;
+    }
+
+    const col = g.signal >= 0 ? SIG_COL[g.signal] : '#888';
+    const alpha = g.passed ? 0.15 : g.hit ? 0.12 : 0.88;
+    ctx.globalAlpha = alpha;
+
+    // vertical bar
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 3.5 * dpr;
+    if (g.lane >= 0) {
+      ctx.beginPath(); ctx.moveTo(g.x, gy - gateH / 2); ctx.lineTo(g.x, gy + gateH / 2); ctx.stroke();
+      // caps
+      ctx.lineWidth = 2.5 * dpr;
+      ctx.beginPath();
+      ctx.moveTo(g.x - 12 * dpr, gy - gateH / 2); ctx.lineTo(g.x + 12 * dpr, gy - gateH / 2);
+      ctx.moveTo(g.x - 12 * dpr, gy + gateH / 2); ctx.lineTo(g.x + 12 * dpr, gy + gateH / 2);
+      ctx.stroke();
+    } else {
+      ctx.beginPath(); ctx.moveTo(g.x, H * 0.22); ctx.lineTo(g.x, H * 0.78); ctx.stroke();
+    }
+
+    // icon
+    if (g.signal >= 0) {
+      drawSigIcon(g.x, gy - gateH / 2 - 17 * dpr, g.signal, 9 * dpr, col, alpha);
+    }
+
+    // partial label
+    if (g.partial) {
+      ctx.fillStyle = 'rgba(255,255,255,0.28)';
+      ctx.font = `${8 * dpr}px sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(g.signal === -1 ? 'LANE' : 'SIG', g.x, gy + gateH / 2 + 13 * dpr);
+    }
+
+    // glow
+    if (!g.passed && !g.hit) {
+      const dist = g.x - W * PLAYER_X_FRAC;
+      if (dist > 0 && dist < 140 * dpr) {
+        const ga = 0.12 * (1 - dist / (140 * dpr));
+        ctx.globalAlpha = ga;
+        ctx.fillStyle = col;
+        ctx.beginPath(); ctx.arc(g.x, gy, 28 * dpr, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+}
+
+/* -- player -- */
+function drawPlayer() {
+  const px = W * PLAYER_X_FRAC;
+  const py = playerY;
+  const r = 14 * dpr;
+  const col = SIG_COL[signal];
+
+  // outer glow
+  ctx.globalAlpha = 0.18;
+  ctx.fillStyle = col;
+  ctx.beginPath(); ctx.arc(px, py, r * 2, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = 1;
+
+  ctx.fillStyle = col;
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2.2 * dpr;
+  ctx.lineJoin = 'round';
+
+  if (signal === 0) {
+    ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.65)';
+    for (let i = 0; i < 3; i++) {
+      const a = i * Math.PI * 2 / 3 - Math.PI / 2 + frame * 0.025;
+      ctx.beginPath(); ctx.arc(px + Math.cos(a) * r * 0.42, py + Math.sin(a) * r * 0.42, r * 0.14, 0, Math.PI * 2); ctx.fill();
+    }
+  } else if (signal === 1) {
+    ctx.beginPath();
+    ctx.moveTo(px, py - r); ctx.lineTo(px + r * 0.87, py + r * 0.5); ctx.lineTo(px - r * 0.87, py + r * 0.5);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+    ctx.lineWidth = 1.5 * dpr;
+    for (let i = -1; i <= 1; i++) {
+      const sy = py + i * r * 0.23 + r * 0.08;
+      ctx.beginPath(); ctx.moveTo(px - r * 0.28, sy); ctx.lineTo(px + r * 0.28, sy); ctx.stroke();
+    }
+  } else {
+    const hs = r * 0.78;
+    ctx.fillRect(px - hs, py - hs, hs * 2, hs * 2);
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.2 * dpr;
+    ctx.strokeRect(px - hs, py - hs, hs * 2, hs * 2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+    ctx.lineWidth = 1.5 * dpr;
+    ctx.beginPath();
+    ctx.moveTo(px, py - hs); ctx.lineTo(px, py + hs);
+    ctx.moveTo(px - hs, py); ctx.lineTo(px + hs, py);
+    ctx.stroke();
+  }
+}
+
+/* -- HUD -- */
+function drawHUD() {
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.fillStyle = TXT;
+  ctx.font = `bold ${24 * dpr}px 'Segoe UI',system-ui,sans-serif`;
+  ctx.fillText(String(score), W / 2, 14 * dpr);
+
+  if (multi > 1) {
+    ctx.fillStyle = PERF_COL;
+    ctx.font = `bold ${13 * dpr}px sans-serif`;
+    ctx.fillText('x' + multi, W / 2, 42 * dpr);
+  }
+
+  // streak indicator
+  if (streak > 0 && streak >= 3) {
+    ctx.fillStyle = `hsl(${hue},70%,65%)`;
+    ctx.font = `${11 * dpr}px sans-serif`;
+    ctx.fillText(streak + ' streak', W / 2, multi > 1 ? 58 * dpr : 42 * dpr);
+  }
+
+  // hearts
+  for (let i = 0; i < MAX_HEARTS; i++) {
+    drawHeart(W - 28 * dpr - i * 24 * dpr, 12 * dpr, 8 * dpr, i < hearts);
+  }
+
+  // current state
+  drawSigIcon(28 * dpr, 26 * dpr, signal, 9 * dpr, SIG_COL[signal], 0.85);
+  ctx.fillStyle = DIM;
+  ctx.font = `${9 * dpr}px sans-serif`;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText(SIG_NAMES[signal], 42 * dpr, 20 * dpr);
+  ctx.fillText(lane === 0 ? 'Top' : 'Bot', 42 * dpr, 32 * dpr);
+}
+
+/* -- game over -- */
+function drawGO() {
+  ctx.fillStyle = 'rgba(12,12,22,0.78)';
+  ctx.fillRect(-20, -20, W + 40, H + 40);
+
+  const cx = W / 2, cy = H / 2;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+  ctx.fillStyle = HIT_COL;
+  ctx.font = `bold ${30 * dpr}px 'Segoe UI',system-ui,sans-serif`;
+  ctx.fillText('GAME OVER', cx, cy - 72 * dpr);
+
+  ctx.fillStyle = TXT;
+  ctx.font = `bold ${22 * dpr}px sans-serif`;
+  ctx.fillText('Score: ' + score, cx, cy - 28 * dpr);
+
+  if (score > 0 && score >= highScore) {
+    ctx.fillStyle = PERF_COL;
+    ctx.font = `bold ${15 * dpr}px sans-serif`;
+    ctx.fillText('NEW BEST!', cx, cy + 2 * dpr);
+  }
+
+  ctx.fillStyle = DIM;
+  ctx.font = `${13 * dpr}px sans-serif`;
+  ctx.fillText('Best: ' + highScore, cx, cy + 28 * dpr);
+
+  // share btn
+  const bw = 110 * dpr, bh = 34 * dpr;
+  const bx = cx - bw / 2, by = cy + 50 * dpr;
+  ctx.fillStyle = `hsl(${hue},55%,48%)`;
+  rrect(bx, by, bw, bh, 6 * dpr); ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = `bold ${13 * dpr}px sans-serif`;
+  ctx.fillText('SHARE', cx, cy + 67 * dpr);
+  shareBounds = { x: bx / dpr, y: by / dpr, w: bw / dpr, h: bh / dpr };
+
+  const pulse = 0.45 + 0.55 * Math.sin(frame * 0.06);
+  ctx.globalAlpha = pulse;
+  ctx.fillStyle = TXT;
+  ctx.font = `${14 * dpr}px sans-serif`;
+  ctx.fillText('TAP TO RESTART', cx, cy + 115 * dpr);
+  ctx.globalAlpha = 1;
+}
+
+/* -- particles -- */
+function drawParts() {
+  for (const p of particles) {
+    ctx.globalAlpha = p.life;
+    ctx.fillStyle = p.col;
+    const sz = p.r * p.life;
+    ctx.beginPath(); ctx.arc(p.x, p.y, sz, 0, Math.PI * 2); ctx.fill();
+    if (p.burst) {
+      ctx.globalAlpha = p.life * 0.4;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(p.x, p.y, sz * 0.4, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawToast() {
+  if (toastT <= 0) return;
+  ctx.globalAlpha = Math.min(1, toastT / 18);
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  ctx.font = `bold ${13 * dpr}px sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(toastTxt, W / 2, H * 0.84);
+  ctx.globalAlpha = 1;
+}
+
+/* ====== MAIN LOOP ====== */
+frame = 0;
+function loop() {
+  frame++;
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
 
 })();
 </script>
