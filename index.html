@@ -6,607 +6,570 @@
 <meta name="description" content="Play Color Dash - Run through color gates matching your current color. Tap to switch between colors. Speed increases every 10 points.">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0a0a1a">
-<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://balinti.github.io/color-dash/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Color Dash - Free HTML5 Game">
-<meta property="og:description" content="Play Color Dash - Run through color gates matching your current color. Tap to switch between colors. Speed increases every 10 points.">
+<meta property="og:description" content="Run through color gates matching your current color. Tap to switch between colors. Speed increases every 10 points.">
 <meta property="og:url" content="https://balinti.github.io/color-dash/">
 <meta property="og:image" content="https://balinti.github.io/color-dash/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Color Dash - Free HTML5 Game">
-<meta name="twitter:description" content="Play Color Dash - Run through color gates matching your current color. Tap to switch between colors. Speed increases every 10 points.">
+<meta name="twitter:description" content="Run through color gates matching your current color. Tap to switch between colors. Speed increases every 10 points.">
 <meta name="twitter:image" content="https://balinti.github.io/color-dash/og-image.png">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4099346100621490" crossorigin="anonymous"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-html,body{width:100%;height:100dvh;overflow:hidden;background:#0a0a1a;font-family:'Segoe UI',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-#wrap{position:relative;width:100%;max-width:420px;height:100dvh;max-height:750px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-canvas{display:block;width:100%;height:100%;border-radius:8px;touch-action:none;}
-details{max-width:420px;width:90%;color:#aab;font-size:13px;margin:8px auto;position:fixed;bottom:4px;left:50%;transform:translateX(-50%);z-index:10;}
-details summary{cursor:pointer;color:#88a;font-weight:600;text-align:center;}
-details p{margin:6px 0;line-height:1.5;}
-details .key{background:#222;padding:1px 5px;border-radius:3px;font-size:12px;}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a0a1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#fff;touch-action:none;-webkit-tap-highlight-color:transparent;user-select:none}
+#wrap{display:flex;flex-direction:column;align-items:center;width:100%;max-width:420px;height:100vh;height:100dvh;margin:0 auto}
+#header{width:100%;height:50px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;z-index:10}
+#header span{font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.7)}
+#game-area{flex:1;width:100%;position:relative;overflow:hidden;min-height:0}
+canvas{display:block;width:100%;height:100%}
+#hud{position:absolute;top:10px;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:0 14px;pointer-events:none;z-index:5}
+.hud-left{display:flex;flex-direction:column}
+.hud-score{font-size:26px;font-weight:800;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.hud-combo{font-size:12px;font-weight:600;color:rgba(255,255,255,.65);margin-top:2px}
+.hud-shield{font-size:22px;text-shadow:0 0 8px rgba(255,255,255,.3)}
+#footer{width:100%;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.04);border-top:1px solid rgba(255,255,255,.06);flex-shrink:0;z-index:10}
+#footer a{color:rgba(255,255,255,.35);font-size:11px;text-decoration:none;cursor:pointer}
+#footer a:hover{color:rgba(255,255,255,.55)}
+#pm{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center}
+#pm.show{display:flex}
+#pm .inner{background:#1a1a2e;border-radius:12px;padding:24px;max-width:340px;width:90%;max-height:70vh;overflow-y:auto}
+#pm h3{margin-bottom:10px;font-size:16px}
+#pm p{font-size:13px;color:rgba(255,255,255,.65);line-height:1.6;margin-bottom:10px}
+#pm button{background:rgba(255,255,255,.1);border:none;color:#fff;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px}
 </style>
 </head>
 <body>
-<div id="wrap"><canvas id="c"></canvas></div>
-<details>
-<summary>How to Play</summary>
-<p><strong>Color Dash: Flip + Match</strong> &mdash; a hyper-casual reflex game.</p>
-<p><strong>Goal:</strong> Pass through color gates that match your current color.</p>
-<p><strong>Controls:</strong> <span class="key">Tap</span>, <span class="key">Space</span>, or <span class="key">Enter</span> to flip your lane <em>and</em> swap your color (Cyan &#9650; &harr; Magenta &#9679;).</p>
-<p><strong>Shield:</strong> You start each run with a shield. The first wrong gate cracks it; the second ends your run. Shields refresh less often as difficulty rises.</p>
-<p><strong>Combo:</strong> Pass 5 perfect gates in a row to activate a x2 combo multiplier for 2.5&thinsp;s. Keep passing perfectly to refresh it!</p>
-<p><strong>Feint Gates:</strong> Dashed-outline gates don&rsquo;t score but can break your combo if you hit the wrong lane/color.</p>
-<p><strong>Color-Lock Gates:</strong> Passing one locks your color for 1.5&thinsp;s &mdash; you can still flip lanes but your color won&rsquo;t change.</p>
-<p>Speed increases over time. How far can you dash?</p>
-</details>
+<div id="wrap">
+  <div id="header"><span>Color Dash</span></div>
+  <div id="game-area">
+    <canvas id="c"></canvas>
+    <div id="hud">
+      <div class="hud-left">
+        <div class="hud-score" id="hs">0</div>
+        <div class="hud-combo" id="hc"></div>
+      </div>
+      <div class="hud-shield" id="hsh"></div>
+    </div>
+  </div>
+  <div id="footer"><a id="plink">Privacy</a></div>
+</div>
+<div id="pm">
+  <div class="inner">
+    <h3>Privacy Policy</h3>
+    <p>This game stores your high score locally on your device using localStorage. No personal data is collected or transmitted.</p>
+    <p>Third-party advertising (Google AdSense) may use cookies. See Google's privacy policy for details.</p>
+    <button id="pclose">Close</button>
+  </div>
+</div>
 <script>
 'use strict';
-/* ========== HELPERS ========== */
+(()=>{
+/* ── Helpers ── */
 const clamp=(v,lo,hi)=>v<lo?lo:v>hi?hi:v;
 const lerp=(a,b,t)=>a+(b-a)*t;
 const rand=(lo,hi)=>lo+Math.random()*(hi-lo);
 const randInt=(lo,hi)=>Math.floor(rand(lo,hi+1));
-const hsl=(h,s,l,a)=>a!==undefined?`hsla(${h},${s}%,${l}%,${a})`:`hsl(${h},${s}%,${l}%)`;
+const hsl=(h,s,l,a)=>a!=null?`hsla(${h},${s}%,${l}%,${a})`:`hsl(${h},${s}%,${l}%)`;
 
-/* ========== CANVAS INIT ========== */
+/* ── Constants ── */
+const LS_KEY='cd_best';
+const SUN=0,MOON=1;
+const LEFT=0,RIGHT=1;
+const GUARD_MS=500;
+const ORB_R=16;
+
+/* Sun = warm gold + stripes, Moon = cool blue + dots */
+const MODE_COLORS=['#FFB347','#7EC8E3'];
+const MODE_DARK=['#E8941C','#4A9EC7'];
+
+/* Gate types */
+const GT_STATIC=0,GT_OFFSET=1,GT_SLIDING=2,GT_FLICKER=3,GT_COMBO=4,GT_NARROW=5;
+
+/* ── DOM ── */
 const canvas=document.getElementById('c');
 const ctx=canvas.getContext('2d');
+const scoreEl=document.getElementById('hs');
+const comboEl=document.getElementById('hc');
+const shieldEl=document.getElementById('hsh');
+const gameArea=document.getElementById('game-area');
+
+document.getElementById('plink').onclick=()=>document.getElementById('pm').classList.add('show');
+document.getElementById('pclose').onclick=()=>document.getElementById('pm').classList.remove('show');
+
+/* ── Canvas sizing ── */
 let W,H,dpr;
 function resize(){
-  const wrap=document.getElementById('wrap');
-  const r=wrap.getBoundingClientRect();
+  const r=gameArea.getBoundingClientRect();
+  W=r.width;H=r.height;
   dpr=Math.min(window.devicePixelRatio||1,2);
-  W=r.width; H=r.height;
-  canvas.width=W*dpr; canvas.height=H*dpr;
-  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
   ctx.setTransform(dpr,0,0,dpr,0,0);
 }
 window.addEventListener('resize',resize);
 resize();
 
-/* ========== COLORS ========== */
-const CYAN='#00e5ff';
-const MAGENTA='#ff2ec4';
-const COLORS=[CYAN,MAGENTA];
-
-/* ========== GLOBAL STATE ========== */
+/* ── State ── */
 let state='start';
-let score=0, best=parseInt(localStorage.getItem('cd_best'))||0;
-let bestStreak=parseInt(localStorage.getItem('cd_bestStreak'))||0;
-let gameTime=0, speed=0, baseSpeed=0;
-let gates=[], particles=[], bgDots=[];
-let shakeX=0, shakeY=0, shakeMag=0;
-const shakeDecay=0.88;
+let score=0,best=parseInt(localStorage.getItem(LS_KEY))||0;
+let mode=SUN,lane=LEFT;
+let hasShield=true;
+let combo=0,comboMul=1;
+let speed=0,baseSpeed=3;
+let gates=[],particles=[],bgStars=[];
+let shakeX=0,shakeY=0,shakeMag=0;
+let hitStopTimer=0;
+let gameOverTime=0;
 let hueShift=0;
-let comboActive=false, comboTimer=0, comboMultiplier=1;
-let perfectStreak=0;
-let retryTimer=0;
-let deathFreeze=0;
-let spawnTimer=0;
+let orbY=0;
+let orbTrail=[];
+let nearMissTimer=0;
+let gateSpawnAccum=0;
+let gameTime=0;
+let lastGateY=-999;
 
-/* ========== PLAYER ========== */
-const player={
-  lane:0, targetLane:0,
-  x:0, y:0,
-  radius:18,
-  colorId:0,
-  shield:1,
-  lockTimer:0,
-  flipCooldown:0,
-  trail:[]
-};
+/* ── Background stars ── */
+function initStars(){
+  bgStars=[];
+  for(let i=0;i<35;i++) bgStars.push({x:rand(0,W),y:rand(0,H),r:rand(0.8,2),a:rand(0.05,0.2),s:rand(0.2,0.8)});
+}
+initStars();
 
-/* ========== BACKGROUND DOTS ========== */
-function initBgDots(){
-  bgDots=[];
-  for(let i=0;i<40;i++){
-    bgDots.push({x:rand(0,W),y:rand(0,H),r:rand(1,2.5),spd:rand(0.3,1.2),alpha:rand(0.08,0.25)});
+/* ── Gate helpers ── */
+function gateTypes(){
+  const t=[GT_STATIC];
+  if(score>=10) t.push(GT_OFFSET);
+  if(score>=25) t.push(GT_SLIDING);
+  if(score>=45) t.push(GT_FLICKER);
+  if(score>=70) t.push(GT_COMBO,GT_NARROW);
+  return t;
+}
+
+function makeGate(y){
+  const types=gateTypes();
+  const type=types[randInt(0,types.length-1)];
+  const sunLane=Math.random()<0.5?LEFT:RIGHT;
+  return{
+    y:y||-50,
+    type,sunLane,
+    gateW:type===GT_NARROW?W*0.52:W*0.72,
+    divX:type===GT_OFFSET?(0.3+Math.random()*0.4):0.5,
+    slideDir:Math.random()<0.5?1:-1,
+    slideSpd:0.25+Math.random()*0.3,
+    flickTimer:0,flickVis:false,
+    passed:false,scored:false,
+    narrow:type===GT_NARROW,
+    isCombo:type===GT_COMBO
+  };
+}
+
+/* ── Particles ── */
+function spawn(x,y,col,n,spread,life){
+  for(let i=0;i<n&&particles.length<400;i++){
+    const a=rand(0,Math.PI*2),sp=rand(0.5,spread);
+    particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:life*rand(0.5,1),maxLife:life,color:col,r:rand(1.5,4.5)});
   }
 }
-
-/* ========== GATE FACTORY ========== */
-function makeGate(lane,colorId,isFeint,isColorLock){
-  const gapH=clamp(92-score*0.35,48,92);
-  return{x:W+60,w:16,lane,colorId,gapH,isFeint:!!isFeint,isColorLock:!!isColorLock,scored:false,passed:false};
-}
-
-/* ========== SPAWN SYSTEM ========== */
-function getSpawnInterval(){
-  return clamp(1.55-gameTime*0.009,0.5,1.55);
-}
-function spawnGate(){
-  const s=score;
-  const lane=randInt(0,1);
-  const colorId=randInt(0,1);
-  let isFeint=false,isColorLock=false;
-  if(s>=8&&Math.random()<clamp(0.12+s*0.003,0.12,0.28)) isFeint=true;
-  if(!isFeint&&s>=15&&Math.random()<clamp(0.1+s*0.002,0.1,0.22)) isColorLock=true;
-  gates.push(makeGate(lane,colorId,isFeint,isColorLock));
-  if(s>=20&&Math.random()<0.18){
-    gates.push(makeGate(1-lane,randInt(0,1),false,false));
-  }
-}
-
-/* ========== PARTICLES ========== */
-function spawnParticles(x,y,color,count,spread,life){
-  for(let i=0;i<count&&particles.length<300;i++){
-    const a=rand(0,Math.PI*2);
-    const sp=rand(1,spread);
-    const l=life||rand(0.4,0.9);
-    particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:l,maxLife:l,color,r:rand(2,5)});
-  }
-}
-
-/* ========== SHAKE ========== */
-function triggerShake(mag){ shakeMag=Math.max(shakeMag,mag); }
-
-/* ========== INPUT ========== */
-function doFlip(){
-  if(state==='start'){ startGame(); return; }
-  if(state==='gameover'){ if(retryTimer>0.45) startGame(); return; }
-  if(player.flipCooldown>0) return;
-  player.targetLane=1-player.lane;
-  if(player.lockTimer<=0) player.colorId=1-player.colorId;
-  player.flipCooldown=0.08;
-}
-canvas.addEventListener('pointerdown',e=>{e.preventDefault();doFlip();});
-document.addEventListener('keydown',e=>{
-  if(e.code==='Space'||e.code==='Enter'){e.preventDefault();doFlip();}
-});
-
-/* ========== GAME LIFECYCLE ========== */
-function startGame(){
-  state='playing';
-  score=0;gameTime=0;speed=3;baseSpeed=3;
-  gates=[];particles=[];
-  player.lane=0;player.targetLane=0;player.colorId=0;
-  player.shield=1;player.lockTimer=0;player.flipCooldown=0;player.trail=[];
-  player.x=W*0.22;player.y=H*0.35;
-  comboActive=false;comboTimer=0;comboMultiplier=1;
-  perfectStreak=0;spawnTimer=0;retryTimer=0;deathFreeze=0;shakeMag=0;
-  initBgDots();
-}
-
-function die(){
-  state='gameover';
-  if(score>best){best=score;localStorage.setItem('cd_best',''+best);}
-  if(perfectStreak>bestStreak){bestStreak=perfectStreak;localStorage.setItem('cd_bestStreak',''+bestStreak);}
-  triggerShake(16);
-  spawnParticles(player.x,player.y,COLORS[player.colorId],45,7,1);
-  spawnParticles(player.x,player.y,'#fff',18,5,0.7);
-  deathFreeze=0.3;retryTimer=0;
-}
-
-/* ========== UPDATE ========== */
-function update(dt){
-  hueShift+=dt*8;
-
-  // Shake
-  if(shakeMag>0.15){
-    shakeMag*=shakeDecay;
-    shakeX=rand(-shakeMag,shakeMag);
-    shakeY=rand(-shakeMag,shakeMag);
-  } else { shakeMag=0;shakeX=0;shakeY=0; }
-
-  if(state==='gameover'){
-    retryTimer+=dt;
-    if(deathFreeze>0) deathFreeze-=dt;
-    updateParticles(dt);
-    updateBgDots(dt);
-    return;
-  }
-  if(state==='start'){
-    updateBgDots(dt);
-    updateParticles(dt);
-    return;
-  }
-
-  /* --- Playing --- */
-  gameTime+=dt;
-  baseSpeed=3+gameTime*0.12;
-  speed=clamp(baseSpeed,3,12);
-
-  // Player y interpolation
-  const laneY0=H*0.35,laneY1=H*0.65;
-  const targetY=player.targetLane===0?laneY0:laneY1;
-  player.y=lerp(player.y,targetY,clamp(dt*18,0,1));
-  player.lane=player.targetLane;
-  player.x=W*0.22;
-
-  // Cooldowns
-  if(player.flipCooldown>0) player.flipCooldown-=dt;
-  if(player.lockTimer>0) player.lockTimer-=dt;
-
-  // Combo
-  if(comboActive){
-    comboTimer-=dt;
-    if(comboTimer<=0){comboActive=false;comboMultiplier=1;}
-  }
-
-  // Trail
-  player.trail.unshift({x:player.x,y:player.y,a:1});
-  const maxTrail=comboActive?16:8;
-  while(player.trail.length>maxTrail) player.trail.pop();
-  for(const t of player.trail) t.a*=0.86;
-
-  // Spawn
-  spawnTimer-=dt;
-  if(spawnTimer<=0){ spawnGate(); spawnTimer=getSpawnInterval(); }
-
-  // Move gates
-  const px=speed*100*dt;
-  for(const g of gates) g.x-=px;
-
-  // Collision
-  for(const g of gates){
-    if(g.passed) continue;
-    const gRight=g.x+g.w;
-    const pLeft=player.x-player.radius;
-    const pRight=player.x+player.radius;
-
-    if(pRight>g.x&&pLeft<gRight){
-      const laneCY=g.lane===0?laneY0:laneY1;
-      const halfGap=g.gapH/2;
-      const margin=player.radius*0.4;
-      const inGap=player.y>laneCY-halfGap+margin&&player.y<laneCY+halfGap-margin;
-      const sameLane=player.lane===g.lane;
-      const colorMatch=player.colorId===g.colorId;
-
-      if(sameLane){
-        if(!g.scored){
-          if(inGap&&colorMatch){
-            /* --- Perfect pass --- */
-            g.scored=true;
-            if(!g.isFeint){
-              score+=comboActive?2:1;
-              perfectStreak++;
-              if(perfectStreak>=5&&!comboActive){
-                comboActive=true;comboTimer=2.5;comboMultiplier=2;
-                spawnParticles(player.x,player.y,'#ffeb3b',22,5,0.6);
-              } else if(comboActive){ comboTimer=2.5; }
-              triggerShake(2.5);
-              spawnParticles(player.x,player.y,COLORS[g.colorId],14,4,0.5);
-              if(g.isColorLock){
-                player.lockTimer=1.5;
-                spawnParticles(player.x,player.y,'#fff',10,3,0.4);
-              }
-            }
-            /* Feint passed correctly — no score, no penalty */
-          } else {
-            /* --- Hit / wrong color --- */
-            g.scored=true;
-            if(g.isFeint){
-              perfectStreak=0;comboActive=false;comboMultiplier=1;comboTimer=0;
-              triggerShake(3);
-              spawnParticles(player.x,player.y,'#888',10,3,0.4);
-            } else {
-              if(player.shield===1){
-                player.shield=0;
-                perfectStreak=0;comboActive=false;comboMultiplier=1;comboTimer=0;
-                triggerShake(7);
-                spawnParticles(player.x,player.y,'#ff6600',20,5,0.6);
-              } else { die(); return; }
-            }
-          }
-        }
-      }
-    }
-
-    if(gRight<pLeft&&!g.passed){ g.passed=true; }
-  }
-
-  // Shield refresh
-  if(player.shield===0){
-    const chance=clamp(0.0018-score*0.00003,0.0002,0.0018);
-    if(Math.random()<chance){ player.shield=1; spawnParticles(player.x,player.y,'rgba(255,255,255,0.8)',8,3,0.4); }
-  }
-
-  // Cleanup
-  gates=gates.filter(g=>g.x+g.w>-60);
-  updateParticles(dt);
-  updateBgDots(dt);
-}
-
 function updateParticles(dt){
-  for(const p of particles){
-    p.x+=p.vx;p.y+=p.vy;
-    p.vy+=30*dt;
-    p.vx*=0.98;
-    p.life-=dt;
-    p.r*=0.996;
-  }
-  particles=particles.filter(p=>p.life>0&&p.r>0.3);
-}
-
-function updateBgDots(dt){
-  const s=state==='playing'?speed:1.5;
-  for(const d of bgDots){
-    d.x-=d.spd*s;
-    if(d.x<-5){d.x=W+5;d.y=rand(0,H);}
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx*dt*60;p.y+=p.vy*dt*60;
+    p.vy+=0.03*dt*60;p.vx*=0.98;
+    p.life-=dt;p.r*=0.997;
+    if(p.life<=0||p.r<0.3) particles.splice(i,1);
   }
 }
-
-/* ========== DRAW ========== */
-function draw(){
-  ctx.save();
-  ctx.translate(shakeX,shakeY);
-
-  // Background gradient with subtle hue cycling
-  const bgH=hueShift%360;
-  const grad=ctx.createLinearGradient(0,0,0,H);
-  grad.addColorStop(0,hsl(230+bgH*0.05,30,8));
-  grad.addColorStop(1,hsl(260+bgH*0.05,25,5));
-  ctx.fillStyle=grad;
-  ctx.fillRect(-20,-20,W+40,H+40);
-
-  // BG dots
-  for(const d of bgDots){
-    ctx.beginPath();
-    ctx.arc(d.x,d.y,d.r,0,Math.PI*2);
-    ctx.fillStyle=`rgba(255,255,255,${d.alpha})`;
-    ctx.fill();
-  }
-
-  // Lane divider
-  ctx.save();
-  ctx.setLineDash([6,8]);
-  ctx.strokeStyle='rgba(255,255,255,0.06)';
-  ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(0,H*0.5);ctx.lineTo(W,H*0.5);ctx.stroke();
-  ctx.restore();
-
-  // Upper lane tint
-  ctx.fillStyle='rgba(255,255,255,0.012)';
-  ctx.fillRect(0,0,W,H*0.5);
-
-  if(state==='start'){ drawStartScreen(); drawParticles(); ctx.restore(); return; }
-
-  // Gates
-  for(const g of gates) drawGate(g);
-
-  // Player trail
-  for(let i=player.trail.length-1;i>=0;i--){
-    const t=player.trail[i];
-    const a=t.a*(comboActive?0.45:0.22);
-    if(a<0.01) continue;
-    ctx.beginPath();
-    ctx.arc(t.x,t.y,player.radius*(0.4+t.a*0.6),0,Math.PI*2);
-    ctx.fillStyle=player.colorId===0?`rgba(0,229,255,${a})`:`rgba(255,46,196,${a})`;
-    ctx.fill();
-  }
-
-  drawPlayer();
-  drawParticles();
-  drawHUD();
-
-  if(state==='gameover') drawGameOver();
-
-  ctx.restore();
-}
-
-function drawPlayer(){
-  const px=player.x,py=player.y,r=player.radius;
-  const col=COLORS[player.colorId];
-
-  // Glow
-  ctx.save();
-  ctx.shadowColor=col;
-  ctx.shadowBlur=comboActive?28:16;
-  ctx.beginPath();ctx.arc(px,py,r,0,Math.PI*2);
-  ctx.fillStyle=col;ctx.fill();
-  ctx.restore();
-
-  // Disc
-  ctx.beginPath();ctx.arc(px,py,r*0.88,0,Math.PI*2);
-  ctx.fillStyle=col;ctx.fill();
-
-  // Accessibility icon
-  ctx.strokeStyle='#fff';ctx.lineWidth=2;
-  if(player.colorId===0){
-    ctx.beginPath();
-    ctx.moveTo(px,py-r*0.42);
-    ctx.lineTo(px-r*0.38,py+r*0.28);
-    ctx.lineTo(px+r*0.38,py+r*0.28);
-    ctx.closePath();ctx.stroke();
-  } else {
-    ctx.beginPath();ctx.arc(px,py,r*0.33,0,Math.PI*2);ctx.stroke();
-  }
-
-  // Shield ring
-  if(player.shield===1){
-    ctx.save();
-    ctx.strokeStyle='rgba(255,255,255,0.65)';
-    ctx.lineWidth=2.5;ctx.setLineDash([]);
-    ctx.beginPath();ctx.arc(px,py,r+6,0,Math.PI*2);ctx.stroke();
-    ctx.restore();
-  } else if(player.shield===0){
-    ctx.save();
-    ctx.strokeStyle='rgba(255,150,0,0.45)';
-    ctx.lineWidth=2;ctx.setLineDash([4,4]);
-    ctx.beginPath();ctx.arc(px,py,r+6,0,Math.PI*2);ctx.stroke();
-    ctx.restore();
-  }
-
-  // Lock indicator
-  if(player.lockTimer>0){
-    ctx.save();
-    ctx.fillStyle='rgba(255,255,255,0.85)';
-    ctx.font='bold 10px sans-serif';ctx.textAlign='center';
-    ctx.fillText('LOCK',px,py-r-11);
-    ctx.restore();
-  }
-
-  // Combo ring
-  if(comboActive){
-    const ca=0.3+0.3*Math.sin(gameTime*10);
-    ctx.save();
-    ctx.strokeStyle=`rgba(255,235,59,${ca})`;
-    ctx.lineWidth=3;
-    ctx.beginPath();ctx.arc(px,py,r+11+Math.sin(gameTime*8)*2,0,Math.PI*2);ctx.stroke();
-    ctx.restore();
-  }
-}
-
-function drawGate(g){
-  const laneY=g.lane===0?H*0.35:H*0.65;
-  const half=g.gapH/2;
-  const col=COLORS[g.colorId];
-
-  ctx.save();
-  if(g.isFeint){ ctx.setLineDash([6,6]);ctx.globalAlpha=0.45; }
-
-  // Glow bloom layers
-  for(let i=3;i>=1;i--){
-    ctx.strokeStyle=player.colorId===g.colorId?`rgba(${g.colorId===0?'0,229,255':'255,46,196'},${0.04*i})`:`rgba(${g.colorId===0?'0,229,255':'255,46,196'},${0.03*i})`;
-    ctx.lineWidth=g.w+i*7;
-    ctx.beginPath();ctx.moveTo(g.x+g.w/2,laneY-half-45);ctx.lineTo(g.x+g.w/2,laneY-half);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(g.x+g.w/2,laneY+half);ctx.lineTo(g.x+g.w/2,laneY+half+45);ctx.stroke();
-  }
-
-  // Main bars
-  ctx.strokeStyle=col;ctx.lineWidth=g.w;
-  ctx.beginPath();ctx.moveTo(g.x+g.w/2,laneY-half-45);ctx.lineTo(g.x+g.w/2,laneY-half);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(g.x+g.w/2,laneY+half);ctx.lineTo(g.x+g.w/2,laneY+half+45);ctx.stroke();
-
-  // Gap edge markers
-  ctx.fillStyle=`rgba(${g.colorId===0?'0,229,255':'255,46,196'},0.3)`;
-  ctx.fillRect(g.x,laneY-half,g.w,2);
-  ctx.fillRect(g.x,laneY+half-2,g.w,2);
-
-  // Accessibility icon in gap
-  const ix=g.x+g.w/2,iy=laneY;
-  ctx.strokeStyle='rgba(255,255,255,0.55)';ctx.lineWidth=1.5;
-  if(g.colorId===0){
-    ctx.beginPath();ctx.moveTo(ix,iy-8);ctx.lineTo(ix-7,iy+5);ctx.lineTo(ix+7,iy+5);ctx.closePath();ctx.stroke();
-  } else {
-    ctx.beginPath();ctx.arc(ix,iy,6,0,Math.PI*2);ctx.stroke();
-  }
-
-  // Color-lock badge
-  if(g.isColorLock){
-    ctx.fillStyle='rgba(255,255,255,0.75)';
-    ctx.font='bold 9px sans-serif';ctx.textAlign='center';
-    ctx.fillText('CL',g.x+g.w/2,laneY-half-48);
-  }
-
-  ctx.restore();
-}
-
 function drawParticles(){
   for(const p of particles){
     const a=clamp(p.life/p.maxLife,0,1);
-    ctx.globalAlpha=a;
-    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    ctx.fillStyle=p.color;ctx.fill();
+    ctx.globalAlpha=a;ctx.fillStyle=p.color;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r*a,0,Math.PI*2);ctx.fill();
   }
   ctx.globalAlpha=1;
 }
 
-function drawHUD(){
-  ctx.save();ctx.textAlign='center';
+/* ── Shake ── */
+function triggerShake(mag){shakeMag=Math.max(shakeMag,mag);}
+function updateShake(dt){
+  if(shakeMag>0.2){
+    shakeMag*=0.88;
+    shakeX=rand(-shakeMag,shakeMag);shakeY=rand(-shakeMag,shakeMag);
+  }else{shakeMag=0;shakeX=shakeY=0;}
+}
 
-  // Score
-  ctx.fillStyle='#fff';
-  ctx.font='bold 28px sans-serif';
-  ctx.fillText(score,W/2,40);
-
-  // Combo
-  if(comboActive){
-    const fl=0.65+0.35*Math.sin(gameTime*12);
-    ctx.fillStyle=`rgba(255,235,59,${fl})`;
-    ctx.font='bold 16px sans-serif';
-    ctx.fillText('x2 COMBO',W/2,62);
-    const bw=80,remain=comboTimer/2.5;
-    ctx.fillStyle='rgba(255,235,59,0.25)';ctx.fillRect(W/2-bw/2,67,bw,4);
-    ctx.fillStyle='rgba(255,235,59,0.8)';ctx.fillRect(W/2-bw/2,67,bw*remain,4);
+/* ── Drawing: Sun icon ── */
+function drawSunIcon(x,y,r,alpha){
+  ctx.save();ctx.globalAlpha=alpha||1;
+  ctx.fillStyle=MODE_COLORS[SUN];
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  /* rays */
+  ctx.strokeStyle=MODE_COLORS[SUN];ctx.lineWidth=1.5;
+  for(let i=0;i<8;i++){
+    const a=(Math.PI*2/8)*i+hueShift*0.015;
+    ctx.beginPath();
+    ctx.moveTo(x+Math.cos(a)*(r+2),y+Math.sin(a)*(r+2));
+    ctx.lineTo(x+Math.cos(a)*(r+5),y+Math.sin(a)*(r+5));
+    ctx.stroke();
   }
-
-  // Streak
-  if(perfectStreak>=2){
-    ctx.fillStyle='rgba(255,255,255,0.35)';
-    ctx.font='12px sans-serif';
-    ctx.fillText('streak '+perfectStreak,W/2,H-14);
-  }
-
+  /* stripes — accessibility pattern */
+  ctx.strokeStyle='rgba(255,255,255,0.45)';ctx.lineWidth=1.2;
+  ctx.beginPath();
+  ctx.moveTo(x-r*.4,y-r*.3);ctx.lineTo(x+r*.4,y-r*.3);
+  ctx.moveTo(x-r*.5,y);ctx.lineTo(x+r*.5,y);
+  ctx.moveTo(x-r*.4,y+r*.3);ctx.lineTo(x+r*.4,y+r*.3);
+  ctx.stroke();
   ctx.restore();
 }
 
+/* ── Drawing: Moon icon ── */
+function drawMoonIcon(x,y,r,alpha){
+  ctx.save();ctx.globalAlpha=alpha||1;
+  ctx.fillStyle=MODE_COLORS[MOON];
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  /* crescent */
+  ctx.fillStyle='rgba(0,0,0,0.22)';
+  ctx.beginPath();ctx.arc(x+r*0.32,y-r*0.18,r*0.62,0,Math.PI*2);ctx.fill();
+  /* dots — accessibility pattern */
+  ctx.fillStyle='rgba(255,255,255,0.5)';
+  const dots=[[-.25,-.2],[.12,.22],[-.12,.12],[.22,-.08],[0,.02]];
+  for(const d of dots){ctx.beginPath();ctx.arc(x+d[0]*r,y+d[1]*r,1.3,0,Math.PI*2);ctx.fill();}
+  ctx.restore();
+}
+
+/* ── Drawing: Orb (player) ── */
+function getOrbX(){
+  const w=W*0.36;
+  return lane===LEFT?W/2-w/2:W/2+w/2;
+}
+
+function drawOrb(x,y){
+  /* trail */
+  for(let i=0;i<orbTrail.length;i++){
+    const t=orbTrail[i];
+    const a=(i/orbTrail.length)*0.25;
+    ctx.globalAlpha=a;ctx.fillStyle=MODE_COLORS[mode];
+    ctx.beginPath();ctx.arc(t.x,t.y,ORB_R*(0.35+0.65*i/orbTrail.length),0,Math.PI*2);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  /* glow */
+  const g=ctx.createRadialGradient(x,y,ORB_R*0.3,x,y,ORB_R*2.2);
+  g.addColorStop(0,mode===SUN?'rgba(255,179,71,0.28)':'rgba(126,200,227,0.28)');
+  g.addColorStop(1,'transparent');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,ORB_R*2.2,0,Math.PI*2);ctx.fill();
+  /* icon */
+  if(mode===SUN) drawSunIcon(x,y,ORB_R,1);
+  else drawMoonIcon(x,y,ORB_R,1);
+  /* shield ring */
+  if(hasShield){
+    ctx.strokeStyle='rgba(255,255,255,0.55)';ctx.lineWidth=2;
+    ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.arc(x,y,ORB_R+7,hueShift*0.06,hueShift*0.06+Math.PI*1.5);ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
+/* ── Drawing: Gate ── */
+function drawGate(g){
+  const gx=(W-g.gateW)/2;
+  const gH=14;
+  const divAbs=gx+g.gateW*g.divX;
+  const leftW=divAbs-gx;
+  const rightW=gx+g.gateW-divAbs;
+
+  /* For flicker type: visual color swaps but icon/pattern stays true */
+  const flickSwap=g.type===GT_FLICKER&&g.flickVis;
+  const sunIsLeft=flickSwap?(g.sunLane!==LEFT):(g.sunLane===LEFT);
+
+  const leftCol=sunIsLeft?MODE_DARK[SUN]:MODE_DARK[MOON];
+  const rightCol=sunIsLeft?MODE_DARK[MOON]:MODE_DARK[SUN];
+
+  /* frame */
+  ctx.fillStyle='rgba(255,255,255,0.1)';
+  ctx.fillRect(gx-2,g.y-2,g.gateW+4,gH+4);
+
+  /* lanes */
+  ctx.fillStyle=leftCol;ctx.fillRect(gx,g.y,leftW,gH);
+  ctx.fillStyle=rightCol;ctx.fillRect(divAbs,g.y,rightW,gH);
+
+  /* divider line */
+  ctx.fillStyle='rgba(255,255,255,0.85)';
+  ctx.fillRect(divAbs-1.5,g.y-5,3,gH+10);
+
+  /* icons — always show TRUE assignment (reliable for color-vision) */
+  const iy=g.y+gH/2;
+  const lIx=gx+leftW/2;
+  const rIx=divAbs+rightW/2;
+  if(g.sunLane===LEFT){
+    drawSunIcon(lIx,iy,5,0.75);
+    drawMoonIcon(rIx,iy,5,0.75);
+  }else{
+    drawMoonIcon(lIx,iy,5,0.75);
+    drawSunIcon(rIx,iy,5,0.75);
+  }
+
+  /* narrow bonus label */
+  if(g.narrow){
+    ctx.fillStyle='rgba(255,215,0,0.65)';ctx.font='bold 9px sans-serif';ctx.textAlign='center';
+    ctx.fillText('BONUS',W/2,g.y-7);
+  }
+}
+
+/* ── Drawing: Background ── */
+function drawBG(){
+  const h1=(215+hueShift*0.25)%360;
+  const h2=(245+hueShift*0.4)%360;
+  const gr=ctx.createLinearGradient(0,0,0,H);
+  gr.addColorStop(0,hsl(h1,28,7));
+  gr.addColorStop(1,hsl(h2,32,4));
+  ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);
+  /* grid */
+  ctx.strokeStyle='rgba(255,255,255,0.025)';ctx.lineWidth=1;
+  const off=(hueShift*1.5)%40;
+  for(let y=off;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  /* stars */
+  for(const s of bgStars){
+    ctx.globalAlpha=s.a;ctx.fillStyle='#fff';
+    ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+}
+function updateStars(dt){
+  const s=state==='playing'?speed*0.3:0.5;
+  for(const st of bgStars){st.y+=st.s*s*dt*60;if(st.y>H+5){st.y=-3;st.x=rand(0,W);}}
+}
+
+/* ── Input ── */
+function handleInput(){
+  if(state==='start'){startGame();return;}
+  if(state==='playing'){flipMode();return;}
+  if(state==='gameover'&&performance.now()-gameOverTime>GUARD_MS) state='start';
+}
+
+function flipMode(){
+  mode=mode===SUN?MOON:SUN;
+  lane=lane===LEFT?RIGHT:LEFT;
+  spawn(getOrbX(),orbY,MODE_COLORS[mode],8,2.5,0.3);
+}
+
+canvas.addEventListener('pointerdown',e=>{e.preventDefault();handleInput();},{passive:false});
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'||e.code==='Enter'){e.preventDefault();handleInput();}
+});
+
+/* ── Game lifecycle ── */
+function startGame(){
+  state='playing';score=0;mode=SUN;lane=LEFT;
+  hasShield=true;combo=0;comboMul=1;speed=0;baseSpeed=3;
+  gates=[];particles=[];orbTrail=[];
+  shakeX=shakeY=0;shakeMag=0;hitStopTimer=0;
+  gateSpawnAccum=0;gameTime=0;nearMissTimer=0;
+  orbY=H*0.78;lastGateY=-999;
+  initStars();
+  updateHUD();
+}
+
+function getSpeed(){return 3+score*0.035+Math.min(gameTime*0.08,3.5);}
+
+/* spawn interval in pixels traveled */
+function spawnInterval(){return clamp(200-score*0.6,100,200);}
+
+/* ── Update ── */
+function updateGame(dt){
+  if(hitStopTimer>0){hitStopTimer-=dt;return;}
+  hueShift+=dt*25;
+  gameTime+=dt;
+  speed=getSpeed();
+
+  /* spawn gates */
+  gateSpawnAccum+=speed*dt*60;
+  if(gateSpawnAccum>=spawnInterval()){
+    gateSpawnAccum-=spawnInterval();
+    const g=makeGate(-50);
+    gates.push(g);
+    if(g.isCombo){
+      const g2=makeGate(-100);
+      g2.type=GT_STATIC;g2.isCombo=false;
+      gates.push(g2);
+    }
+  }
+
+  /* move gates */
+  for(const g of gates){
+    g.y+=speed*dt*60;
+    if(g.type===GT_SLIDING){
+      g.divX+=g.slideDir*g.slideSpd*dt;
+      if(g.divX>0.68){g.divX=0.68;g.slideDir=-1;}
+      if(g.divX<0.32){g.divX=0.32;g.slideDir=1;}
+    }
+    if(g.type===GT_FLICKER){
+      g.flickTimer+=dt;
+      g.flickVis=Math.sin(g.flickTimer*14)>0.35;
+    }
+  }
+
+  /* collision */
+  const orbX=getOrbX();
+  for(let i=gates.length-1;i>=0;i--){
+    const g=gates[i];
+    if(g.y>H+60){gates.splice(i,1);continue;}
+    if(!g.passed&&g.y>=orbY-ORB_R&&g.y<=orbY+ORB_R){
+      g.passed=true;
+      const gx=(W-g.gateW)/2;
+      const divAbs=gx+g.gateW*g.divX;
+      const inLeft=orbX<divAbs;
+
+      /* is current mode safe in the lane the orb is in? */
+      const safeInLeft=(mode===SUN&&g.sunLane===LEFT)||(mode===MOON&&g.sunLane===RIGHT);
+      const safeInRight=(mode===SUN&&g.sunLane===RIGHT)||(mode===MOON&&g.sunLane===LEFT);
+      const safe=(inLeft&&safeInLeft)||(!inLeft&&safeInRight);
+
+      if(safe){
+        if(!g.scored){
+          g.scored=true;
+          combo++;
+          comboMul=1+Math.floor(combo/5)*0.5;
+          const pts=g.narrow?Math.ceil(3*comboMul):Math.ceil(1*comboMul);
+          score+=pts;
+          if(score>best){best=score;localStorage.setItem(LS_KEY,''+best);}
+          /* near-miss */
+          const dist=Math.abs(orbX-divAbs);
+          if(dist<28){
+            nearMissTimer=0.7;
+            spawn(orbX,orbY,'#FFD700',14,4,0.45);
+            triggerShake(2);
+          }
+          spawn(orbX,orbY,MODE_COLORS[mode],10,3,0.4);
+        }
+      }else{
+        /* hit */
+        if(hasShield){
+          hasShield=false;combo=0;comboMul=1;
+          triggerShake(7);hitStopTimer=0.12;
+          spawn(orbX,orbY,'#fff',22,5,0.55);
+          spawn(orbX,orbY,'#FF4444',16,4,0.5);
+        }else{
+          triggerShake(12);hitStopTimer=0.22;
+          spawn(orbX,orbY,'#FF2222',35,6,0.8);
+          spawn(orbX,orbY,'#fff',18,4,0.6);
+          state='gameover';gameOverTime=performance.now();
+          if(score>best){best=score;localStorage.setItem(LS_KEY,''+best);}
+        }
+      }
+    }
+  }
+
+  /* orb trail */
+  orbTrail.push({x:orbX,y:orbY});
+  if(orbTrail.length>14) orbTrail.shift();
+
+  if(nearMissTimer>0) nearMissTimer-=dt;
+  updateHUD();
+}
+
+function updateHUD(){
+  scoreEl.textContent=score;
+  comboEl.textContent=combo>2?`x${comboMul.toFixed(1)} (${combo})`:' ';
+  shieldEl.textContent=hasShield?'\u{1F6E1}\uFE0F':'';
+}
+
+/* ── Draw screens ── */
 function drawStartScreen(){
-  ctx.save();ctx.textAlign='center';
+  drawBG();
+  ctx.textAlign='center';
+  ctx.fillStyle='#fff';ctx.font='bold 34px sans-serif';
+  ctx.fillText('Color Dash',W/2,H*0.22);
+  ctx.font='15px sans-serif';ctx.fillStyle='rgba(255,255,255,0.5)';
+  ctx.fillText('Flip & Thread',W/2,H*0.28);
 
-  ctx.fillStyle='#fff';
-  ctx.font='bold 38px sans-serif';
-  ctx.fillText('Color Dash',W/2,H*0.28);
+  /* preview icons */
+  drawSunIcon(W/2-28,H*0.38,20,0.9);
+  drawMoonIcon(W/2+28,H*0.38,20,0.9);
 
-  ctx.fillStyle='rgba(255,255,255,0.45)';
-  ctx.font='16px sans-serif';
-  ctx.fillText('Flip + Match',W/2,H*0.28+32);
+  ctx.fillStyle='rgba(255,255,255,0.75)';ctx.font='13px sans-serif';
+  const lines=[
+    'Tap to flip between Sun & Moon',
+    'Each flip also swaps your lane',
+    'Match your mode to the safe lane',
+    'Icons always show the truth!',
+    'One shield per run — use it wisely',
+  ];
+  lines.forEach((l,i)=>ctx.fillText(l,W/2,H*0.50+i*20));
 
-  // Preview player
-  const py=H*0.48;
-  ctx.beginPath();ctx.arc(W/2,py,24,0,Math.PI*2);ctx.fillStyle=CYAN;ctx.fill();
-  ctx.strokeStyle='#fff';ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(W/2,py-11);ctx.lineTo(W/2-10,py+7);ctx.lineTo(W/2+10,py+7);ctx.closePath();ctx.stroke();
+  const pulse=0.5+0.5*Math.sin(performance.now()*0.004);
+  ctx.globalAlpha=0.4+pulse*0.6;ctx.font='bold 18px sans-serif';ctx.fillStyle='#fff';
+  ctx.fillText('Tap to Start',W/2,H*0.78);
+  ctx.globalAlpha=1;
 
   if(best>0){
-    ctx.fillStyle='rgba(255,255,255,0.4)';ctx.font='14px sans-serif';
-    ctx.fillText('Best: '+best,W/2,H*0.6);
+    ctx.font='13px sans-serif';ctx.fillStyle='rgba(255,255,255,0.4)';
+    ctx.fillText('Best: '+best,W/2,H*0.85);
   }
-
-  const pulse=0.5+0.5*Math.sin(Date.now()*0.004);
-  ctx.fillStyle=`rgba(255,255,255,${0.35+pulse*0.45})`;
-  ctx.font='18px sans-serif';
-  ctx.fillText('Tap to Start',W/2,H*0.73);
-
-  ctx.restore();
 }
 
-function drawGameOver(){
-  if(deathFreeze>0) return;
-  ctx.save();
-
-  ctx.fillStyle='rgba(0,0,0,0.6)';
-  ctx.fillRect(-20,-20,W+40,H+40);
-
+function drawGameOverScreen(){
+  drawBG();drawParticles();
   ctx.textAlign='center';
-
-  ctx.fillStyle='rgba(255,255,255,0.5)';ctx.font='16px sans-serif';
-  ctx.fillText('Score',W/2,H*0.28);
-
-  ctx.fillStyle='#fff';ctx.font='bold 52px sans-serif';
-  ctx.fillText(score,W/2,H*0.38);
-
-  ctx.fillStyle='rgba(255,255,255,0.55)';ctx.font='18px sans-serif';
-  ctx.fillText('Best: '+best,W/2,H*0.48);
-
-  if(bestStreak>0){
-    ctx.fillStyle='rgba(255,255,255,0.35)';ctx.font='14px sans-serif';
-    ctx.fillText('Best Streak: '+bestStreak,W/2,H*0.54);
+  ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#FF4444';ctx.font='bold 30px sans-serif';
+  ctx.fillText('Game Over',W/2,H*0.27);
+  ctx.fillStyle='#fff';ctx.font='bold 46px sans-serif';
+  ctx.fillText(score,W/2,H*0.40);
+  ctx.font='13px sans-serif';ctx.fillStyle='rgba(255,255,255,0.5)';
+  ctx.fillText('SCORE',W/2,H*0.44);
+  ctx.font='bold 18px sans-serif';
+  ctx.fillStyle=score>=best&&score>0?'#FFD700':'rgba(255,255,255,0.65)';
+  ctx.fillText('Best: '+best,W/2,H*0.52);
+  if(score>=best&&score>0){
+    ctx.font='11px sans-serif';ctx.fillStyle='#FFD700';
+    ctx.fillText('NEW HIGH SCORE!',W/2,H*0.56);
   }
+  const canRetry=performance.now()-gameOverTime>GUARD_MS;
+  const p=canRetry?0.4+0.6*Math.sin(performance.now()*0.004)*0.5+0.3:0.25;
+  ctx.globalAlpha=p;ctx.font='bold 16px sans-serif';ctx.fillStyle='#fff';
+  ctx.fillText(canRetry?'Tap to Retry':'...',W/2,H*0.70);
+  ctx.globalAlpha=1;
+}
 
-  if(retryTimer>0.45){
-    const p2=0.5+0.5*Math.sin(Date.now()*0.005);
-    ctx.fillStyle=`rgba(255,255,255,${0.35+p2*0.45})`;
-    ctx.font='18px sans-serif';
-    ctx.fillText('Tap to Retry',W/2,H*0.7);
+function drawPlaying(){
+  drawBG();
+  ctx.save();ctx.translate(shakeX,shakeY);
+  for(const g of gates) drawGate(g);
+  drawOrb(getOrbX(),orbY);
+  /* near-miss flash */
+  if(nearMissTimer>0){
+    ctx.globalAlpha=nearMissTimer;ctx.fillStyle='#FFD700';
+    ctx.font='bold 14px sans-serif';ctx.textAlign='center';
+    ctx.fillText('CLOSE!',getOrbX(),orbY-28);ctx.globalAlpha=1;
   }
-
+  drawParticles();
   ctx.restore();
 }
 
-/* ========== MAIN LOOP ========== */
+/* ── Main loop ── */
 let lastTime=0;
 function loop(ts){
   requestAnimationFrame(loop);
-  const dt=Math.min((ts-lastTime)/1000,0.05);
+  const rawDt=(ts-lastTime)/1000;
   lastTime=ts;
-  update(dt);
-  draw();
+  const dt=Math.min(rawDt,0.05);
+  resize();
+  ctx.clearRect(0,0,W,H);
+  updateStars(dt);
+  switch(state){
+    case 'start': drawStartScreen();break;
+    case 'playing':
+      updateGame(dt);updateParticles(dt);updateShake(dt);
+      drawPlaying();break;
+    case 'gameover':
+      updateParticles(dt);updateShake(dt);
+      drawGameOverScreen();break;
+  }
 }
-requestAnimationFrame(ts=>{lastTime=ts;loop(ts);});
-initBgDots();
+requestAnimationFrame(t=>{lastTime=t;requestAnimationFrame(loop);});
+})();
 </script>
 </body>
 </html>
